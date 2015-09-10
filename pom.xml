@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>doser</groupId>
+	<artifactId>doser-parent</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0</version>
+	<name>DoSer</name>
+
+	<modules>
+		<module>doser-extensions</module>
+		<module>doser-experiments</module>
+		<module>doser-externtools</module>
+		<module>doser-core</module>
+		<module>doser-disambiguationserver</module>
+		<module>doser-hadoop</module>
+		<module>doser-gerbilrest</module>
+	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>1.7</source>
+						<target>1.7</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<dependencies>
+	</dependencies>
+	<dependencyManagement>
+	</dependencyManagement>
+</project>

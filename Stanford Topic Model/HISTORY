@@ -1,0 +1,51 @@
+Version 0.4.0
+ - Introducing PLDA and PLDP (API only)
+ - Fixes outstanding bug in LabeledLDA inference
+ - Allows loading documents longer than Short.MaxValue in length
+ - Specify Java max memory in GUI
+ - Fix code paths so standard modification of LDA infer example to
+   LabeledLDA (and PLDA) works as expected
+
+Version 0.3.0
+ - Major code refactoring and upgrade to Scala 2.8.  Improved ability to call
+   from Java.
+ - Incompatibilties introduced in example scripts:
+   - GibbsLDA.loadInferenceModel -> GibbsLDA.loadModel
+   - LDADataset constructor no longer not takes an index argument.
+   - model.computePerplexity no longer takes an InferenceParams argument.
+   - dataset.meta[LabelIndex] has been removed.  Use model.topicIndex instead.
+
+Version 0.2.1
+ - Automatically sort and remove duplicates in LabeledLDADataset construction.
+
+Version 0.2 released 2009.11.20
+ - Some backwards-incompatible changes were introduced in the scripting
+   interface for better compatibility, performance, and coverage of the
+   desired functionality.
+   - import edu.stanford.nlp.tmt.stage._ should now be:
+     import edu.stanford.nlp.tmt.stage.LDAStages._;
+     import edu.stanford.nlp.tmt.stage.GibbsLDAStages._;
+     import edu.stanford.nlp.tmt.stage.GibbsLabeledLDAStages._;
+     This change enables more straightforward selection of
+     capabilities desired for a script and better future-proofing
+     for new capabilities.
+   - InferPerWord -> GibbsLDAStages.InferPerWordTopicDistributions
+ - New function GibbsLDAStages.LoadTrainingPerWordTopicDistributions:
+   Load the topic distributions inferred during training on a corpus.  
+ - New function LDAStages.DocumentTopicUsage:
+   Output per-document distributions over topics.  Each line of the
+   output can be paired with the corresponding line of the input, with
+   blank lines for missing documents.
+ - LDAStages.LDAQuery and LDAStages.SlicedLDAQuery now output CSV header
+   lines.
+ - New method LabeledLDAStages.TrainLabeledLDA trains a model using
+   the GibbsLabeledLDA trainer.  The returned model is also a regular
+   GibbsLDA InferenceModel.
+
+Version 0.1.2 released 2009.10.15 
+ - First public source release
+ - Model training can continue from an interrupted point on disk
+ - Perplexity and average per-word log probability implemented
+ - Small GUI changes ("Open ..." remembers last folder, check for
+   updates removed and integrated into main page)
+

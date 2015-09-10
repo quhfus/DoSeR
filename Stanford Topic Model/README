@@ -1,0 +1,19 @@
+The Stanford Topic Modeling Toolbox (TMT) is a collection of tools for
+analyzing trends in text.  This software is Copyright (c) 2009- The
+Board of Trustees of the Leland Stanford Junior University.  It is
+released on the GNU General Public License (v 2.0), found in LICENSE.
+
+http://nlp.stanford.edu/software/tmt/
+
+BUILD INSTRUCTIONS
+
+Building this software requires Maven v2.2 or greater and Java 1.6 or
+greater.  Maven uses pom.xml to describe the build process.  "mvn
+compile" will compile the program from src/ into target/, downloading
+the project's dependencies along the way.
+
+USAGE INSTRUCTIONS
+
+Please see the documentation online at:
+
+http://nlp.stanford.edu/software/tmt/

@@ -1,0 +1,12 @@
+doser/gebrilwrapper/DoserResource.class
+doser/gebrilwrapper/DisambiguatedEntity.class
+doser/gebrilwrapper/Response.class
+doser/gebrilwrapper/Position.class
+doser/gebrilwrapper/DisambiguationRequest.class
+doser/gebrilwrapper/Fact.class
+doser/gebrilwrapper/Fact$SubjectPredObject.class
+doser/gebrilwrapper/Type.class
+doser/gebrilwrapper/WrapperApplication.class
+doser/gebrilwrapper/EntityDisambiguationDPO.class
+doser/gebrilwrapper/BoundingBox.class
+doser/gebrilwrapper/DisambiguationResponse.class
