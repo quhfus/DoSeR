@@ -97,11 +97,12 @@
 			<version>1.0</version>
 		</dependency>
 </> --> 
-		<dependency>
+<!-- <>		<dependency>
 			<groupId>mpi.aida</groupId>
 			<artifactId>aida</artifactId>
 			<version>3.0.4</version>
-		</dependency>
+ 		</dependency>
+ 		</> -->
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

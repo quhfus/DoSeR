@@ -13,6 +13,7 @@ class Vertex implements Comparable<Vertex> {
 	private boolean isCandidate;
 	private String description;
 	private String text;
+	private String context;
 	private double occurrences;
 
 	private Set<Edge> outgoingEdges;
@@ -26,6 +27,8 @@ class Vertex implements Comparable<Vertex> {
 		this.entityQuery = -1;
 		this.isCandidate = false;
 		this.sumOutGoing = 0;
+		this.text = "";
+		this.context = "";
 	}
 
 	void addOutGoingEdge(Edge e) {
@@ -60,6 +63,14 @@ class Vertex implements Comparable<Vertex> {
 		}
 		
 		return toRemove;
+	}
+
+	String getContext() {
+		return context;
+	}
+
+	void setContext(String context) {
+		this.context = context;
 	}
 
 	double getSumOutGoingEdges() {

@@ -13,7 +13,7 @@ public class WrapperApplication extends Application {
 	public Restlet createInboundRoot() {
 		Router router = new Router(getContext());
 		router.attach("/doserwrapper", DoserResource.class);
-		router.attach("/aidawrapper", AidaWrapper.class);
+//		router.attach("/aidawrapper", AidaWrapper.class);
 //		router.attach("/illinoiswrapper", IllinoisWrapper.class);
 		return router;
 	}

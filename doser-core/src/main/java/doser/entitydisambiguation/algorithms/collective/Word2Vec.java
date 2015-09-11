@@ -20,19 +20,27 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import doser.entitydisambiguation.properties.Properties;
 import doser.tools.ServiceQueries;
 
+/**
+ * Class holding Word2Vec and Doc2Vec information for collective disambiguation
+ * 
+ * @author quh
+ *
+ */
 public class Word2Vec {
 
 	protected List<CollectiveSFRepresentation> repList;
 
 	protected Map<String, Float> word2vecsimilarities;
 
+	protected Map<String, Float> doc2vecsimilarities;
+
 	public Word2Vec(List<CollectiveSFRepresentation> rep) {
 		super();
 		this.repList = rep;
 		this.computeWord2VecSimilarities(rep);
+		this.computeLocalContextCompatibility(rep);
 	}
 
 	protected float getWord2VecSimilarity(String source, String target) {
@@ -67,8 +75,54 @@ public class Word2Vec {
 		if (this.word2vecsimilarities.containsKey(res)) {
 			result = this.word2vecsimilarities.get(res) + 1.0f;
 		}
-//		System.out.println("VALUES: "+res+"  "+result);
 		return result;
+	}
+
+	protected float getDoc2VecSimilarity(String sf, String context,
+			String entity) {
+		String key = sf + context + entity;
+		if (this.doc2vecsimilarities.containsKey(key)) {
+			return this.doc2vecsimilarities.get(key) + 1.0f;
+		} else {
+			return 0;
+		}
+	}
+
+	private void computeLocalContextCompatibility(
+			List<CollectiveSFRepresentation> rep) {
+		this.doc2vecsimilarities = new HashMap<String, Float>();
+		Doc2VecJsonFormat format = new Doc2VecJsonFormat();
+		for (CollectiveSFRepresentation sf : rep) {
+			String context = sf.getContext();
+			// ToDo Do some context preprocessing
+			Data doc = new Data();
+			String[] candidates = new String[sf.getCandidates().size()];
+			sf.getCandidates().toArray(candidates);
+			doc.setCandidates(candidates);
+			doc.setContext(context);
+			doc.setSurfaceForm(sf.getSurfaceForm());
+			doc.getQryNr();
+			format.addData(doc);
+		}
+		JSONArray res = performquery(format, "d2vsim");
+
+		// We obtain the same order of surface forms
+		for (int i = 0; i < res.length(); i++) {
+			CollectiveSFRepresentation c = rep.get(i);
+			try {
+				JSONObject obj = res.getJSONObject(i);
+				JSONArray simArray = obj.getJSONArray("sim");
+				for (int j = 0; j < simArray.length(); j++) {
+					float sim = (float) simArray.getDouble(j);
+					String entity = c.getCandidates().get(j);
+					this.doc2vecsimilarities.put(
+							c.getSurfaceForm() + c.getContext() + entity, sim);
+					// c.setCandidateCompatibility(entity, sim);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -131,15 +185,12 @@ public class Word2Vec {
 		}
 		Word2VecJsonFormat format = new Word2VecJsonFormat();
 		format.setData(combinations);
-		JSONArray res = queryword2vec(format);
+		JSONArray res = performquery(format, "w2vsim");
 		for (int i = 0; i < res.length(); i++) {
 			try {
 				JSONObject obj = res.getJSONObject(i);
 				String ents = obj.getString("ents");
 				float sim = (float) obj.getDouble("sim");
-				if(ents.split("\\|").length > 2) {
-//					System.out.println(ents + " "+sim);
-				}
 				this.word2vecsimilarities.put(ents, sim);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -147,7 +198,7 @@ public class Word2Vec {
 		}
 	}
 
-	private JSONArray queryword2vec(Object json) {
+	private JSONArray performquery(Object json, String serviceEndpoint) {
 		final ObjectMapper mapper = new ObjectMapper();
 		String jsonString = null;
 		JSONArray result = null;
@@ -157,11 +208,8 @@ public class Word2Vec {
 					new BasicHeader("content-type", "application/json") };
 			ByteArrayEntity ent = new ByteArrayEntity(jsonString.getBytes(),
 					ContentType.create("application/json"));
-			// String resStr = ServiceQueries.httpPostRequest((Properties
-			// .getInstance().getWord2VecService() + "w2vsim"), ent,
-			// headers);
 			String resStr = ServiceQueries.httpPostRequest(
-					("http://localhost:5000/" + "w2vsim"), ent, headers);
+					("http://localhost:5000/" + serviceEndpoint), ent, headers);
 			JSONObject resultJSON = null;
 			try {
 				resultJSON = new JSONObject(resStr);
@@ -176,6 +224,7 @@ public class Word2Vec {
 	}
 
 	class Word2VecJsonFormat {
+
 		private Set<String> data;
 
 		public Set<String> getData() {
@@ -187,35 +236,99 @@ public class Word2Vec {
 		}
 	}
 
+	class Doc2VecJsonFormat {
+		private List<Data> data;
+
+		public Doc2VecJsonFormat() {
+			super();
+			this.data = new ArrayList<Word2Vec.Data>();
+		}
+
+		public List<Data> getData() {
+			return data;
+		}
+
+		public void setData(List<Data> data) {
+			this.data = data;
+		}
+
+		void addData(Data doc) {
+			this.data.add(doc);
+		}
+	}
+
+	class Data {
+		private String surfaceForm;
+		private String qryNr;
+		private String[] candidates;
+		private String context;
+
+		public String getSurfaceForm() {
+			return surfaceForm;
+		}
+
+		public void setSurfaceForm(String surfaceForm) {
+			this.surfaceForm = surfaceForm;
+		}
+
+		public String getQryNr() {
+			return qryNr;
+		}
+
+		public void setQryNr(String qryNr) {
+			this.qryNr = qryNr;
+		}
+
+		public String[] getCandidates() {
+			return candidates;
+		}
+
+		public void setCandidates(String[] candidates) {
+			this.candidates = candidates;
+		}
+
+		public String getContext() {
+			return context;
+		}
+
+		public void setContext(String context) {
+			this.context = context;
+		}
+	}
+
 	public static void main(String[] args) {
 		List<String> l = new ArrayList<String>();
-		l.add("paris");
-		l.add("germany");
-		List<String> l1 = new ArrayList<String>();
-		l1.add("madrid");
-		l1.add("spain");
-		List<String> l2 = new ArrayList<String>();
-		l2.add("france");
-		List<String> l3 = new ArrayList<String>();
-		l3.add("taiko");
+		l.add("http://dbpedia.org/resource/Leicestershire");
+		l.add("http://dbpedia.org/resource/Leicestershire_County_Cricket_Club");
+		// List<String> l1 = new ArrayList<String>();
+		// l1.add("http://dbpedia.org/resource/Leicestershire");
+		// l1.add("http://dbpedia.org/resource/Leicestershire_County_Cricket_Club");
+		// List<String> l2 = new ArrayList<String>();
+		// l2.add("france");
+		// List<String> l3 = new ArrayList<String>();
+		// l3.add("taiko");
 		CollectiveSFRepresentation rep1 = new CollectiveSFRepresentation(
-				"Paris", "Mein White House steht in Washington", l, 0);
-		CollectiveSFRepresentation rep2 = new CollectiveSFRepresentation(
-				"Madrid", "Mein White House steht in Washington", l1, 1);
-		CollectiveSFRepresentation rep3 = new CollectiveSFRepresentation(
-				"Madrid", "Mein White House steht in Washington", l2, 2);
-		CollectiveSFRepresentation rep4 = new CollectiveSFRepresentation(
-				"Madrid", "Mein White House steht in Washington", l3, 4);
+				"Leicestershire",
+				"cricket english county championship scores london 1996-08-30 result and close of play scores in english county championship matches on friday leicester leicestershire beat somerset by an innings and 39 runs somerset 83 and 174) 296 points",
+				l, 0);
+		// CollectiveSFRepresentation rep2 = new CollectiveSFRepresentation(
+		// "Madrid", "Mein White House steht in Washington", l1, 1);
+		// CollectiveSFRepresentation rep3 = new CollectiveSFRepresentation(
+		// "Madrid", "Mein White House steht in Washington", l2, 2);
+		// CollectiveSFRepresentation rep4 = new CollectiveSFRepresentation(
+		// "Madrid", "Mein White House steht in Washington", l3, 4);
 		List<CollectiveSFRepresentation> reps = new LinkedList<CollectiveSFRepresentation>();
 		reps.add(rep1);
-		reps.add(rep2);
-		reps.add(rep3);
-		reps.add(rep4);
+		// reps.add(rep2);
+		// reps.add(rep3);
+		// reps.add(rep4);
 		Word2Vec w2v = new Word2Vec(reps);
-		List<String> testlist = new LinkedList<String>();
-		testlist.add("france");
-		testlist.add("taiko");
-		System.out.println(w2v.getWord2VecSimilarity(testlist, "madrid"));
+		for (int i = 0; i < reps.size(); i++) {
+			reps.get(i).getLocalContextCompatibility(
+					reps.get(i).getCandidates().get(0));
+			reps.get(i).getLocalContextCompatibility(
+					reps.get(i).getCandidates().get(1));
+		}
 		// System.out.println(w2v.getWord2VecSimilarity("paris", "m1"));
 	}
 }

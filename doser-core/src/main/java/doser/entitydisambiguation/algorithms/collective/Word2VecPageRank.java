@@ -32,7 +32,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 	protected BitSet disambiguatedSurfaceForms;
 
 	protected List<CollectiveSFRepresentation> allCandidates;
-	
+
 	public Word2VecPageRank(EnCenExtFeatures featureDefinition,
 			List<CollectiveSFRepresentation> rep) {
 		super(rep);
@@ -97,16 +97,16 @@ public abstract class Word2VecPageRank extends Word2Vec {
 				if (rep.getCandidates().size() == 1) {
 					disambiguatedEntities.add(rep.getCandidates().get(0));
 					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true,
-							20000);
+							20000, rep.getContext());
 				} else {
 					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true,
-							occs);
+							occs, rep.getContext());
 				}
 			}
 		}
 
 		// Add Document AsVertex
-		addVertex(disambiguatedEntities, "", -1, true, 50000);
+		addVertex(disambiguatedEntities, "", -1, true, 50000, "");
 
 		// Add Edges
 		List<Vertex> vertexList = new ArrayList<Vertex>(graph.getVertices());
@@ -118,17 +118,24 @@ public abstract class Word2VecPageRank extends Word2Vec {
 					if (l1.size() == 1 && l2.size() == 1) {
 						double weight = super.getWord2VecSimilarity(l1.get(0),
 								l2.get(0));
+						// Add Doc2Vec Local Compatibility
+						// First experiment: Harmonic mean
+//						double localComp = super.getDoc2VecSimilarity(
+//								v2.getText(), v2.getContext(), l2.get(0));
+//						double hm = 2 * (localComp * weight)
+//								/ (localComp + weight);
+//						System.out.println(l1.get(0) + " "+l2.get(0) +"  Connection: "+ weight+ " Localcomp: "+ localComp + "HarmonicMean: "+ hm);
 						addEdge(v1, v2, edgeFactory.create(), weight);
 					} else if (l1.size() > 1 && l2.size() == 1) {
-//						double weight = super.getWord2VecSimilarity(l1,
-//								l2.get(0));
-////						System.out.println("WEIGHT: "+weight);
-//						addEdge(v1, v2, edgeFactory.create(), weight);
+						// double weight = super.getWord2VecSimilarity(l1,
+						// l2.get(0));
+						// // System.out.println("WEIGHT: "+weight);
+						// addEdge(v1, v2, edgeFactory.create(), weight);
 					} else if (l1.size() == 1 && l2.size() > 2) {
-//						double weight = super.getWord2VecSimilarity(l2,
-//								l1.get(0));
-////						System.out.println("WEIGHT: "+weight);
-//						addEdge(v1, v2, edgeFactory.create(), weight);
+						// double weight = super.getWord2VecSimilarity(l2,
+						// l1.get(0));
+						// // System.out.println("WEIGHT: "+weight);
+						// addEdge(v1, v2, edgeFactory.create(), weight);
 					}
 				}
 			}
@@ -145,7 +152,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 	}
 
 	protected void addVertex(List<String> uri, String sf, int qryNr,
-			boolean isCandidate, int occurrences) {
+			boolean isCandidate, int occurrences, String context) {
 		Vertex v = new Vertex();
 		for (String u : uri) {
 			v.addUri(u);
@@ -154,6 +161,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		v.setText(sf);
 		v.setEntityQuery(qryNr);
 		v.setOccurrences(occurrences);
+		v.setContext(context);
 		graph.addVertex(v);
 	}
 
