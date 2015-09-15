@@ -7,6 +7,7 @@ public class Edge {
 	private Vertex target;
 	
 	private double transition;
+	
 	private Double edgeProbability;
 	
 	public Edge(Integer edgeNr, Vertex target, double transition) {

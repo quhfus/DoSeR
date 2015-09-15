@@ -67,6 +67,7 @@ public class EntityCentricAlgorithmCollectiveSolver {
 			List<CollectiveSFRepresentation> rep) {
 		List<CollectiveSFRepresentation> sol = new LinkedList<CollectiveSFRepresentation>();
 		List<LinkedList<CollectiveSFRepresentation>> clusters = createDivideAndConquerClusters(rep);
+		boolean reduced = false;
 		while (clusters.size() > 1) {
 			for (LinkedList<CollectiveSFRepresentation> cluster : clusters) {
 				CandidateElimination elimination = new CandidateElimination(
@@ -74,14 +75,39 @@ public class EntityCentricAlgorithmCollectiveSolver {
 				elimination.solve();
 			}
 			clusters = merge(clusters);
+			reduced = true;
 		}
+
 		LinkedList<CollectiveSFRepresentation> cluster = clusters.get(0);
+
+		// If no CandidateElimination was performed due to only cluster is
+		// available, we have to perform a CandidateElimination if more than one
+		// surface form are available.
+//		if (!reduced && cluster.size() > 1) {
+//			int max = 0;
+//			while ((max = computeMaxCandidates(cluster)) > 10) {
+//				int nrCandidates = (int) Math.floor(((double) max) * 0.66);
+//				CandidateElimination elimination = new CandidateElimination(
+//						cluster, eckb, nrCandidates, this.rep);
+//				elimination.solve();
+//			}
+//		}
 
 		PageRankDisambiguator disambiguator = new PageRankDisambiguator(
 				cluster, eckb.getFeatureDefinition());
 		disambiguator.solve();
 		sol.addAll(disambiguator.getRepresentation());
 		return sol;
+	}
+
+	private int computeMaxCandidates(List<CollectiveSFRepresentation> reps) {
+		int max = 0;
+		for (CollectiveSFRepresentation sf : reps) {
+			if (sf.getCandidates().size() > max) {
+				max = sf.getCandidates().size();
+			}
+		}
+		return max;
 	}
 
 	private List<LinkedList<CollectiveSFRepresentation>> merge(

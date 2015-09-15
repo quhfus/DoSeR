@@ -94,7 +94,15 @@ public class Word2Vec {
 		Doc2VecJsonFormat format = new Doc2VecJsonFormat();
 		for (CollectiveSFRepresentation sf : rep) {
 			String context = sf.getContext();
-			// ToDo Do some context preprocessing
+			
+			// ToDo: Replace with one regex
+			context = context.toLowerCase();
+			context = context.replaceAll("\\.", " ");
+			context = context.replaceAll("\\,", " ");
+			context = context.replaceAll("\\!", " ");
+			context = context.replaceAll("\\?", " ");
+			context = context.replaceAll(" +", " ");
+			
 			Data doc = new Data();
 			String[] candidates = new String[sf.getCandidates().size()];
 			sf.getCandidates().toArray(candidates);
