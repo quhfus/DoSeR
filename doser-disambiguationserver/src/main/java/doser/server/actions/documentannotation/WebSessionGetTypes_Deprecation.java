@@ -1,4 +1,4 @@
-package doser.server.actions.webclassify;
+package doser.server.actions.documentannotation;
 
 import java.util.HashSet;
 import java.util.Map;

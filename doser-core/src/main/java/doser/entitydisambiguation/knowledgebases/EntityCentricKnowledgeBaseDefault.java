@@ -114,6 +114,7 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 						.replaceAll("http://dbpedia.org/resource/", "");
 				if ((val != null) && !val.equalsIgnoreCase("")) {
 					final String[] splitter = val.split(TRIMLABELAMOUNT);
+
 					// int priorVal = 0;
 					// for (final String element : splitter) {
 					// // System.out.println(element);
@@ -164,26 +165,28 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 								check);
 					}
 					indexsensePriorHashMapBlanc.put(entity, hash);
-					
-					// Create Temporary Prior HashMap for DBPedia only Disambiguation
-//					String entry = iReader.document(i).get("DbpediaVertexDegree");
-//					if(entry != null) {
-//						indexpriorHashMap.put(entity, Integer.parseInt(entry));
-//					}
+
+					// Create Temporary Prior HashMap for DBPedia only
+					// Disambiguation
+					// String entry =
+					// iReader.document(i).get("DbpediaVertexDegree");
+					// if(entry != null) {
+					// indexpriorHashMap.put(entity, Integer.parseInt(entry));
+					// }
 				}
 
 				// DBediaFacts
-//				final String uri = iReader.document(i).get(KBMAINLINK);
-//				final String facts = iReader.document(i).get(KBFACTFIELD);
-//				final HashSet<String> set = new HashSet<String>();
-//				if (facts != null && !facts.equalsIgnoreCase("")) {
-//					final String[] splitter = facts.split(TRIMLABELAMOUNT);
-//					for (int j = 0; j < splitter.length; j++) {
-//						String s = splitter[j];
-//						String[] split = s.split(TRIMOCCOCC);
-//						set.add(split[1].replaceAll("dbpediaRes/", ""));
-//					}
-//				}
+				// final String uri = iReader.document(i).get(KBMAINLINK);
+				// final String facts = iReader.document(i).get(KBFACTFIELD);
+				// final HashSet<String> set = new HashSet<String>();
+				// if (facts != null && !facts.equalsIgnoreCase("")) {
+				// final String[] splitter = facts.split(TRIMLABELAMOUNT);
+				// for (int j = 0; j < splitter.length; j++) {
+				// String s = splitter[j];
+				// String[] split = s.split(TRIMOCCOCC);
+				// set.add(split[1].replaceAll("dbpediaRes/", ""));
+				// }
+				// }
 
 				// PattyRelations
 				// final String pattyrelations = iReader.document(i).get(
@@ -213,7 +216,7 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 				// set.add(split[1].replaceAll("dbpediaRes/", ""));
 				// }
 				// }
-//				indexRelation.put(uri.hashCode(), set);
+				// indexRelation.put(uri.hashCode(), set);
 			}
 			iReader.close();
 		} catch (final IOException e) {
@@ -276,15 +279,14 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 			return (res + 1);
 		}
 
-		
-//		@Override
-//		public int getOccurrences(String sf, String uri) {
-//			String entity = uri.replaceAll("http://dbpedia.org/resource/", "");
-//			int res = 0;
-//			if (indexpriorHashMap.containsKey(entity)) {
-//				res = indexpriorHashMap.get(entity);
-//			}
-//			return (res + 1);
-//		}
+		// @Override
+		// public int getOccurrences(String sf, String uri) {
+		// String entity = uri.replaceAll("http://dbpedia.org/resource/", "");
+		// int res = 0;
+		// if (indexpriorHashMap.containsKey(entity)) {
+		// res = indexpriorHashMap.get(entity);
+		// }
+		// return (res + 1);
+		// }
 	}
 }

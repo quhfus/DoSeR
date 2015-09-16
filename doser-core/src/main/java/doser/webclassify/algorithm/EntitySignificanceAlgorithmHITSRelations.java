@@ -11,11 +11,11 @@ import doser.tools.RDFGraphOperations;
 import edu.uci.ics.jung.algorithms.scoring.HITS;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
-public class EntitySignificanceAlgorithm {
+public class EntitySignificanceAlgorithmHITSRelations {
 
 	private static final int MAXGRAPHDEPTH = 4;
 
-	public EntitySignificanceAlgorithm() {
+	public EntitySignificanceAlgorithmHITSRelations() {
 		super();
 	}
 
@@ -27,9 +27,6 @@ public class EntitySignificanceAlgorithm {
 		// Set graph vertexes
 		for (Map.Entry<DisambiguatedEntity, Integer> entry : map.entrySet()) {
 			String uri = entry.getKey().getEntityUri();
-			if (uri.equalsIgnoreCase("http://dbpedia.org/resource/Ada_(programming_language)")) {
-				uri = "http://dbpedia.org/resource/Ada_Lovelace";
-			}
 			graph.addVertex(uri);
 			linkSet.add(uri);
 		}

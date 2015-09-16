@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class Vertex implements Comparable<Vertex> {
+public class Vertex implements Comparable<Vertex> {
 	private List<String> uris;
 	private int entityQuery;
 	private double score;
@@ -20,7 +20,7 @@ class Vertex implements Comparable<Vertex> {
 
 	private double sumOutGoing;
 
-	Vertex() {
+	public Vertex() {
 		super();
 		this.uris = new ArrayList<String>();
 		this.outgoingEdges = new HashSet<Edge>();
@@ -31,7 +31,7 @@ class Vertex implements Comparable<Vertex> {
 		this.context = "";
 	}
 
-	void addOutGoingEdge(Edge e) {
+	public void addOutGoingEdge(Edge e) {
 		outgoingEdges.add(e);
 		this.sumOutGoing += e.getTransition();
 		for(Edge out : outgoingEdges) {
@@ -39,11 +39,11 @@ class Vertex implements Comparable<Vertex> {
 		}
 	}
 
-	void removeAllOutgoingEdges() {
+	public void removeAllOutgoingEdges() {
 		this.outgoingEdges.clear();
 	}
 
-	Edge removeOutgoingEdge(Vertex v, Map<Edge, Number> edgeWeight) {
+	public Edge removeOutgoingEdge(Vertex v, Map<Edge, Number> edgeWeight) {
 		Edge toRemove = null;
 		for (Edge e : outgoingEdges) {
 			if (e.getTarget().equals(v)) {
@@ -65,59 +65,59 @@ class Vertex implements Comparable<Vertex> {
 		return toRemove;
 	}
 
-	String getContext() {
+	public String getContext() {
 		return context;
 	}
 
-	void setContext(String context) {
+	public void setContext(String context) {
 		this.context = context;
 	}
 
-	double getSumOutGoingEdges() {
+	public double getSumOutGoingEdges() {
 		return sumOutGoing;
 	}
 
-	Set<Edge> getOutgoingEdges() {
+	public Set<Edge> getOutgoingEdges() {
 		return this.outgoingEdges;
 	}
 
-	List<String> getUris() {
+	public List<String> getUris() {
 		return uris;
 	}
 
-	void addUri(String uri) {
+	public void addUri(String uri) {
 		this.uris.add(uri);
 	}
 
-	boolean isCandidate() {
+	public boolean isCandidate() {
 		return isCandidate;
 	}
 
-	void setCandidate(boolean isCandidate) {
+	public void setCandidate(boolean isCandidate) {
 		this.isCandidate = isCandidate;
 	}
 
-	int getEntityQuery() {
+	public int getEntityQuery() {
 		return entityQuery;
 	}
 
-	void setEntityQuery(int entityQuery) {
+	public void setEntityQuery(int entityQuery) {
 		this.entityQuery = entityQuery;
 	}
 
-	void setGraphValue(double val) {
+	public void setGraphValue(double val) {
 		this.score = val;
 	}
 
-	double getScore() {
+	public double getScore() {
 		return this.score;
 	}
 
-	void setScore(double score) {
+	public void setScore(double score) {
 		this.score = score;
 	}
 
-	String getDescription() {
+	public String getDescription() {
 		return description;
 	}
 
@@ -125,19 +125,19 @@ class Vertex implements Comparable<Vertex> {
 		this.description = description;
 	}
 
-	String getText() {
+	public String getText() {
 		return text;
 	}
 
-	void setText(String text) {
+	public void setText(String text) {
 		this.text = text;
 	}
 
-	double getOccurrences() {
+	public double getOccurrences() {
 		return occurrences;
 	}
 
-	void setOccurrences(int occurrences) {
+	public void setOccurrences(int occurrences) {
 		this.occurrences = Math.log(occurrences + 1);
 	}
 

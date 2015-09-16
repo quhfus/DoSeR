@@ -17,22 +17,22 @@ public class Edge {
 		this.target = target;
 	}
 	
-	double getTransition() {
+	public double getTransition() {
 		return transition;
 	}
-	void setTransition(double transition) {
+	public void setTransition(double transition) {
 		this.transition = transition;
 	}
 	
-	void setProbability(double p) {
+	public void setProbability(double p) {
 		this.edgeProbability = new Double(p);
 	}
 	
-	Double getProbability() {
+	public Double getProbability() {
 		return this.edgeProbability;
 	}
 	
-	Vertex getTarget() {
+	public Vertex getTarget() {
 		return this.target;
 	}
 	

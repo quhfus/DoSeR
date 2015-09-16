@@ -8,12 +8,12 @@ public class DocumentStatistic<K, V> {
 
 	private List<ParagraphStatistic> paragraphs;
 	private List<Map.Entry<K, V>> documentStatistic;
-	
+
 	public DocumentStatistic() {
 		super();
 		this.paragraphs = new LinkedList<ParagraphStatistic>();
 	}
-	
+
 	public List<ParagraphStatistic> getParagraphs() {
 		return paragraphs;
 	}
@@ -21,11 +21,13 @@ public class DocumentStatistic<K, V> {
 	public void setParagraphs(List<ParagraphStatistic> paragraphs) {
 		this.paragraphs = paragraphs;
 	}
-	
-	public void addStatistic(String ID, String headline, String content, List<Map.Entry<K, V>> list) {
-		this.paragraphs.add(new ParagraphStatistic(ID, headline, content, list));
+
+	public void addStatistic(String ID, String headline, String content,
+			String topic, List<Map.Entry<K, V>> list) {
+		this.paragraphs.add(new ParagraphStatistic(ID, headline, content,
+				topic, list));
 	}
-	
+
 	public List<Map.Entry<K, V>> getDocumentStatistic() {
 		return documentStatistic;
 	}
@@ -35,22 +37,25 @@ public class DocumentStatistic<K, V> {
 	}
 
 	public class ParagraphStatistic {
-		
+
 		private String headline;
-		
+
 		private String content;
-		
+
 		private String id;
-		
+
+		private String topic;
+
 		private List<Map.Entry<K, V>> statistic;
 
 		public ParagraphStatistic(String id, String headline, String content,
-				List<Map.Entry<K, V>> statistic) {
+				String topic, List<Map.Entry<K, V>> statistic) {
 			super();
 			this.id = id;
 			this.headline = headline;
 			this.content = content;
 			this.statistic = statistic;
+			this.topic = topic;
 		}
 
 		public String getHeadline() {
@@ -75,6 +80,14 @@ public class DocumentStatistic<K, V> {
 
 		public void setContent(String content) {
 			this.content = content;
+		}
+
+		public String getTopic() {
+			return topic;
+		}
+
+		public void setTopic(String topic) {
+			this.topic = topic;
 		}
 
 		public List<Map.Entry<K, V>> getStatistic() {

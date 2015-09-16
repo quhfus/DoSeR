@@ -24,18 +24,14 @@ import doser.entitydisambiguation.table.logic.Type;
 import doser.general.HelpfulMethods;
 import doser.tools.RDFGraphOperations;
 import doser.tools.ServiceQueries;
-import doser.webclassify.algorithm.EntitySignificanceAlgorithm;
+import doser.webclassify.algorithm.EntitySignificanceAlgorithmPR_W2V;
 import doser.webclassify.dpo.Paragraph;
 
 public class AnnotateEntities {
 
 	public static final String RESTDBPEDIASPOTLIGHT = "http://theseus.dimis.fim.uni-passau.de:8061/rest/annotate";
-
-	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionParagraph(
-			Paragraph p) {
-		Set<Paragraph> set = new HashSet<Paragraph>();
-		set.add(p);
-		Map<DisambiguatedEntity, Integer> map = createEntityMap(set);
+	
+	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionParagraph(Map<DisambiguatedEntity, Integer> map) {
 		return HelpfulMethods.sortByValue(map);
 	}
 
@@ -50,13 +46,19 @@ public class AnnotateEntities {
 		Set<Paragraph> set = new HashSet<Paragraph>();
 		set.add(p);
 		Map<DisambiguatedEntity, Integer> map = createEntityMap(set);
-		EntitySignificanceAlgorithm sig = new EntitySignificanceAlgorithm();
-
-		sig.process(map);
-		return new LinkedList<DisambiguatedEntity>();
+		List<DisambiguatedEntity> l = new ArrayList<DisambiguatedEntity>();
+		l.add(extractTopicEntity(map));
+		return l;
+	}
+	
+	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map) {
+		EntitySignificanceAlgorithmPR_W2V sig = new EntitySignificanceAlgorithmPR_W2V();
+		DisambiguatedEntity topicEntity = new DisambiguatedEntity();
+		topicEntity.setEntityUri(sig.process(map));
+		return topicEntity;
 	}
 
-	private Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p) {
+	public Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p) {
 		Map<DisambiguatedEntity, Integer> map = new HashMap<DisambiguatedEntity, Integer>();
 
 		for (Paragraph para : p) {

@@ -1,4 +1,4 @@
-package doser.server.actions.webclassify;
+package doser.server.actions.documentannotation;
 
 import java.util.HashSet;
 import java.util.List;
@@ -36,10 +36,16 @@ public class DocumentClassification {
 		DocumentStatistic<DisambiguatedEntity, Integer> statistic = new DocumentStatistic<DisambiguatedEntity, Integer>();
 		List<Paragraph> paragraphs = request.getParagraphs();
 		for (Paragraph para : paragraphs) {
+			Set<Paragraph> set = new HashSet<Paragraph>();
+			set.add(para);
+			Map<DisambiguatedEntity, Integer> map = entityAnnotation
+					.createEntityMap(set);
 			List<Map.Entry<DisambiguatedEntity, Integer>> sortedList = entityAnnotation
-					.createEntityDistributionParagraph(para);
-			statistic.addStatistic(para.getId(), para.getHeadline(), para.getContent(),
-					sortedList);
+					.createEntityDistributionParagraph(map);
+			DisambiguatedEntity disentity = entityAnnotation
+					.extractTopicEntity(map);
+			statistic.addStatistic(para.getId(), para.getHeadline(),
+					para.getContent(), disentity.getEntityUri(), sortedList);
 		}
 		return statistic;
 	}
@@ -50,13 +56,19 @@ public class DocumentClassification {
 		DocumentStatistic<DisambiguatedEntity, Integer> statistic = new DocumentStatistic<DisambiguatedEntity, Integer>();
 		List<Paragraph> paragraphs = request.getParagraphs();
 		for (Paragraph para : paragraphs) {
+			Set<Paragraph> set = new HashSet<Paragraph>();
+			set.add(para);
+			Map<DisambiguatedEntity, Integer> map = entityAnnotation
+					.createEntityMap(set);
 			List<Map.Entry<DisambiguatedEntity, Integer>> sortedList = entityAnnotation
-					.createEntityDistributionParagraph(para);
+					.createEntityDistributionParagraph(map);
+			DisambiguatedEntity disentity = entityAnnotation
+					.extractTopicEntity(map);
 			for (Map.Entry<DisambiguatedEntity, Integer> entry : sortedList) {
 				categoryAnnotation.annotateCategories(entry.getKey());
 			}
-			statistic.addStatistic(para.getId(), para.getHeadline(), para.getContent(),
-					sortedList);
+			statistic.addStatistic(para.getId(), para.getHeadline(),
+					para.getContent(), disentity.getEntityUri(), sortedList);
 		}
 		return statistic;
 	}
@@ -81,7 +93,7 @@ public class DocumentClassification {
 			List<DisambiguatedEntity> l = entityAnnotation
 					.extractSignificantEntitiesInParagraph(p);
 		}
-//		statistic.setDocumentStatistic(l);
+		// statistic.setDocumentStatistic(l);
 		return statistic;
 	}
 }

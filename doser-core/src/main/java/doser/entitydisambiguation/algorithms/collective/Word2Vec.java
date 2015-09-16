@@ -1,6 +1,5 @@
 package doser.entitydisambiguation.algorithms.collective;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,17 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.Header;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.message.BasicHeader;
-import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import doser.tools.ServiceQueries;
+import doser.word2vec.Word2VecJsonFormat;
 
 /**
  * Class holding Word2Vec and Doc2Vec information for collective disambiguation
@@ -112,7 +105,7 @@ public class Word2Vec {
 			doc.getQryNr();
 			format.addData(doc);
 		}
-		JSONArray res = performquery(format, "d2vsim");
+		JSONArray res = Word2VecJsonFormat.performquery(format, "d2vsim");
 
 		// We obtain the same order of surface forms
 		for (int i = 0; i < res.length(); i++) {
@@ -193,7 +186,7 @@ public class Word2Vec {
 		}
 		Word2VecJsonFormat format = new Word2VecJsonFormat();
 		format.setData(combinations);
-		JSONArray res = performquery(format, "w2vsim");
+		JSONArray res = Word2VecJsonFormat.performquery(format, "w2vsim");
 		for (int i = 0; i < res.length(); i++) {
 			try {
 				JSONObject obj = res.getJSONObject(i);
@@ -203,44 +196,6 @@ public class Word2Vec {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-		}
-	}
-
-	private JSONArray performquery(Object json, String serviceEndpoint) {
-		final ObjectMapper mapper = new ObjectMapper();
-		String jsonString = null;
-		JSONArray result = null;
-		try {
-			jsonString = mapper.writeValueAsString(json);
-			Header[] headers = { new BasicHeader("Accept", "application/json"),
-					new BasicHeader("content-type", "application/json") };
-			ByteArrayEntity ent = new ByteArrayEntity(jsonString.getBytes(),
-					ContentType.create("application/json"));
-			String resStr = ServiceQueries.httpPostRequest(
-					("http://localhost:5000/" + serviceEndpoint), ent, headers);
-			JSONObject resultJSON = null;
-			try {
-				resultJSON = new JSONObject(resStr);
-				result = resultJSON.getJSONArray("data");
-			} catch (JSONException e) {
-				Logger.getRootLogger().error("Error: ", e);
-			}
-		} catch (IOException e) {
-			Logger.getRootLogger().error("Error:", e);
-		}
-		return result;
-	}
-
-	class Word2VecJsonFormat {
-
-		private Set<String> data;
-
-		public Set<String> getData() {
-			return data;
-		}
-
-		public void setData(Set<String> data) {
-			this.data = data;
 		}
 	}
 
