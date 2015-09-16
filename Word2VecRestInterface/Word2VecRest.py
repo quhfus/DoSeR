@@ -16,16 +16,10 @@ class Word2VecRest(Flask):
 
     def __init__(self, *args, **kwargs):
         super(Word2VecRest, self).__init__(*args, **kwargs)
-#        W2VPATH = '/mnt/ssd1/disambiguation/word2vec/WikiEntityModel_400_neg10_iter5.seq'
-#        D2VPATH = '/mnt/ssd1/disambiguation/word2vec/doc2vec/doc2vec_wiki_model.d2v'
-#	D2VPATH = '/home/zwicklbauer/word2vec/doc2vec_model.d2v' 
-#        self.w2vmodel = Word2Vec.load_word2vec_format(W2VPATH, binary=True)
-#        self.d2vmodel = Doc2Vec.load(D2VPATH)
-
 
     def compute_w2vsimilarity(self, s1, s2):
         try:
-            similarity = self.w2vmodel.similarity(s1, s2)
+            similarity = GunicornApplication.w2vmodel.similarity(s1, s2)
         except Exception:
             similarity = 0
         return similarity
@@ -35,7 +29,7 @@ class Word2VecRest(Flask):
         l2.append(str)
 	similarity = 0
         try :
-            similarity = self.w2vmodel.n_similarity(l1, l2)
+            similarity = GunicornApplication.w2vmodel.n_similarity(l1, l2)
         except Exception:
             similarity = 0
         return similarity
@@ -105,16 +99,13 @@ def infer():
 
 class GunicornApplication(BaseApplication):
     
-    d2vmodel = Doc2Vec.load('/mnt/ssd1/disambiguation/word2vec/doc2vec/doc2vec_wiki_model.d2v')
-    m2vmodel = Word2Vec.load_word2vec_format('/mnt/ssd1/disambiguation/word2vec/WikiEntityModel_400_neg10_iter5.seq', binary=True)
+    d2vmodel = Doc2Vec.load('')
+    w2vmodel = Word2Vec.load_word2vec_format('', binary=True)    
 
     def __init__(self, wsgi_app, port=5000):
-#	D2VPATH = '/mnt/ssd1/disambiguation/word2vec/doc2vec/doc2vec_wiki_model.d2v'
- #       self.d2vmodel = Doc2Vec.load(D2VPATH)
 	self.options = {
-            'bind': "0.0.0.0:{port}".format(port=port),
+            'bind': "127.0.0.1:{port}".format(port=port),
              'workers': 5,
-             'worker_class': 'gevent',
              'preload_app': True,
         }
         self.application = wsgi_app
