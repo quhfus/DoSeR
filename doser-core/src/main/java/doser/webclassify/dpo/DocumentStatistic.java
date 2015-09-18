@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import doser.entitydisambiguation.dpo.Time;
+
 public class DocumentStatistic<K, V> {
 
 	private List<ParagraphStatistic> paragraphs;
@@ -23,9 +25,9 @@ public class DocumentStatistic<K, V> {
 	}
 
 	public void addStatistic(String ID, String headline, String content,
-			String topic, List<Map.Entry<K, V>> list) {
+			K topic, List<Time> time, List<Map.Entry<K, V>> list) {
 		this.paragraphs.add(new ParagraphStatistic(ID, headline, content,
-				topic, list));
+				topic, time,  list));
 	}
 
 	public List<Map.Entry<K, V>> getDocumentStatistic() {
@@ -44,18 +46,21 @@ public class DocumentStatistic<K, V> {
 
 		private String id;
 
-		private String topic;
+		private K topic;
+		
+		private List<Time> time;
 
 		private List<Map.Entry<K, V>> statistic;
 
 		public ParagraphStatistic(String id, String headline, String content,
-				String topic, List<Map.Entry<K, V>> statistic) {
+				K topic, List<Time> time, List<Map.Entry<K, V>> statistic) {
 			super();
 			this.id = id;
 			this.headline = headline;
 			this.content = content;
 			this.statistic = statistic;
 			this.topic = topic;
+			this.time = time;
 		}
 
 		public String getHeadline() {
@@ -82,11 +87,11 @@ public class DocumentStatistic<K, V> {
 			this.content = content;
 		}
 
-		public String getTopic() {
+		public K getTopic() {
 			return topic;
 		}
 
-		public void setTopic(String topic) {
+		public void setTopic(K topic) {
 			this.topic = topic;
 		}
 
@@ -96,6 +101,14 @@ public class DocumentStatistic<K, V> {
 
 		public void setStatistic(List<Map.Entry<K, V>> statistic) {
 			this.statistic = statistic;
+		}
+
+		public List<Time> getTime() {
+			return time;
+		}
+
+		public void setTime(List<Time> time) {
+			this.time = time;
 		}
 	}
 }

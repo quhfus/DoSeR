@@ -115,6 +115,13 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 				if ((val != null) && !val.equalsIgnoreCase("")) {
 					final String[] splitter = val.split(TRIMLABELAMOUNT);
 
+					
+					
+					
+					
+					
+					
+					
 					// int priorVal = 0;
 					// for (final String element : splitter) {
 					// // System.out.println(element);
@@ -150,6 +157,13 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 					// indexsensePriorHashMap.put(i, hash);
 					// }
 
+				
+				
+				
+				
+				
+				
+				
 					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
 					for (final String element : splitter) {
 						final String[] value = element.split(TRIMOCCOCC);
@@ -166,6 +180,23 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 					}
 					indexsensePriorHashMapBlanc.put(entity, hash);
 
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
 					// Create Temporary Prior HashMap for DBPedia only
 					// Disambiguation
 					// String entry =

@@ -149,6 +149,14 @@ public final class Properties {
 		return this.config.getString("word2vecmodel");
 	}
 	
+	public String getDBpediaSpotLight_En_Rest() {
+		return this.config.getString("dbpediaSpotlight_eng");
+	}
+	
+	public String getDBpediaSpotLight_Ger_Rest() {
+		return this.config.getString("dbpediaSpotlight_ger");
+	}
+	
 	public boolean getHBaseStorage() {
 		boolean bool = false;
 		String s = this.config.getString("writeHBase");

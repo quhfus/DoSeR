@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
+import doser.entitydisambiguation.dpo.Time;
 import doser.webclassify.annotation.AnnotateCategories;
 import doser.webclassify.annotation.AnnotateEntities;
+import doser.webclassify.annotation.AnnotateTime;
 import doser.webclassify.dpo.Document;
 import doser.webclassify.dpo.DocumentStatistic;
 import doser.webclassify.dpo.Paragraph;
@@ -39,13 +41,16 @@ public class DocumentClassification {
 			Set<Paragraph> set = new HashSet<Paragraph>();
 			set.add(para);
 			Map<DisambiguatedEntity, Integer> map = entityAnnotation
-					.createEntityMap(set);
+					.createEntityMap(set, request.getInternLanguage());
 			List<Map.Entry<DisambiguatedEntity, Integer>> sortedList = entityAnnotation
 					.createEntityDistributionParagraph(map);
 			DisambiguatedEntity disentity = entityAnnotation
-					.extractTopicEntity(map);
+					.extractTopicEntity(map, para);
+			List<Time> time = AnnotateTime.getInstance().annotateTime(map,
+					para.getContent());
 			statistic.addStatistic(para.getId(), para.getHeadline(),
-					para.getContent(), disentity.getEntityUri(), sortedList);
+					para.getContent(), disentity, time,
+					sortedList);
 		}
 		return statistic;
 	}
@@ -59,16 +64,20 @@ public class DocumentClassification {
 			Set<Paragraph> set = new HashSet<Paragraph>();
 			set.add(para);
 			Map<DisambiguatedEntity, Integer> map = entityAnnotation
-					.createEntityMap(set);
+					.createEntityMap(set, request.getInternLanguage());
+
 			List<Map.Entry<DisambiguatedEntity, Integer>> sortedList = entityAnnotation
 					.createEntityDistributionParagraph(map);
 			DisambiguatedEntity disentity = entityAnnotation
-					.extractTopicEntity(map);
+					.extractTopicEntity(map, para);
 			for (Map.Entry<DisambiguatedEntity, Integer> entry : sortedList) {
 				categoryAnnotation.annotateCategories(entry.getKey());
 			}
+			List<Time> time = AnnotateTime.getInstance().annotateTime(map,
+					para.getContent());
 			statistic.addStatistic(para.getId(), para.getHeadline(),
-					para.getContent(), disentity.getEntityUri(), sortedList);
+					para.getContent(), disentity, time,
+					sortedList);
 		}
 		return statistic;
 	}
@@ -79,7 +88,8 @@ public class DocumentClassification {
 		DocumentStatistic<DisambiguatedEntity, Integer> statistic = new DocumentStatistic<DisambiguatedEntity, Integer>();
 		Set<Paragraph> set = new HashSet<Paragraph>(request.getParagraphs());
 		List<Map.Entry<DisambiguatedEntity, Integer>> l = entityAnnotation
-				.createEntityDistributionDocument(set);
+				.createEntityDistributionDocument(set,
+						request.getInternLanguage());
 		statistic.setDocumentStatistic(l);
 		return statistic;
 	}
@@ -91,7 +101,8 @@ public class DocumentClassification {
 		Set<Paragraph> set = new HashSet<Paragraph>(request.getParagraphs());
 		for (Paragraph p : set) {
 			List<DisambiguatedEntity> l = entityAnnotation
-					.extractSignificantEntitiesInParagraph(p);
+					.extractSignificantEntitiesInParagraph(p,
+							request.getInternLanguage());
 		}
 		// statistic.setDocumentStatistic(l);
 		return statistic;

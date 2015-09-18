@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,55 +19,68 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
+import doser.entitydisambiguation.properties.Properties;
 import doser.entitydisambiguation.table.logic.Type;
 import doser.general.HelpfulMethods;
+import doser.language.Languages;
 import doser.tools.RDFGraphOperations;
 import doser.tools.ServiceQueries;
-import doser.webclassify.algorithm.EntitySignificanceAlgorithmPR_W2V;
+import doser.webclassify.algorithm.EntitySignificanceAlgorithm_Doc2Vec;
 import doser.webclassify.dpo.Paragraph;
 
 public class AnnotateEntities {
 
-	public static final String RESTDBPEDIASPOTLIGHT = "http://theseus.dimis.fim.uni-passau.de:8061/rest/annotate";
-	
-	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionParagraph(Map<DisambiguatedEntity, Integer> map) {
+	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionParagraph(
+			Map<DisambiguatedEntity, Integer> map) {
 		return HelpfulMethods.sortByValue(map);
 	}
 
 	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionDocument(
-			Set<Paragraph> paragraphs) {
-		Map<DisambiguatedEntity, Integer> map = createEntityMap(paragraphs);
+			Set<Paragraph> paragraphs, Languages lang) {
+		Map<DisambiguatedEntity, Integer> map = createEntityMap(paragraphs,
+				lang);
 		return HelpfulMethods.sortByValue(map);
 	}
 
 	public List<DisambiguatedEntity> extractSignificantEntitiesInParagraph(
-			Paragraph p) {
+			Paragraph p, Languages lang) {
 		Set<Paragraph> set = new HashSet<Paragraph>();
 		set.add(p);
-		Map<DisambiguatedEntity, Integer> map = createEntityMap(set);
+		Map<DisambiguatedEntity, Integer> map = createEntityMap(set, lang);
 		List<DisambiguatedEntity> l = new ArrayList<DisambiguatedEntity>();
-		l.add(extractTopicEntity(map));
+		l.add(extractTopicEntity(map, p));
 		return l;
 	}
-	
-	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map) {
-		EntitySignificanceAlgorithmPR_W2V sig = new EntitySignificanceAlgorithmPR_W2V();
-		DisambiguatedEntity topicEntity = new DisambiguatedEntity();
-		topicEntity.setEntityUri(sig.process(map));
+
+	public DisambiguatedEntity extractTopicEntity(
+			Map<DisambiguatedEntity, Integer> map, Paragraph p) {
+		EntitySignificanceAlgorithm_Doc2Vec sig = new EntitySignificanceAlgorithm_Doc2Vec();
+		String topicEntityString = sig.process(map, p);
+		DisambiguatedEntity topicEntity = null;
+		if(!topicEntityString.equalsIgnoreCase("")) {
+			topicEntity = new DisambiguatedEntity();
+			topicEntity.setEntityUri(topicEntityString);
+			List<String> labels = RDFGraphOperations.getDbPediaLabel(topicEntity
+					.getEntityUri());
+			if (labels.size() > 0) {
+				topicEntity.setText(labels.get(0));
+			}
+		}
 		return topicEntity;
 	}
 
-	public Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p) {
+	public Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p,
+			Languages lang) {
 		Map<DisambiguatedEntity, Integer> map = new HashMap<DisambiguatedEntity, Integer>();
 
 		for (Paragraph para : p) {
-			JSONArray array = queryEntities(para.getContent());
+			JSONArray array = queryEntities(para.getContent(), lang);
 			if (array != null) {
-				List<DisambiguatedEntity> entityList = new LinkedList<DisambiguatedEntity>();
 				for (int i = 0; i < array.length(); i++) {
 					try {
 						JSONObject obj = array.getJSONObject(i);
 						String uri = obj.getString("@URI");
+						String offset = obj.getString("@offset");
 						DisambiguatedEntity e = new DisambiguatedEntity();
 						e.setEntityUri(uri);
 						List<String> labels = RDFGraphOperations
@@ -82,11 +94,10 @@ public class AnnotateEntities {
 						} else {
 							map.put(e, 1);
 						}
+						e.addOffset(Integer.parseInt(offset));
 						e.setEntityUri(uri);
 						e.setType(filterStandardDomain(RDFGraphOperations
 								.getRDFTypesFromEntity(uri)));
-						entityList.add(e);
-						// Add Entity Class Type
 					} catch (JSONException e) {
 						Logger.getRootLogger().error("Error: ", e);
 					}
@@ -96,28 +107,41 @@ public class AnnotateEntities {
 		return map;
 	}
 
-	private JSONArray queryEntities(String text) {
+	private JSONArray queryEntities(String text, Languages lang) {
 		ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-		postParameters.add(new BasicNameValuePair("text", text));
-		postParameters.add(new BasicNameValuePair("confidence", "0.2"));
-		postParameters.add(new BasicNameValuePair("support", "20"));
+		Header[] headers = { new BasicHeader("Accept", "application/json") };
+		String serviceUrl = "";
+		if (lang.equals(Languages.german)) {
+			postParameters.add(new BasicNameValuePair("text", text));
+			postParameters.add(new BasicNameValuePair("confidence", "0.45"));
+			postParameters.add(new BasicNameValuePair("support", "20"));
+			serviceUrl = Properties.getInstance()
+					.getDBpediaSpotLight_Ger_Rest();
+		} else {
+			postParameters.add(new BasicNameValuePair("text", text));
+			postParameters.add(new BasicNameValuePair("confidence", "0.2"));
+			postParameters.add(new BasicNameValuePair("support", "20"));
+			serviceUrl = Properties.getInstance().getDBpediaSpotLight_En_Rest();
+		}
+
 		UrlEncodedFormEntity ent = null;
 		try {
 			ent = new UrlEncodedFormEntity(postParameters);
 		} catch (UnsupportedEncodingException e1) {
 			Logger.getRootLogger().error("Error:", e1);
 		}
-		Header[] headers = { new BasicHeader("Accept", "application/json") };
+
 		if (ent != null) {
-			String resStr = ServiceQueries.httpPostRequest(
-					RESTDBPEDIASPOTLIGHT, ent, headers);
+			String resStr = ServiceQueries.httpPostRequest(serviceUrl, ent,
+					headers);
+
 			JSONObject resultJSON = null;
 			JSONArray entities = null;
 			try {
 				resultJSON = new JSONObject(resStr);
 				entities = resultJSON.getJSONArray("Resources");
 			} catch (JSONException e) {
-				Logger.getRootLogger().error("Error: ", e);
+				Logger.getRootLogger().info("No Ressources found");
 			}
 			return entities;
 		}

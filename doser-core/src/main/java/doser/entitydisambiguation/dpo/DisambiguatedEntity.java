@@ -24,9 +24,11 @@ public class DisambiguatedEntity {
 	private double confidence;
 	private Set<Type> categories;
 	private String type;
+	private Set<Integer> offset;
 
 	public DisambiguatedEntity() {
 		super();
+		this.offset = new HashSet<Integer>();
 		this.categories = new HashSet<Type>();
 		this.confidence = -1;
 		this.description = "";
@@ -89,6 +91,18 @@ public class DisambiguatedEntity {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public Set<Integer> getOffset() {
+		return offset;
+	}
+
+	public void setOffset(Set<Integer> offset) {
+		this.offset = offset;
+	}
+	
+	public void addOffset(Integer i) {
+		this.offset.add(i);
 	}
 
 	@Override

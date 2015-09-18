@@ -1,6 +1,5 @@
 package doser.entitydisambiguation.algorithms.collective;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +12,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import doser.word2vec.Data;
+import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
 
 /**
@@ -88,13 +89,8 @@ public class Word2Vec {
 		for (CollectiveSFRepresentation sf : rep) {
 			String context = sf.getContext();
 			
-			// ToDo: Replace with one regex
 			context = context.toLowerCase();
-			context = context.replaceAll("\\.", " ");
-			context = context.replaceAll("\\,", " ");
-			context = context.replaceAll("\\!", " ");
-			context = context.replaceAll("\\?", " ");
-			context = context.replaceAll(" +", " ");
+			context = context.replaceAll("[\\.\\,\\!\\? ]+", " ");
 			
 			Data doc = new Data();
 			String[] candidates = new String[sf.getCandidates().size()];
@@ -199,99 +195,8 @@ public class Word2Vec {
 		}
 	}
 
-	class Doc2VecJsonFormat {
-		private List<Data> data;
-
-		public Doc2VecJsonFormat() {
-			super();
-			this.data = new ArrayList<Word2Vec.Data>();
-		}
-
-		public List<Data> getData() {
-			return data;
-		}
-
-		public void setData(List<Data> data) {
-			this.data = data;
-		}
-
-		void addData(Data doc) {
-			this.data.add(doc);
-		}
-	}
-
-	class Data {
-		private String surfaceForm;
-		private String qryNr;
-		private String[] candidates;
-		private String context;
-
-		public String getSurfaceForm() {
-			return surfaceForm;
-		}
-
-		public void setSurfaceForm(String surfaceForm) {
-			this.surfaceForm = surfaceForm;
-		}
-
-		public String getQryNr() {
-			return qryNr;
-		}
-
-		public void setQryNr(String qryNr) {
-			this.qryNr = qryNr;
-		}
-
-		public String[] getCandidates() {
-			return candidates;
-		}
-
-		public void setCandidates(String[] candidates) {
-			this.candidates = candidates;
-		}
-
-		public String getContext() {
-			return context;
-		}
-
-		public void setContext(String context) {
-			this.context = context;
-		}
-	}
-
 	public static void main(String[] args) {
-		List<String> l = new ArrayList<String>();
-		l.add("http://dbpedia.org/resource/Leicestershire");
-		l.add("http://dbpedia.org/resource/Leicestershire_County_Cricket_Club");
-		// List<String> l1 = new ArrayList<String>();
-		// l1.add("http://dbpedia.org/resource/Leicestershire");
-		// l1.add("http://dbpedia.org/resource/Leicestershire_County_Cricket_Club");
-		// List<String> l2 = new ArrayList<String>();
-		// l2.add("france");
-		// List<String> l3 = new ArrayList<String>();
-		// l3.add("taiko");
-		CollectiveSFRepresentation rep1 = new CollectiveSFRepresentation(
-				"Leicestershire",
-				"cricket english county championship scores london 1996-08-30 result and close of play scores in english county championship matches on friday leicester leicestershire beat somerset by an innings and 39 runs somerset 83 and 174) 296 points",
-				l, 0);
-		// CollectiveSFRepresentation rep2 = new CollectiveSFRepresentation(
-		// "Madrid", "Mein White House steht in Washington", l1, 1);
-		// CollectiveSFRepresentation rep3 = new CollectiveSFRepresentation(
-		// "Madrid", "Mein White House steht in Washington", l2, 2);
-		// CollectiveSFRepresentation rep4 = new CollectiveSFRepresentation(
-		// "Madrid", "Mein White House steht in Washington", l3, 4);
-		List<CollectiveSFRepresentation> reps = new LinkedList<CollectiveSFRepresentation>();
-		reps.add(rep1);
-		// reps.add(rep2);
-		// reps.add(rep3);
-		// reps.add(rep4);
-		Word2Vec w2v = new Word2Vec(reps);
-		for (int i = 0; i < reps.size(); i++) {
-			reps.get(i).getLocalContextCompatibility(
-					reps.get(i).getCandidates().get(0));
-			reps.get(i).getLocalContextCompatibility(
-					reps.get(i).getCandidates().get(1));
-		}
-		// System.out.println(w2v.getWord2VecSimilarity("paris", "m1"));
+		String test = "My name is Stefan  .?!";
+		System.out.println(test.replaceAll("[\\.\\,\\!\\? ]+", " "));
 	}
 }
