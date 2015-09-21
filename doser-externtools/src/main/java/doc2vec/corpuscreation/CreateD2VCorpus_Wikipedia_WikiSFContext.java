@@ -49,6 +49,12 @@ public class CreateD2VCorpus_Wikipedia_WikiSFContext {
 		this.plainFiles = new HashMap<String, String>();
 		this.relevantEntities = new HashSet<String>();
 	}
+	
+	private String format(String s) {
+		s = s.toLowerCase();
+		s = s.replaceAll("[\\.\\,\\!\\? ]+", " ");
+		return s;
+	}
 
 	public void action() {
 		System.out.println("ExtractRelevantEntities");
@@ -57,7 +63,6 @@ public class CreateD2VCorpus_Wikipedia_WikiSFContext {
 		readWikipediaPages();
 		System.out.println("WriteOutput");
 		createOutputFile();
-
 	}
 	
 	public void finalize(PrintWriter writer) {
@@ -67,7 +72,7 @@ public class CreateD2VCorpus_Wikipedia_WikiSFContext {
 			builder.append(" ");
 			String wikiText = "";
 			wikiText = getWikiText(s);
-			builder.append(wikiText);
+			builder.append(format(wikiText));
 			if(!wikiText.equalsIgnoreCase("")) {
 				writer.println(builder.toString());
 			}
@@ -89,10 +94,10 @@ public class CreateD2VCorpus_Wikipedia_WikiSFContext {
 				StringBuilder builder = new StringBuilder();
 				builder.append(splitter[0]);
 				builder.append(" ");
-				builder.append(splitter[1]);
+				builder.append(format(splitter[1]));
 				builder.append(" ");
 				String wikiText = getWikiText(splitter[0]);
-				builder.append(wikiText);
+				builder.append(format(wikiText));
 				writer.println(builder.toString());
 				this.relevantEntities.remove(splitter[0]);
 			}

@@ -157,23 +157,15 @@ public class MineEvidences extends LDAExecutor {
 
 
 	public static void main(String[] args) {
-//		MineEvidences evidence = new MineEvidences();
-//		evidence.initializeEntityFiles();
-//		System.out.println("First");
-//		evidence.initializeAvailableFiles();
-//		System.out.println("Second");
-//		evidence.fillHashMap();
-//		System.out.println("Third");
-//		evidence.initializeData();
-//		System.out.println("Fourth");
-//		evidence.start();
-		
-		String test = "Test_(test)";
-		try {
-			System.out.println(URLEncoder.encode(test, "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		MineEvidences evidence = new MineEvidences();
+		evidence.initializeEntityFiles();
+		System.out.println("First");
+		evidence.initializeAvailableFiles();
+		System.out.println("Second");
+		evidence.fillHashMap();
+		System.out.println("Third");
+		evidence.initializeData();
+		System.out.println("Fourth");
+		evidence.start();
 	}
 }

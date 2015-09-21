@@ -29,7 +29,7 @@ public class WikipediaLDAThreadExtractEvidenceTerms extends LDAClient {
 
 	public static final int RANDOMDOCUMENTS = 1000;
 
-	public static final String WIKIPEDIAPAGESDIR = "/home/zwicklbauer/plain_reduced/";
+	public static final String WIKIPEDIAPAGESDIR = "/mnt/storage/zwicklbauer/WikiParse/temp/plain_reduced/";
 
 	private String lastIterationPath;
 	private String evidenceFilePath;
