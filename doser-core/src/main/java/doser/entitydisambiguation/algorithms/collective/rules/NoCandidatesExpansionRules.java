@@ -13,11 +13,11 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
-import doser.entitydisambiguation.algorithms.collective.Inflector;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
+import doser.tools.Inflector;
 
 /**
  * Falls eine Surface Form keine Kandidaten hat, allerdings aus mindestens 3

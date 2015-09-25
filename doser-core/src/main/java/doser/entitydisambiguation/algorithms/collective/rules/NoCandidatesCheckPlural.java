@@ -14,10 +14,10 @@ import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
-import doser.entitydisambiguation.algorithms.collective.Inflector;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
+import doser.tools.Inflector;
 
 /**
  * Überprüft ob eine surface form im plural angegeben ist und falls ja überprüfe

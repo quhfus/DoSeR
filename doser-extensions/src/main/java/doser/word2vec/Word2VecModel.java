@@ -188,6 +188,20 @@ public class Word2VecModel {
 			}
 		}
 	}
+	
+	
+
+	public int getSize() {
+		return size;
+	}
+
+	public HashMap<String, Integer> getVocab() {
+		return vocab;
+	}
+
+	public float[][] getVec() {
+		return vec;
+	}
 
 	public static Word2VecModel createWord2VecModel(String path) {
 		File file = new File(path);

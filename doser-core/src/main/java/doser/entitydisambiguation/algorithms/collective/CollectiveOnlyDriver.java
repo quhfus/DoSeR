@@ -3,34 +3,22 @@ package doser.entitydisambiguation.algorithms.collective;
 import java.util.LinkedList;
 import java.util.List;
 
-import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
-public class EntityCentricAlgorithmCollectiveSolver {
+public class CollectiveOnlyDriver extends AlgorithmDriver {
 
 	public static final int MAXSURFACEFORMSPERQUERY = 50;
 	public static final int MULTIPLIER = 4;
 	public static final int CLUSTERSIZE = 5;
 
-	private Response[] currentResponse;
-
-	private List<CollectiveSFRepresentation> rep;
-
-	private EntityCentricKnowledgeBaseDefault eckb;
-
-	public EntityCentricAlgorithmCollectiveSolver(Response[] res,
+	public CollectiveOnlyDriver(Response[] res,
 			List<CollectiveSFRepresentation> rep,
 			EntityCentricKnowledgeBaseDefault eckb) {
-		super();
-		if (res.length != rep.size()) {
-			throw new IllegalArgumentException();
-		}
-		this.currentResponse = res;
-		this.rep = rep;
-		this.eckb = eckb;
+		super(res, rep, eckb);
 	}
 
+	@Override
 	public void solve() {
 		List<CollectiveSFRepresentation> finalList = new LinkedList<CollectiveSFRepresentation>();
 
@@ -83,15 +71,15 @@ public class EntityCentricAlgorithmCollectiveSolver {
 		// If no CandidateElimination was performed due to only cluster is
 		// available, we have to perform a CandidateElimination if more than one
 		// surface form are available.
-//		if (!reduced && cluster.size() > 1) {
-//			int max = 0;
-//			while ((max = computeMaxCandidates(cluster)) > 10) {
-//				int nrCandidates = (int) Math.floor(((double) max) * 0.66);
-//				CandidateElimination elimination = new CandidateElimination(
-//						cluster, eckb, nrCandidates, this.rep);
-//				elimination.solve();
-//			}
-//		}
+		// if (!reduced && cluster.size() > 1) {
+		// int max = 0;
+		// while ((max = computeMaxCandidates(cluster)) > 10) {
+		// int nrCandidates = (int) Math.floor(((double) max) * 0.66);
+		// CandidateElimination elimination = new CandidateElimination(
+		// cluster, eckb, nrCandidates, this.rep);
+		// elimination.solve();
+		// }
+		// }
 
 		PageRankDisambiguator disambiguator = new PageRankDisambiguator(
 				cluster, eckb.getFeatureDefinition());
@@ -190,34 +178,6 @@ public class EntityCentricAlgorithmCollectiveSolver {
 			}
 		}
 		return unambiguous;
-	}
-
-	public void generateResult() {
-		for (int i = 0; i < currentResponse.length; i++) {
-			CollectiveSFRepresentation r = search(i);
-			if (currentResponse[i] == null && r != null
-					&& r.getCandidates().size() == 1) {
-				Response res = new Response();
-				List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
-				DisambiguatedEntity ent = new DisambiguatedEntity();
-				ent.setEntityUri(r.getCandidates().get(0));
-				ent.setText("ToDoText");
-				entList.add(ent);
-				res.setDisEntities(entList);
-				res.setPosition(null);
-				res.setSelectedText(r.getSurfaceForm());
-				currentResponse[i] = res;
-			}
-		}
-	}
-
-	private CollectiveSFRepresentation search(int qryNr) {
-		for (CollectiveSFRepresentation r : rep) {
-			if (r.getQueryNr() == qryNr) {
-				return r;
-			}
-		}
-		return null;
 	}
 
 	class DivideAndConquerCluster {

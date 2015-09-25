@@ -133,7 +133,9 @@ public class CreateEntityWordCorpus {
 				throws SAXException {
 			currentValue = new String(ch, start, length);
 			if(!isOpen) {
-				currentValue = currentValue.replaceAll("[^a-zA-Z \\.\\?\\!]", "");  
+//				currentValue = currentValue.replaceAll("[^a-zA-Z \\.\\?\\!]", ""); 
+				currentValue = currentValue.toLowerCase();
+				currentValue = currentValue.replaceAll("[\\.\\,\\!\\? ]+", " ");
 				builder.append(currentValue);
 			}
 		}
@@ -159,7 +161,7 @@ public class CreateEntityWordCorpus {
 		}
 
 		public String getString() {
-			return builder.toString().toLowerCase().replaceAll("\\s+", " ");
+			return builder.toString();
 		}
 
 	}

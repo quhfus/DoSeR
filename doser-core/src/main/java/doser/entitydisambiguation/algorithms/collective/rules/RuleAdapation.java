@@ -16,8 +16,8 @@ public class RuleAdapation {
 		super();
 		this.beforerules = new ArrayList<Rule>();
 		this.beforerules.add(new NoCandidatesCheckPlural(eckb));
-		this.beforerules.add(new NoCandidatesExpansionRules(eckb));
-		this.beforerules.add(new UnambiguousToAmbiguousRule(eckb));
+//		this.beforerules.add(new NoCandidatesExpansionRules(eckb));
+//		this.beforerules.add(new UnambiguousToAmbiguousRule(eckb));
 	}
 
 	public void performRuleChainBeforeCandidateSelection(List<CollectiveSFRepresentation> rep) {

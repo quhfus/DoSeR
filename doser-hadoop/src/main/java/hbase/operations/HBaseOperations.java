@@ -70,7 +70,7 @@ public final class HBaseOperations {
 		super();
 		this.date = new Date();
 		Configuration conf = HBaseConfiguration.create();
-		conf.set("hbase.zookeeper.quorum", "zaire");
+		conf.set("hbase.zookeeper.quorum", "localhost");
 		try {
 			conn = ConnectionFactory.createConnection(conf);
 		} catch (IOException e) {

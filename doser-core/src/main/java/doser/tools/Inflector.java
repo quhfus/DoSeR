@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.tools;
 
 import java.util.HashSet;
 import java.util.LinkedList;

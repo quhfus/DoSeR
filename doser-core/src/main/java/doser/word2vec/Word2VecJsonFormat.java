@@ -7,7 +7,6 @@ import org.apache.http.Header;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
-import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -44,10 +43,12 @@ public class Word2VecJsonFormat {
 				resultJSON = new JSONObject(resStr);
 				result = resultJSON.getJSONArray("data");
 			} catch (JSONException e) {
-				Logger.getRootLogger().error("Error: ", e);
+				System.out.println(e);
+//				Logger.getRootLogger().error("Error: ", e);
 			}
 		} catch (IOException e) {
-			Logger.getRootLogger().error("Error:", e);
+			System.out.println(e);
+//			Logger.getRootLogger().error("Error:", e);
 		}
 		return result;
 	}

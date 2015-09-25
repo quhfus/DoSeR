@@ -30,10 +30,12 @@ public class Document {
 	}	
 	
 	public Languages getInternLanguage() {
-		if(this.language.equalsIgnoreCase("en")) {
-			return Languages.english;
-		} else if(this.language.equalsIgnoreCase("ger")) {
-			return Languages.german;
+		if(this.language != null) {
+			if(this.language.equalsIgnoreCase("de")) {
+				return Languages.german;
+			} else {
+				return Languages.english;
+			}
 		} else {
 			return Languages.english;
 		}

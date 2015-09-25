@@ -16,6 +16,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
+import doser.entitydisambiguation.algorithms.collective.hybrid.CollectiveAndContextDriver;
 import doser.entitydisambiguation.algorithms.collective.rules.RuleAdapation;
 import doser.entitydisambiguation.backend.DisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskCollective;
@@ -113,8 +114,9 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 		RuleAdapation rules = new RuleAdapation(eckb);
 		rules.performRuleChainBeforeCandidateSelection(collectiveRep);
-		EntityCentricAlgorithmCollectiveSolver solver = new EntityCentricAlgorithmCollectiveSolver(
-				responseArray, collectiveRep, eckb);
+//		AlgorithmDriver solver = new CollectiveOnlyDriver(
+//				responseArray, collectiveRep, eckb);
+		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb);
 		solver.solve();
 
 		solver.generateResult();
