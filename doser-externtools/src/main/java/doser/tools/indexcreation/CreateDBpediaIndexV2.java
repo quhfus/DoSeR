@@ -70,6 +70,8 @@ public class CreateDBpediaIndexV2 {
 	public static final String PATTYFREEBASEPATTERN = "/home/zwicklbauer/Patty/patty-dataset-freebase/wikipedia-patterns.txt";
 	public static final String PATTYFREEBASEINSTANCE = "/home/zwicklbauer/Patty/patty-dataset-freebase/wikipedia-instances.txt";
 
+	public static final String EVIDENCEFILE = "/home/zwicklbauer/word2vec/evidences.dat";
+
 	public static final String WEBOCCURRENCESDIRECTORY = "/home/zwicklbauer/WikipediaEntities/EntitiesWebContext/";
 
 	public static final String LINKTEXT = "/home/zwicklbauer/WikipediaEntities/enwiki-latest/linktext";
@@ -90,6 +92,7 @@ public class CreateDBpediaIndexV2 {
 	private HashMap<String, LinkedList<String>> relationmap;
 	private HashMap<String, LinkedList<String>> pattymap;
 	private HashMap<String, LinkedList<String>> pattyfreebasemap;
+	private HashMap<String, String> evidences;
 	private HashSet<String> teams;
 
 	private HashMap<String, HashSet<String>> UNIQUELABELSTRINGS;
@@ -102,6 +105,7 @@ public class CreateDBpediaIndexV2 {
 	private Model shortdescmodel;
 	private Model longdescmodel;
 	private Model persondata;
+	private Model instancemappingtypes;
 
 	public CreateDBpediaIndexV2() {
 		super();
@@ -114,7 +118,7 @@ public class CreateDBpediaIndexV2 {
 		this.LABELS = new HashMap<String, HashSet<String>>();
 		this.UNIQUELABELSTRINGS = new HashMap<String, HashSet<String>>();
 		this.DBPEDIAGRAPHINLINKS = new HashMap<String, Integer>();
-
+		this.evidences = new HashMap<String, String>();
 		this.teams = new HashSet<String>();
 
 		this.entities = new HashSet<String>();
@@ -125,26 +129,58 @@ public class CreateDBpediaIndexV2 {
 		HDT shortdeschdt;
 		HDT longdeschdt;
 		HDT mappingbasedproperties;
+		HDT instancemappingtypeshdt;
 		try {
 			labelhdt = HDTManager.mapIndexedHDT(LABELHDT, null);
 			shortdeschdt = HDTManager.mapIndexedHDT(SHORTDESCHDT, null);
 			longdeschdt = HDTManager.mapIndexedHDT(LONGDESCHDT, null);
-			mappingbasedproperties = HDTManager.mapIndexedHDT(
-					PERSONDATAHDT, null);
+			mappingbasedproperties = HDTManager.mapIndexedHDT(PERSONDATAHDT,
+					null);
+			instancemappingtypeshdt = HDTManager.mapIndexedHDT(
+					INSTANCEMAPPINGTYPES, null);
 			final HDTGraph labelhdtgraph = new HDTGraph(labelhdt);
 			final HDTGraph shortdeschdtgraph = new HDTGraph(shortdeschdt);
 			final HDTGraph longdeschdtgraph = new HDTGraph(longdeschdt);
-			final HDTGraph instancemappingtypesgraph = new HDTGraph(
+			final HDTGraph instancepersondata = new HDTGraph(
 					mappingbasedproperties);
+			final HDTGraph instancemappingtypesgraph = new HDTGraph(
+					instancemappingtypeshdt);
 			this.labelmodel = ModelFactory.createModelForGraph(labelhdtgraph);
 			this.shortdescmodel = ModelFactory
 					.createModelForGraph(shortdeschdtgraph);
 			this.longdescmodel = ModelFactory
 					.createModelForGraph(longdeschdtgraph);
 			this.persondata = ModelFactory
+					.createModelForGraph(instancepersondata);
+			this.instancemappingtypes = ModelFactory
 					.createModelForGraph(instancemappingtypesgraph);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public void loadEvidences() {
+		File file = new File(EVIDENCEFILE);
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				String splitter[] = line.split("\\t");
+				this.evidences.put(splitter[0], splitter[1]);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -709,6 +745,8 @@ public class CreateDBpediaIndexV2 {
 					new DoserIDAnalyzer());
 			analyzerPerField.put("Relations", new DoserIDAnalyzer());
 			analyzerPerField.put("Occurrences", new DoserIDAnalyzer());
+			analyzerPerField.put("Type", new DoserIDAnalyzer());
+			analyzerPerField.put("Evidence", new DoserIDAnalyzer());
 
 			PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(
 					new StandardAnalyzer(), analyzerPerField);
@@ -739,7 +777,7 @@ public class CreateDBpediaIndexV2 {
 				}
 
 				for (String s : labelset) {
-					doc.add(new TextField("Label", s, Store.YES));
+					doc.add(new StringField("Label", s, Store.YES));
 				}
 
 				// Add ShortDescriptions
@@ -751,6 +789,10 @@ public class CreateDBpediaIndexV2 {
 				String longDescription = getDbPediaLongDescription(uri);
 				doc.add(new TextField("LongDescription", longDescription,
 						Store.YES));
+
+				// Add Type
+				String type = filterStandardDomain(getRDFTypesFromEntity(uri));
+				doc.add(new StringField("Type", type, Store.YES));
 
 				// Add Occurrences
 				HashMap<String, Integer> occs = OCCURRENCES.get(uri);
@@ -856,6 +898,14 @@ public class CreateDBpediaIndexV2 {
 				if (DBPEDIAGRAPHINLINKS.containsKey(uri)) {
 					doc.add(new IntField("DbpediaVertexDegree",
 							DBPEDIAGRAPHINLINKS.get(uri), Field.Store.YES));
+				}
+				
+				// Add Evidences
+				if(evidences.containsKey(uri)) {
+					Set<String> ev = extractEvidences(evidences.get(uri));
+					for(String s : ev) {
+						doc.add(new StringField("Evidence", s, Field.Store.YES));
+					}
 				}
 
 				// Write Document To Index
@@ -1055,8 +1105,7 @@ public class CreateDBpediaIndexV2 {
 
 			final com.hp.hpl.jena.query.Query cquery = QueryFactory
 					.create(query);
-			qexec = QueryExecutionFactory.create(cquery,
-					this.persondata);
+			qexec = QueryExecutionFactory.create(cquery, this.persondata);
 			results = qexec.execSelect();
 
 			if (results != null) {
@@ -1104,8 +1153,9 @@ public class CreateDBpediaIndexV2 {
 				// Generiere verschiedene Namensmöglichkeiten
 				for (int i = 0; i < splitter.length; i++) {
 					for (int j = 0; j < splitter.length; j++) {
-						if(!splitter[i].equalsIgnoreCase(splitter[j])) {
-							names.add((splitter[i]+" "+splitter[j]).toLowerCase());
+						if (!splitter[i].equalsIgnoreCase(splitter[j])) {
+							names.add((splitter[i] + " " + splitter[j])
+									.toLowerCase());
 						}
 					}
 				}
@@ -1190,8 +1240,68 @@ public class CreateDBpediaIndexV2 {
 		return newStringSet;
 	}
 
+	private String filterStandardDomain(Set<String> set) {
+		String res = new String();
+		for (String s : set) {
+			if (s.equalsIgnoreCase("http://dbpedia.org/ontology/Person")) {
+				res = "Person";
+				break;
+			} else if (s
+					.equalsIgnoreCase("http://dbpedia.org/ontology/Organisation")) {
+				res = "Organisation";
+				break;
+			} else if (s
+					.equalsIgnoreCase("http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
+				res = "Location";
+				break;
+			} else {
+				res = "Misc";
+			}
+		}
+		return res;
+	}
+
+	public Set<String> getRDFTypesFromEntity(final String entityUri) {
+		Set<String> set = new HashSet<String>();
+		final String query = "SELECT ?types WHERE{ <"
+				+ entityUri
+				+ "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?types. }";
+		ResultSet results = null;
+		QueryExecution qexec = null;
+		try {
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory
+					.create(query);
+			qexec = QueryExecutionFactory.create(cquery, instancemappingtypes);
+			results = qexec.execSelect();
+		} catch (final QueryException e) {
+			Logger.getRootLogger().error(e.getStackTrace());
+		} finally {
+			if (results != null) {
+				while (results.hasNext()) {
+					final QuerySolution sol = results.nextSolution();
+					final String type = sol.getResource("types").toString();
+					set.add(type);
+				}
+			}
+		}
+		return set;
+	}
+	
+    private Set<String> extractEvidences(String evidences) {
+    	Set<String> set = new HashSet<String>();
+    	String splitter[] = evidences.split(";");
+    	for (int i = 0; i < splitter.length; i++) {
+			String evidence = splitter[i].replaceAll("(", "").replaceAll(")", "");
+			String split2[] = evidence.split(",");
+			set.add(split2[0]);
+		}
+    	return set;
+    }
+
 	public static void main(String[] args) {
 		CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
+		System.out.println("Step-1: Load Evidences");
+		index.loadEvidences();
 		System.out.println("Step0: Create DBpediaPriors");
 		index.createDBpediaPriors();
 		System.out.println("Step1: Read Sportsteams");

@@ -111,7 +111,6 @@ public final class RDFGraphOperations {
 			}
 		}
 		return set;
-		
 	}
 
 	public static String getDbPediaDescription(final String uri)

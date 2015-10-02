@@ -4,12 +4,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import doser.entitydisambiguation.dpo.Time;
 
 public class DocumentStatistic<K, V> {
 
 	private List<ParagraphStatistic> paragraphs;
-	private List<Map.Entry<K, V>> documentStatistic;
+//	private List<Map.Entry<K, V>> documentStatistic;
 
 	public DocumentStatistic() {
 		super();
@@ -27,17 +29,18 @@ public class DocumentStatistic<K, V> {
 	public void addStatistic(String ID, String headline, String content,
 			K topic, List<Time> time, List<Map.Entry<K, V>> list) {
 		this.paragraphs.add(new ParagraphStatistic(ID, headline, content,
-				topic, time,  list));
+				topic, time, list));
 	}
 
-	public List<Map.Entry<K, V>> getDocumentStatistic() {
-		return documentStatistic;
-	}
+//	public List<Map.Entry<K, V>> getDocumentStatistic() {
+//		return documentStatistic;
+//	}
 
-	public void setDocumentStatistic(List<Map.Entry<K, V>> documentStatistic) {
-		this.documentStatistic = documentStatistic;
-	}
+//	public void setDocumentStatistic(List<Map.Entry<K, V>> documentStatistic) {
+//		this.documentStatistic = documentStatistic;
+//	}
 
+	@JsonIgnoreProperties(value = { "headline", "content" })
 	public class ParagraphStatistic {
 
 		private String headline;
@@ -47,7 +50,7 @@ public class DocumentStatistic<K, V> {
 		private String id;
 
 		private K topic;
-		
+
 		private List<Time> time;
 
 		private List<Map.Entry<K, V>> statistic;

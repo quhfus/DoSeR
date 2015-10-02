@@ -3,6 +3,8 @@ package doser.entitydisambiguation.dpo;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import doser.entitydisambiguation.table.logic.Type;
 
 
@@ -16,6 +18,7 @@ import doser.entitydisambiguation.table.logic.Type;
  * @author zwicklbauer
  * 
  */
+@JsonIgnoreProperties(value = { "confidence", "description" })
 public class DisambiguatedEntity {
 
 	private String text;

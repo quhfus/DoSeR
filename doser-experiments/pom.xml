@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>doser.sub</groupId>
-			<artifactId>doser-core</artifactId>
+			<artifactId>doser-externtools</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

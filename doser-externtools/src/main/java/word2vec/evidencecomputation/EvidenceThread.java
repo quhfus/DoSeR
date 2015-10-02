@@ -12,7 +12,7 @@ import doser.word2vec.Word2VecModel;
 @SuppressWarnings("deprecation")
 public class EvidenceThread implements Runnable {
 
-	private static final int TOPN = 50;
+	private static final int TOPN = 100;
 
 	private List<String> entities;
 	private Word2VecModel model;
@@ -53,10 +53,10 @@ public class EvidenceThread implements Runnable {
 				}
 			}
 			String line = "";
-			for (int i = 0; i < topN.size(); ++i) {
+			while(!topN.isEmpty()) {
 				Holder h = topN.poll();
 				String addition = "(" + h.word + "," + h.score + ")";
-				if (i < topN.size() - 1) {
+				if (topN.size() > 0) {
 					addition = "," + addition;
 				}
 				line = addition + line;

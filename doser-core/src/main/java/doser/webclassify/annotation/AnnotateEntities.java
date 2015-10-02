@@ -149,7 +149,7 @@ public class AnnotateEntities {
 	}
 
 	private String filterStandardDomain(Set<Type> set) {
-		String res = new String();
+		String res = "Misc";
 		for (Type t : set) {
 			if (t.getUri().equalsIgnoreCase(
 					"http://dbpedia.org/ontology/Person")) {
@@ -165,8 +165,6 @@ public class AnnotateEntities {
 							"http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
 				res = "Location";
 				break;
-			} else {
-				res = "Misc";
 			}
 		}
 		return res;

@@ -1,7 +1,10 @@
 package doser.entitydisambiguation.table.logic;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(value = { "accumulatedWeight", "correct", "relevant",
+		"type", "layer", "weightedScore" })
 public class Type implements Comparable<Type>, Cloneable {
 
 	private double accumulatedWeight;
@@ -10,7 +13,7 @@ public class Type implements Comparable<Type>, Cloneable {
 
 	private boolean relevant;
 
-	private final boolean btype;
+	private final boolean type;
 
 	private final int layer;
 
@@ -35,7 +38,7 @@ public class Type implements Comparable<Type>, Cloneable {
 		} else {
 			this.uri = uri;
 		}
-		this.btype = type;
+		this.type = type;
 		this.accumulatedWeight = 0;
 		this.relevant = true;
 		this.layer = layer;
@@ -106,7 +109,7 @@ public class Type implements Comparable<Type>, Cloneable {
 	}
 
 	public boolean isType() {
-		return this.btype;
+		return this.type;
 	}
 
 	public void setAccumulatedWeight(final double accumulatedWeight) {
