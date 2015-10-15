@@ -12,7 +12,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
@@ -35,8 +35,8 @@ public class NoCandidatesExpansionRules extends Rule {
 	}
 
 	@Override
-	public boolean applyRule(List<CollectiveSFRepresentation> rep) {
-		for (CollectiveSFRepresentation c : rep) {
+	public boolean applyRule(List<SurfaceForm> rep) {
+		for (SurfaceForm c : rep) {
 			if (c.getCandidates().size() == 0) {
 				c.setCandidates(queryCandidates(c.getSurfaceForm()));
 			}

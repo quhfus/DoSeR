@@ -1,5 +1,9 @@
 package doser.entitydisambiguation.properties;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
@@ -7,7 +11,7 @@ import org.apache.log4j.Logger;
 public final class Properties {
 	private static Properties instance;
 	private static final String RESOURCE_NAME = "disambiguation.properties";
-
+	
 	public synchronized static Properties getInstance() {
 		if (instance == null) {
 			instance = new Properties();
@@ -155,6 +159,10 @@ public final class Properties {
 	
 	public String getDBpediaSpotLight_Ger_Rest() {
 		return this.config.getString("dbpediaSpotlight_ger");
+	}
+	
+	public String getNounPhraseModel() {
+		return this.config.getString("nounphrasemodel");
 	}
 	
 	public boolean getHBaseStorage() {

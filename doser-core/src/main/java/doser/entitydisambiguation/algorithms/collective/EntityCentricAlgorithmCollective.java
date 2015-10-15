@@ -69,7 +69,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 				.getEntityToDisambiguate();
 		Response[] responseArray = new Response[entityList.size()];
 
-		List<CollectiveSFRepresentation> collectiveRep = new LinkedList<CollectiveSFRepresentation>();
+		List<SurfaceForm> collectiveRep = new LinkedList<SurfaceForm>();
 		System.out
 				.println("---------------------------------------------------------------------------------------------------------------------------");
 		for (int i = 0; i < entityList.size(); i++) {
@@ -84,7 +84,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					final Document doc = reader.document(score[0].doc);
 					ArrayList<String> l = new ArrayList<String>();
 					l.add(doc.get("Mainlink"));
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+					SurfaceForm col = new SurfaceForm(
 							dpo.getSelectedText(), dpo.getContext(), l, i);
 					collectiveRep.add(col);
 					System.out.println("Save Disambiguation: "
@@ -95,13 +95,13 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 						final Document doc = reader.document(score[j].doc);
 						l.add(doc.get("Mainlink"));
 					}
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+					SurfaceForm col = new SurfaceForm(
 							dpo.getSelectedText(), dpo.getContext(), l, i);
 					collectiveRep.add(col);
 
 				} else {
 					ArrayList<String> l = new ArrayList<String>();
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+					SurfaceForm col = new SurfaceForm(
 							dpo.getSelectedText(), dpo.getContext(), l, i);
 					collectiveRep.add(col);
 				}
@@ -127,9 +127,9 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 	}
 
 	public void generateResult(Response[] responseArray,
-			List<CollectiveSFRepresentation> cols) {
+			List<SurfaceForm> cols) {
 		for (int i = 0; i < responseArray.length; i++) {
-			CollectiveSFRepresentation r = search(i, cols);
+			SurfaceForm r = search(i, cols);
 			if (responseArray[i] == null && r != null
 					&& r.getCandidates().size() == 1) {
 				Response res = new Response();
@@ -146,9 +146,9 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		}
 	}
 
-	private CollectiveSFRepresentation search(int qryNr,
-			List<CollectiveSFRepresentation> rep) {
-		for (CollectiveSFRepresentation r : rep) {
+	private SurfaceForm search(int qryNr,
+			List<SurfaceForm> rep) {
+		for (SurfaceForm r : rep) {
 			if (r.getQueryNr() == qryNr) {
 				return r;
 			}

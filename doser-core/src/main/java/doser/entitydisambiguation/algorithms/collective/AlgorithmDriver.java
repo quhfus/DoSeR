@@ -11,12 +11,12 @@ public abstract class AlgorithmDriver {
 
 	protected Response[] currentResponse;
 
-	protected List<CollectiveSFRepresentation> rep;
+	protected List<SurfaceForm> rep;
 
 	protected EntityCentricKnowledgeBaseDefault eckb;
 
 	public AlgorithmDriver(Response[] res,
-			List<CollectiveSFRepresentation> rep,
+			List<SurfaceForm> rep,
 			EntityCentricKnowledgeBaseDefault eckb) {
 		if (res.length != rep.size()) {
 			throw new IllegalArgumentException();
@@ -28,7 +28,7 @@ public abstract class AlgorithmDriver {
 
 	public void generateResult() {
 		for (int i = 0; i < currentResponse.length; i++) {
-			CollectiveSFRepresentation r = search(i);
+			SurfaceForm r = search(i);
 			if (currentResponse[i] == null && r != null
 					&& r.getCandidates().size() == 1) {
 				Response res = new Response();
@@ -45,8 +45,8 @@ public abstract class AlgorithmDriver {
 		}
 	}
 
-	private CollectiveSFRepresentation search(int qryNr) {
-		for (CollectiveSFRepresentation r : rep) {
+	private SurfaceForm search(int qryNr) {
+		for (SurfaceForm r : rep) {
 			if (r.getQueryNr() == qryNr) {
 				return r;
 			}

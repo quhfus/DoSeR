@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface SolverInterface {
 
-	public boolean disambiguate(List<CollectiveSFRepresentation> rep);
+	public boolean disambiguate(List<SurfaceForm> rep);
 	}

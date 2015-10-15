@@ -12,7 +12,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
@@ -33,8 +33,8 @@ public class NoCandidatesCheckPlural extends Rule {
 	}
 
 	@Override
-	public boolean applyRule(List<CollectiveSFRepresentation> rep) {
-		for (CollectiveSFRepresentation r : rep) {
+	public boolean applyRule(List<SurfaceForm> rep) {
+		for (SurfaceForm r : rep) {
 			if (r.getCandidates().size() == 0) {
 				String sf = r.getSurfaceForm();
 				String singular = Inflector.getInstance().singularize(sf);

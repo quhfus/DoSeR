@@ -29,4 +29,9 @@ class Candidate implements Comparable<Candidate> {
 	double getScore() {
 		return score;
 	}
+	
+	@Override
+	public String toString() {
+		return candidate;
+	}
 }

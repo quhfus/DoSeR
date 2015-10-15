@@ -2,7 +2,7 @@ package doser.entitydisambiguation.algorithms.collective.rules;
 
 import java.util.List;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
 public abstract class Rule {
@@ -14,6 +14,6 @@ public abstract class Rule {
 		this.eckb = eckb;
 	}
 	
-	public abstract boolean applyRule(List<CollectiveSFRepresentation> rep);
+	public abstract boolean applyRule(List<SurfaceForm> rep);
 	
 }

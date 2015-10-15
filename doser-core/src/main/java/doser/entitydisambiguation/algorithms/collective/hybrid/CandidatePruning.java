@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.general.HelpfulMethods;
 
@@ -25,8 +25,8 @@ public class CandidatePruning {
 		this.eckb = eckb;
 	}
 
-	void prune(List<CollectiveSFRepresentation> rep) {
-		for (CollectiveSFRepresentation c : rep) {
+	void prune(List<SurfaceForm> rep) {
+		for (SurfaceForm c : rep) {
 			List<String> candidates = c.getCandidates();
 
 			if (candidates.size() > ENTITYTHRESHOLD) {
@@ -43,6 +43,7 @@ public class CandidatePruning {
 						.sortByValue(map);
 				for (int i = 0; i < ENTITYTHRESHOLD; ++i) {
 					prunedCandidates.add(l.get(i).getKey());
+					//System.out.println("SensePrior ADd: "+l.get(i).getKey()+"  "+l.get(i).getValue());
 				}
 
 				// Doc2Vec ContextSimilarity
@@ -61,8 +62,6 @@ public class CandidatePruning {
 				}
 
 				c.setCandidates(new ArrayList<String>(prunedCandidates));
-				System.out.println("SurfaceForm: " + c.getSurfaceForm());
-				System.out.println(prunedCandidates);
 			}
 		}
 	}

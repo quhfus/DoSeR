@@ -11,7 +11,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.query.TermQuery;
 
@@ -22,8 +22,8 @@ public class CheckGeneralEntities extends Rule {
 	}
 
 	@Override
-	public boolean applyRule(List<CollectiveSFRepresentation> rep) {
-		for (CollectiveSFRepresentation c : rep) {
+	public boolean applyRule(List<SurfaceForm> rep) {
+		for (SurfaceForm c : rep) {
 			String sf = c.getSurfaceForm().toLowerCase();
 			List<String> candidates = c.getCandidates();
 			String checked = null;
@@ -83,9 +83,9 @@ public class CheckGeneralEntities extends Rule {
 	}
 
 	private boolean checkSurfaceFormSubset(String sf,
-			List<CollectiveSFRepresentation> reps) {
+			List<SurfaceForm> reps) {
 		boolean isIn = false;
-		for (CollectiveSFRepresentation c : reps) {
+		for (SurfaceForm c : reps) {
 			String toCheck = c.getSurfaceForm().toLowerCase();
 			if (!toCheck.equalsIgnoreCase(sf) && toCheck.contains(sf)) {
 				isIn = true;

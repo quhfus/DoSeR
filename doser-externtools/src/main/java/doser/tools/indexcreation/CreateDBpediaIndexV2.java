@@ -82,7 +82,8 @@ public class CreateDBpediaIndexV2 {
 	public static final String LABELHDT = "/home/zwicklbauer/WikipediaIndexGeneration/rdffiles/labels_en.hdt";
 	public static final String SHORTDESCHDT = "/home/zwicklbauer/WikipediaIndexGeneration/rdffiles/short_abstracts_en.hdt";
 	public static final String LONGDESCHDT = "/home/zwicklbauer/WikipediaIndexGeneration/rdffiles/long_abstracts_en.hdt";
-	public static final String INSTANCEMAPPINGTYPES = "/mnt/ssd1/disambiguation/HDT/instance_types_en.nt";
+	public static final String INSTANCEMAPPINGTYPES = "/mnt/ssd1/disambiguation/HDT/instance_types_en.hdt";
+	public static final String INSTANCEMAPPINGTYPES_NT = "/mnt/ssd1/disambiguation/HDT/instance_types_en.nt";
 	public static final String SKOSBROADER = "/home/zwicklbauer/HDTGeneration/skos_categories_en.nt";
 
 	private HashMap<String, HashSet<String>> LABELS;
@@ -746,7 +747,7 @@ public class CreateDBpediaIndexV2 {
 			analyzerPerField.put("Relations", new DoserIDAnalyzer());
 			analyzerPerField.put("Occurrences", new DoserIDAnalyzer());
 			analyzerPerField.put("Type", new DoserIDAnalyzer());
-			analyzerPerField.put("Evidence", new DoserIDAnalyzer());
+			analyzerPerField.put("StringLabel", new DoserIDAnalyzer());
 
 			PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(
 					new StandardAnalyzer(), analyzerPerField);
@@ -777,7 +778,8 @@ public class CreateDBpediaIndexV2 {
 				}
 
 				for (String s : labelset) {
-					doc.add(new StringField("Label", s, Store.YES));
+					doc.add(new TextField("Label", s.toLowerCase(), Store.YES));
+					doc.add(new StringField("StringLabel", s.toLowerCase(), Store.YES));
 				}
 
 				// Add ShortDescriptions
@@ -901,12 +903,12 @@ public class CreateDBpediaIndexV2 {
 				}
 				
 				// Add Evidences
-				if(evidences.containsKey(uri)) {
-					Set<String> ev = extractEvidences(evidences.get(uri));
-					for(String s : ev) {
-						doc.add(new StringField("Evidence", s, Field.Store.YES));
-					}
-				}
+//				if(evidences.containsKey(uri)) {
+//					Set<String> ev = extractEvidences(evidences.get(uri));
+//					for(String s : ev) {
+//						doc.add(new StringField("Evidence", s, Field.Store.YES));
+//					}
+//				}
 
 				// Write Document To Index
 				if (doc.get("Label") != null
@@ -1204,7 +1206,7 @@ public class CreateDBpediaIndexV2 {
 	public void sportsTeamsSurfaceForms() {
 		Model m = ModelFactory.createDefaultModel();
 
-		m.read(INSTANCEMAPPINGTYPES);
+		m.read(INSTANCEMAPPINGTYPES_NT);
 
 		StmtIterator it = m.listStatements();
 
@@ -1241,7 +1243,7 @@ public class CreateDBpediaIndexV2 {
 	}
 
 	private String filterStandardDomain(Set<String> set) {
-		String res = new String();
+		String res = "Misc";
 		for (String s : set) {
 			if (s.equalsIgnoreCase("http://dbpedia.org/ontology/Person")) {
 				res = "Person";
@@ -1254,8 +1256,6 @@ public class CreateDBpediaIndexV2 {
 					.equalsIgnoreCase("http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
 				res = "Location";
 				break;
-			} else {
-				res = "Misc";
 			}
 		}
 		return res;
@@ -1301,7 +1301,7 @@ public class CreateDBpediaIndexV2 {
 	public static void main(String[] args) {
 		CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
 		System.out.println("Step-1: Load Evidences");
-		index.loadEvidences();
+//		index.loadEvidences();
 		System.out.println("Step0: Create DBpediaPriors");
 		index.createDBpediaPriors();
 		System.out.println("Step1: Read Sportsteams");

@@ -12,7 +12,7 @@ import java.util.Set;
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.functors.MapTransformer;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
 import edu.uci.ics.jung.algorithms.scoring.PageRank;
@@ -30,10 +30,10 @@ class DisambiguateSimpleCases {
 		this.w2v = w2v;
 	}
 
-	void solve(List<CollectiveSFRepresentation> reps) {
+	void solve(List<SurfaceForm> reps) {
 		if (reps.size() > SFSPERPAGERANK) {
-			List<CollectiveSFRepresentation> disambiguatedSFs = new LinkedList<CollectiveSFRepresentation>();
-			for (CollectiveSFRepresentation c : reps) {
+			List<SurfaceForm> disambiguatedSFs = new LinkedList<SurfaceForm>();
+			for (SurfaceForm c : reps) {
 				if (c.getCandidates().size() == 1) {
 					disambiguatedSFs.add(c);
 				}
@@ -41,8 +41,8 @@ class DisambiguateSimpleCases {
 			int counter = 0;
 			while (true) {
 				if ((counter + SFSPERPAGERANK) < reps.size()) {
-					List<CollectiveSFRepresentation> subList = new ArrayList<CollectiveSFRepresentation>();
-					for (CollectiveSFRepresentation c : reps.subList(counter,
+					List<SurfaceForm> subList = new ArrayList<SurfaceForm>();
+					for (SurfaceForm c : reps.subList(counter,
 							(counter + SFSPERPAGERANK))) {
 						if (c.getCandidates().size() > 1) {
 							subList.add(c);
@@ -54,8 +54,8 @@ class DisambiguateSimpleCases {
 					simplePR.solve();
 					counter += SFSPERPAGERANK;
 				} else {
-					List<CollectiveSFRepresentation> subList = new ArrayList<CollectiveSFRepresentation>();
-					for (CollectiveSFRepresentation c : reps.subList(counter,
+					List<SurfaceForm> subList = new ArrayList<SurfaceForm>();
+					for (SurfaceForm c : reps.subList(counter,
 							reps.size())) {
 						if (c.getCandidates().size() > 1) {
 							subList.add(c);
@@ -69,7 +69,7 @@ class DisambiguateSimpleCases {
 				}
 			}
 		} else {
-			List<CollectiveSFRepresentation> l = new ArrayList<CollectiveSFRepresentation>();
+			List<SurfaceForm> l = new ArrayList<SurfaceForm>();
 			l.addAll(reps);
 			SimpleCollectivePageRank simplePR = new SimpleCollectivePageRank(l,
 					createMustMatchCandidates(l));
@@ -78,9 +78,9 @@ class DisambiguateSimpleCases {
 	}
 
 	private List<String> createMustMatchCandidates(
-			List<CollectiveSFRepresentation> reps) {
+			List<SurfaceForm> reps) {
 		List<String> mustMatchCandidates = new ArrayList<String>();
-		for (CollectiveSFRepresentation c : reps) {
+		for (SurfaceForm c : reps) {
 			if (c.getCandidates().size() == 1) {
 				mustMatchCandidates.add(c.getCandidates().get(0));
 			} else if (c.getCandidates().size() == 0) {
@@ -104,12 +104,12 @@ class DisambiguateSimpleCases {
 	class SimpleCollectivePageRank {
 
 		private List<String> mustMatchCandidates;
-		private List<CollectiveSFRepresentation> reps;
+		private List<SurfaceForm> reps;
 		private DirectedGraph<Vertex, Edge> graph;
 		private Map<Edge, Number> edgeWeights;
 		private Factory<Integer> edgeFactory;
 
-		SimpleCollectivePageRank(List<CollectiveSFRepresentation> reps,
+		SimpleCollectivePageRank(List<SurfaceForm> reps,
 				List<String> mustMatchCandidates) {
 			super();
 			this.reps = reps;
@@ -130,7 +130,7 @@ class DisambiguateSimpleCases {
 		private void disambiguate(PageRank<Vertex, Edge> pr) {
 			Collection<Vertex> vertexCol = graph.getVertices();
 			for (int i = 0; i < this.reps.size(); i++) {
-				CollectiveSFRepresentation r = this.reps.get(i);
+				SurfaceForm r = this.reps.get(i);
 				int qryNr = r.getQueryNr();
 				List<Candidate> candidateList = new ArrayList<Candidate>();
 				if (r.isACandidate() && r.getCandidates().size() > 1) {
@@ -182,7 +182,7 @@ class DisambiguateSimpleCases {
 		private void buildMainGraph() {
 			List<String> disambiguatedEntities = new LinkedList<String>();
 			// Add Vertexes
-			for (CollectiveSFRepresentation rep : reps) {
+			for (SurfaceForm rep : reps) {
 				List<String> arrList = rep.getCandidates();
 				for (String s : arrList) {
 					List<String> l = new LinkedList<String>();

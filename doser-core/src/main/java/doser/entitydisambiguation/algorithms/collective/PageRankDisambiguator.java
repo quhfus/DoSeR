@@ -12,12 +12,12 @@ import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 
 public class PageRankDisambiguator extends Word2VecPageRank {
 
-	private List<CollectiveSFRepresentation> sustain;
+	private List<SurfaceForm> sustain;
 
-	public PageRankDisambiguator(List<CollectiveSFRepresentation> reps,
+	public PageRankDisambiguator(List<SurfaceForm> reps,
 			EnCenExtFeatures featureDefinition) {
 		super(featureDefinition, reps);
-		this.sustain = new LinkedList<CollectiveSFRepresentation>();
+		this.sustain = new LinkedList<SurfaceForm>();
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class PageRankDisambiguator extends Word2VecPageRank {
 						}
 					}
 				}
-				CollectiveSFRepresentation rep = repList.get(i);
+				SurfaceForm rep = repList.get(i);
 				// PageRank not solvable
 				if (Double.isInfinite(maxScore)) {
 					List<String> l = computeSensePriorRankedList(qryNr, 1);

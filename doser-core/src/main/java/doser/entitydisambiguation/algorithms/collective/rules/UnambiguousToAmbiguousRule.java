@@ -3,7 +3,7 @@ package doser.entitydisambiguation.algorithms.collective.rules;
 import java.util.LinkedList;
 import java.util.List;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
 /**
@@ -29,16 +29,16 @@ public class UnambiguousToAmbiguousRule extends Rule {
 	}
 	
 	@Override
-	public boolean applyRule(List<CollectiveSFRepresentation> rep) {
-		List<CollectiveSFRepresentation> unambiguous = new LinkedList<CollectiveSFRepresentation>();
-		for (CollectiveSFRepresentation c : rep) {
+	public boolean applyRule(List<SurfaceForm> rep) {
+		List<SurfaceForm> unambiguous = new LinkedList<SurfaceForm>();
+		for (SurfaceForm c : rep) {
 			if (c.getCandidates().size() == 1) {
 				unambiguous.add(c);
 			}
 		}
-		for (CollectiveSFRepresentation c : rep) {
+		for (SurfaceForm c : rep) {
 			if (c.getCandidates().size() > 1) {
-				for (CollectiveSFRepresentation un : unambiguous) {
+				for (SurfaceForm un : unambiguous) {
 					if (isSubString(un.getSurfaceForm(), c.getSurfaceForm())
 							&& c.getCandidates().contains(
 									un.getCandidates().get(0))) {

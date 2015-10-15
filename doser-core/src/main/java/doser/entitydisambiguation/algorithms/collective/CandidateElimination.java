@@ -18,18 +18,18 @@ public class CandidateElimination extends Word2VecPageRank {
 
 	private int maxCandidates;
 
-	private List<CollectiveSFRepresentation> allDocumentCandidates;
+	private List<SurfaceForm> allDocumentCandidates;
 
-	public CandidateElimination(List<CollectiveSFRepresentation> reps,
+	public CandidateElimination(List<SurfaceForm> reps,
 			EntityCentricKnowledgeBaseDefault eckb, int maxCandidates,
-			List<CollectiveSFRepresentation> allDocumentCandidates) {
+			List<SurfaceForm> allDocumentCandidates) {
 		super(eckb.getFeatureDefinition(), reps);
 		this.maxCandidates = maxCandidates;
 		this.allDocumentCandidates = allDocumentCandidates;
 	}
 
 	@Override
-	public void setup(List<CollectiveSFRepresentation> rep) {
+	public void setup(List<SurfaceForm> rep) {
 		this.graph = new DirectedSparseMultigraph<Vertex, Edge>();
 		this.edgeWeights = new HashMap<Edge, Number>();
 		this.edgeFactory = new Factory<Integer>() {
@@ -130,14 +130,14 @@ public class CandidateElimination extends Word2VecPageRank {
 	}
 
 	private List<String> determineAbbreviationCandidates(String surfaceForm,
-			List<CollectiveSFRepresentation> cans) {
+			List<SurfaceForm> cans) {
 		List<String> candidates = new LinkedList<String>();
 		// Check Short surface form
 		if (surfaceForm.length() <= 4
 				&& (surfaceForm.replaceAll("[^a-zA-Z]", "")).length() <= 3
 				&& surfaceForm.length() > 1) {
 			String letters = surfaceForm.replaceAll("[^a-zA-Z]", "");
-			for (CollectiveSFRepresentation sfrep : cans) {
+			for (SurfaceForm sfrep : cans) {
 				String sf = sfrep.getSurfaceForm();
 				String splitter[] = sf.split(" ");
 				if (splitter.length > 1) {

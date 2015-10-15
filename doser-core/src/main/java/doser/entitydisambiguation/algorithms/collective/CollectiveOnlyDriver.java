@@ -13,18 +13,18 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 	public static final int CLUSTERSIZE = 5;
 
 	public CollectiveOnlyDriver(Response[] res,
-			List<CollectiveSFRepresentation> rep,
+			List<SurfaceForm> rep,
 			EntityCentricKnowledgeBaseDefault eckb) {
 		super(res, rep, eckb);
 	}
 
 	@Override
 	public void solve() {
-		List<CollectiveSFRepresentation> finalList = new LinkedList<CollectiveSFRepresentation>();
+		List<SurfaceForm> finalList = new LinkedList<SurfaceForm>();
 
 		if (this.rep.size() > MAXSURFACEFORMSPERQUERY) {
-			List<CollectiveSFRepresentation> disambiguatedSFs = new LinkedList<CollectiveSFRepresentation>();
-			for (CollectiveSFRepresentation c : rep) {
+			List<SurfaceForm> disambiguatedSFs = new LinkedList<SurfaceForm>();
+			for (SurfaceForm c : rep) {
 				if (c.getCandidates().size() == 1) {
 					disambiguatedSFs.add(c);
 				}
@@ -32,13 +32,13 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 			int counter = 0;
 			while (true) {
 				if ((counter + MAXSURFACEFORMSPERQUERY) < this.rep.size()) {
-					List<CollectiveSFRepresentation> subList = this.rep
+					List<SurfaceForm> subList = this.rep
 							.subList(counter,
 									(counter + MAXSURFACEFORMSPERQUERY));
 					finalList.addAll(miniSolve(subList));
 					counter += MAXSURFACEFORMSPERQUERY;
 				} else {
-					List<CollectiveSFRepresentation> subList = this.rep
+					List<SurfaceForm> subList = this.rep
 							.subList(counter, this.rep.size());
 					finalList.addAll(miniSolve(subList));
 					break;
@@ -51,13 +51,13 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 		this.rep = finalList;
 	}
 
-	private List<CollectiveSFRepresentation> miniSolve(
-			List<CollectiveSFRepresentation> rep) {
-		List<CollectiveSFRepresentation> sol = new LinkedList<CollectiveSFRepresentation>();
-		List<LinkedList<CollectiveSFRepresentation>> clusters = createDivideAndConquerClusters(rep);
+	private List<SurfaceForm> miniSolve(
+			List<SurfaceForm> rep) {
+		List<SurfaceForm> sol = new LinkedList<SurfaceForm>();
+		List<LinkedList<SurfaceForm>> clusters = createDivideAndConquerClusters(rep);
 		boolean reduced = false;
 		while (clusters.size() > 1) {
-			for (LinkedList<CollectiveSFRepresentation> cluster : clusters) {
+			for (LinkedList<SurfaceForm> cluster : clusters) {
 				CandidateElimination elimination = new CandidateElimination(
 						cluster, eckb, clusters.size() * MULTIPLIER, this.rep);
 				elimination.solve();
@@ -66,7 +66,7 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 			reduced = true;
 		}
 
-		LinkedList<CollectiveSFRepresentation> cluster = clusters.get(0);
+		LinkedList<SurfaceForm> cluster = clusters.get(0);
 
 		// If no CandidateElimination was performed due to only cluster is
 		// available, we have to perform a CandidateElimination if more than one
@@ -88,9 +88,9 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 		return sol;
 	}
 
-	private int computeMaxCandidates(List<CollectiveSFRepresentation> reps) {
+	private int computeMaxCandidates(List<SurfaceForm> reps) {
 		int max = 0;
-		for (CollectiveSFRepresentation sf : reps) {
+		for (SurfaceForm sf : reps) {
 			if (sf.getCandidates().size() > max) {
 				max = sf.getCandidates().size();
 			}
@@ -98,11 +98,11 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 		return max;
 	}
 
-	private List<LinkedList<CollectiveSFRepresentation>> merge(
-			List<LinkedList<CollectiveSFRepresentation>> oldReps) {
-		List<LinkedList<CollectiveSFRepresentation>> newClusters = new LinkedList<LinkedList<CollectiveSFRepresentation>>();
+	private List<LinkedList<SurfaceForm>> merge(
+			List<LinkedList<SurfaceForm>> oldReps) {
+		List<LinkedList<SurfaceForm>> newClusters = new LinkedList<LinkedList<SurfaceForm>>();
 		for (int i = 0; i < oldReps.size(); i = i + 2) {
-			LinkedList<CollectiveSFRepresentation> l = new LinkedList<CollectiveSFRepresentation>();
+			LinkedList<SurfaceForm> l = new LinkedList<SurfaceForm>();
 			if (i < oldReps.size()) {
 				addAllWithoutNoCandidates(l, oldReps.get(i));
 			}
@@ -115,24 +115,24 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 	}
 
 	private void addAllWithoutNoCandidates(
-			LinkedList<CollectiveSFRepresentation> l,
-			LinkedList<CollectiveSFRepresentation> old) {
-		for (CollectiveSFRepresentation col : old) {
+			LinkedList<SurfaceForm> l,
+			LinkedList<SurfaceForm> old) {
+		for (SurfaceForm col : old) {
 			if (col.isACandidate()) {
 				l.add(col);
 			}
 		}
 	}
 
-	private List<LinkedList<CollectiveSFRepresentation>> createDivideAndConquerClusters(
-			List<CollectiveSFRepresentation> rep) {
+	private List<LinkedList<SurfaceForm>> createDivideAndConquerClusters(
+			List<SurfaceForm> rep) {
 		int nrclusters = (int) Math.ceil((double) rep.size()
 				/ (double) CLUSTERSIZE);
 		System.out.println("Detected Clustersize: " + nrclusters);
-		List<LinkedList<CollectiveSFRepresentation>> clusters = new LinkedList<LinkedList<CollectiveSFRepresentation>>();
-		List<CollectiveSFRepresentation> unambiguous = detectDisambiguatedSufaceForms(rep);
+		List<LinkedList<SurfaceForm>> clusters = new LinkedList<LinkedList<SurfaceForm>>();
+		List<SurfaceForm> unambiguous = detectDisambiguatedSufaceForms(rep);
 		for (int i = 0; i < nrclusters; i++) {
-			LinkedList<CollectiveSFRepresentation> list = new LinkedList<CollectiveSFRepresentation>();
+			LinkedList<SurfaceForm> list = new LinkedList<SurfaceForm>();
 			int counter = 0;
 			while (true) {
 				if (counter > 0
@@ -148,15 +148,15 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 		}
 
 		// Fill Last Cluster with an appropriate amount of Surface Forms
-		LinkedList<CollectiveSFRepresentation> lastCluster = clusters
+		LinkedList<SurfaceForm> lastCluster = clusters
 				.get(clusters.size() - 1);
 		if (clusters.size() > 1 && lastCluster.size() < CLUSTERSIZE) {
-			LinkedList<CollectiveSFRepresentation> forelast = clusters
+			LinkedList<SurfaceForm> forelast = clusters
 					.get(clusters.size() - 2);
 			int counter = forelast.size() - 1;
 			while (lastCluster.size() < CLUSTERSIZE) {
-				CollectiveSFRepresentation col = forelast.get(counter);
-				CollectiveSFRepresentation newCol = (CollectiveSFRepresentation) col
+				SurfaceForm col = forelast.get(counter);
+				SurfaceForm newCol = (SurfaceForm) col
 						.clone();
 				newCol.setACandidate(false);
 				lastCluster.add(newCol);
@@ -166,12 +166,12 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 		return clusters;
 	}
 
-	private List<CollectiveSFRepresentation> detectDisambiguatedSufaceForms(
-			List<CollectiveSFRepresentation> reps) {
-		List<CollectiveSFRepresentation> unambiguous = new LinkedList<CollectiveSFRepresentation>();
-		for (CollectiveSFRepresentation rep : reps) {
+	private List<SurfaceForm> detectDisambiguatedSufaceForms(
+			List<SurfaceForm> reps) {
+		List<SurfaceForm> unambiguous = new LinkedList<SurfaceForm>();
+		for (SurfaceForm rep : reps) {
 			if (rep.getCandidates().size() == 1) {
-				CollectiveSFRepresentation clone = (CollectiveSFRepresentation) rep
+				SurfaceForm clone = (SurfaceForm) rep
 						.clone();
 				clone.setACandidate(false);
 				unambiguous.add(clone);
@@ -182,14 +182,14 @@ public class CollectiveOnlyDriver extends AlgorithmDriver {
 
 	class DivideAndConquerCluster {
 
-		private List<CollectiveSFRepresentation> rep;
+		private List<SurfaceForm> rep;
 
-		DivideAndConquerCluster(List<CollectiveSFRepresentation> reps) {
+		DivideAndConquerCluster(List<SurfaceForm> reps) {
 			super();
 			this.rep = reps;
 		}
 
-		List<CollectiveSFRepresentation> getCollectiveSFRepresentations() {
+		List<SurfaceForm> getCollectiveSFRepresentations() {
 			return this.rep;
 		}
 	}

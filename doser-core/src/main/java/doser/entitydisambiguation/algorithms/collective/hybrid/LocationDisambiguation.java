@@ -17,36 +17,43 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.query.TermQuery;
 
 class LocationDisambiguation {
 
 	private EntityCentricKnowledgeBaseDefault eckb;
+	private Word2Vec w2v;
 
-	public LocationDisambiguation(EntityCentricKnowledgeBaseDefault eckb) {
+	public LocationDisambiguation(Word2Vec w2v,
+			EntityCentricKnowledgeBaseDefault eckb) {
 		super();
 		this.eckb = eckb;
+		this.w2v = w2v;
 	}
 
-	void solve(List<CollectiveSFRepresentation> reps) {
-		for (CollectiveSFRepresentation c : reps) {
+	void solve(List<SurfaceForm> reps) {
+		for (SurfaceForm c : reps) {
 			if (c.getCandidates().size() > 1) {
 				disambiguate(c);
 			}
 		}
 	}
 
-	private void disambiguate(CollectiveSFRepresentation c) {
+	private void disambiguate(SurfaceForm c) {
 		List<String> candidates = c.getCandidates();
 		String surfaceForm = c.getSurfaceForm();
 		Set<Document> sfDocuments = queryLuceneLabel(surfaceForm);
 		removeUnusedDocs(sfDocuments, candidates);
 		Set<Document> nonLocations = checkForLocation(sfDocuments);
-		if (isLocation(nonLocations)) {
-			c.setDisambiguatedEntity(selectLocationWithSensePrior(sfDocuments,
-					candidates, c.getSurfaceForm()));
+
+		// Dont care if no locations are available
+		if (nonLocations.size() < sfDocuments.size()) {
+			if (isLocation(nonLocations, c)) {
+				c.setDisambiguatedEntity(selectLocationWithSensePrior(
+						sfDocuments, candidates, c.getSurfaceForm()));
+			}
 		}
 	}
 
@@ -55,16 +62,26 @@ class LocationDisambiguation {
 		Set<String> relString = new HashSet<String>();
 		for (Document d : relevantEntities) {
 			String type = d.get("Type");
+			System.out.println("RELEVANTE ENTITY: " + d.get("Mainlink"));
 			if (type.equals("Location")) {
 				relString.add(d.get("Mainlink"));
 			}
 		}
-		// Integrate other Location Check e.g. Tennessee, Tennessee,_Illinois; Maybe we have indicators for Tennesse,_Illinois. 
+		// Integrate other Location Check e.g. Tennessee, Tennessee,_Illinois;
+		// Maybe we have indicators for Tennesse,_Illinois.
 		return sensePriorDisambiguation(new LinkedList<String>(relString),
 				surfaceForm);
 	}
 
-	private boolean isLocation(Set<Document> nonLocationSet) {
+	private boolean isLocation(Set<Document> nonLocationSet, SurfaceForm sf) {
+		for (Document doc : nonLocationSet) {
+			String mainlink = doc.get("Mainlink");
+			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
+					sf.getContext(), mainlink);
+			if (docSim > 1.4) {
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -95,7 +112,7 @@ class LocationDisambiguation {
 		final IndexSearcher searcher = eckb.getSearcher();
 		final IndexReader reader = searcher.getIndexReader();
 		try {
-			final TopDocs top = searcher.search(query, 250);
+			final TopDocs top = searcher.search(query, 25000);
 			final ScoreDoc[] score = top.scoreDocs;
 			for (int i = 0; i < score.length; i++) {
 				final Document doc = reader.document(score[i].doc);
@@ -114,6 +131,7 @@ class LocationDisambiguation {
 					.getOccurrences(sf, str)));
 		}
 		Collections.sort(canList, Collections.reverseOrder());
+		System.out.println(canList);
 		return canList.get(0).getCandidate();
 	}
 }

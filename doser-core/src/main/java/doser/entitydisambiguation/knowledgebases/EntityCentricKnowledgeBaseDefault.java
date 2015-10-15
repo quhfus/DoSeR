@@ -109,13 +109,13 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 					Logger.getRootLogger().info("Loaded Entities: " + i);
 				}
 
-//				final String val = iReader.document(i).get(KBOCCURRENCESFIELD);
-//				String entity = iReader.document(i).get("Mainlink")
-//						.replaceAll("http://dbpedia.org/resource/", "");
-//				if ((val != null) && !val.equalsIgnoreCase("")) {
-//					final String[] splitter = val.split(TRIMLABELAMOUNT);
-//
-//					
+				final String val = iReader.document(i).get(KBOCCURRENCESFIELD);
+				String entity = iReader.document(i).get("Mainlink")
+						.replaceAll("http://dbpedia.org/resource/", "");
+				if ((val != null) && !val.equalsIgnoreCase("")) {
+					final String[] splitter = val.split(TRIMLABELAMOUNT);
+
+					
 					
 					
 					
@@ -161,26 +161,26 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 				
 				
 				
-//				
-//				
-//				
-//					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
-//					for (final String element : splitter) {
-//						final String[] value = element.split(TRIMOCCOCC);
-//						int check = 1;
-//						try {
-//							check = Integer.valueOf(value[1]);
-//						} catch (final NumberFormatException e) {
-//							Logger.getRootLogger().error(
-//									"Warning NumberFormatException while Initialization: "
-//											+ val);
-//						}
-//						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
-//								check);
-//					}
-//					indexsensePriorHashMapBlanc.put(entity, hash);
-//
-//					
+				
+				
+				
+					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
+					for (final String element : splitter) {
+						final String[] value = element.split(TRIMOCCOCC);
+						int check = 1;
+						try {
+							check = Integer.valueOf(value[1]);
+						} catch (final NumberFormatException e) {
+							Logger.getRootLogger().error(
+									"Warning NumberFormatException while Initialization: "
+											+ val);
+						}
+						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
+								check);
+					}
+					indexsensePriorHashMapBlanc.put(entity, hash);
+
+					
 					
 					
 					
@@ -248,7 +248,7 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 				// }
 				// }
 				// indexRelation.put(uri.hashCode(), set);
-//			}
+			}
 			iReader.close();
 		} catch (final IOException e) {
 			Logger.getRootLogger().error(e.getStackTrace());

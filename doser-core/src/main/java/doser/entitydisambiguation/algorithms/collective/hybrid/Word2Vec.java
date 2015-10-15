@@ -12,7 +12,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.word2vec.Data;
 import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
@@ -30,7 +30,7 @@ public class Word2Vec {
 
 	protected Map<String, Float> doc2vecsimilarities;
 
-	public Word2Vec(List<CollectiveSFRepresentation> rep) {
+	public Word2Vec(List<SurfaceForm> rep) {
 		super();
 //		this.computeWord2VecSimilarities(rep);
 		this.computeLocalContextCompatibility(rep);
@@ -82,10 +82,10 @@ public class Word2Vec {
 	}
 
 	private void computeLocalContextCompatibility(
-			List<CollectiveSFRepresentation> rep) {
+			List<SurfaceForm> rep) {
 		this.doc2vecsimilarities = new HashMap<String, Float>();
 		Doc2VecJsonFormat format = new Doc2VecJsonFormat();
-		for (CollectiveSFRepresentation sf : rep) {
+		for (SurfaceForm sf : rep) {
 			String context = sf.getContext();
 			
 			context = context.toLowerCase();
@@ -104,7 +104,7 @@ public class Word2Vec {
 
 		// We obtain the same order of surface forms
 		for (int i = 0; i < res.length(); i++) {
-			CollectiveSFRepresentation c = rep.get(i);
+			SurfaceForm c = rep.get(i);
 			try {
 				JSONObject obj = res.getJSONObject(i);
 				JSONArray simArray = obj.getJSONArray("sim");
@@ -131,11 +131,11 @@ public class Word2Vec {
 	 * @param rep
 	 */
 	void computeWord2VecSimilarities(
-			List<CollectiveSFRepresentation> rep) {
+			List<SurfaceForm> rep) {
 		this.word2vecsimilarities = new HashMap<String, Float>();
 		Set<String> entities = new HashSet<String>();
 		List<String> multientities = new LinkedList<String>();
-		for (CollectiveSFRepresentation r : rep) {
+		for (SurfaceForm r : rep) {
 			List<String> l = r.getCandidates();
 			for (String s : l) {
 				if (l.size() == 1) {

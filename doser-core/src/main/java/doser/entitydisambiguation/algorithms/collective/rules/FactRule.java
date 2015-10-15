@@ -3,7 +3,7 @@ package doser.entitydisambiguation.algorithms.collective.rules;
 import java.util.List;
 import java.util.Set;
 
-import doser.entitydisambiguation.algorithms.collective.CollectiveSFRepresentation;
+import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
 public class FactRule extends Rule {
@@ -13,14 +13,14 @@ public class FactRule extends Rule {
 	}
 
 	@Override
-	public boolean applyRule(List<CollectiveSFRepresentation> rep) {
+	public boolean applyRule(List<SurfaceForm> rep) {
 		System.out.println("Fact Rule Applying");
-		for (CollectiveSFRepresentation col : rep) {
+		for (SurfaceForm col : rep) {
 			if (col.getCandidates().size() == 1) {
 				String url = col.getCandidates().get(0);
 				Set<String> set = eckb.getFeatureDefinition().getRelations(url);
 				System.out.println("Set For : "+ url +" "+set.toString());
-				for(CollectiveSFRepresentation col1 : rep) {
+				for(SurfaceForm col1 : rep) {
 					if(col1.getCandidates().size() > 1) {
 						String s = checkRelationsToSFRepresentation(set, col1);
 						if(s != null) {
@@ -35,7 +35,7 @@ public class FactRule extends Rule {
 	}
 
 	private String checkRelationsToSFRepresentation(Set<String> relations,
-			CollectiveSFRepresentation rep) {
+			SurfaceForm rep) {
 		List<String> l = rep.getCandidates();
 		String result = null;
 		for(String rel : relations) {

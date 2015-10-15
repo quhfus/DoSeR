@@ -1,5 +1,7 @@
 package doser.entitydisambiguation.backend;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -26,11 +28,14 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefau
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 import doser.entitydisambiguation.properties.Properties;
+import opennlp.tools.parser.Parser;
+import opennlp.tools.parser.ParserFactory;
+import opennlp.tools.parser.ParserModel;
 
 public final class DisambiguationMainService {
 
 	public final static int MAXCLAUSECOUNT = 4096;
-	
+
 	private static final int TIMERPERIOD = 10000;
 
 	private static DisambiguationMainService instance = null;
@@ -44,6 +49,8 @@ public final class DisambiguationMainService {
 	private Model hdtYagoCatsLab;
 	private Model hdtyagoTaxonomy;
 	private Model hdtyagoTransTypes;
+
+	private Parser openNLP_parser;
 
 	private Map<KnowledgeBaseIdentifiers, KnowledgeBase> knowledgebases;
 
@@ -146,9 +153,22 @@ public final class DisambiguationMainService {
 			this.hdtdbpediaDesc = ModelFactory.createModelForGraph(graph6);
 			this.hdtdbpediaSkosCategories = ModelFactory
 					.createModelForGraph(graph7);
-			this.hdtdbpediaInstanceTypes = ModelFactory.createModelForGraph(graph8);
+			this.hdtdbpediaInstanceTypes = ModelFactory
+					.createModelForGraph(graph8);
 		} catch (final IOException e) {
 			e.printStackTrace();
+		}
+
+		// Load OpenNLP Model
+		ParserModel model = null;
+		try {
+			model = new ParserModel(new FileInputStream(new File(Properties
+					.getInstance().getNounPhraseModel())));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (model != null) {
+			this.openNLP_parser = ParserFactory.create(model);
 		}
 	}
 
@@ -162,7 +182,7 @@ public final class DisambiguationMainService {
 	public static void initialize() {
 		instance = new DisambiguationMainService();
 	}
-	
+
 	public void disambiguate(List<DisambiguationTask> taskList) {
 		for (int i = 0; i < taskList.size(); i++) {
 			DisambiguationTask task = taskList.get(i);
@@ -172,7 +192,7 @@ public final class DisambiguationMainService {
 				task.setKb(this.knowledgebases.get(task.getKbIdentifier()));
 				algorithm.disambiguate(task);
 			}
-		}	
+		}
 	}
 
 	public Model getDBPediaArticleCategories() {
@@ -186,7 +206,7 @@ public final class DisambiguationMainService {
 	public Model getDBPediaDescription() {
 		return this.hdtdbpediaDesc;
 	}
-	
+
 	public Model getDBPediaInstanceTypes() {
 		return this.hdtdbpediaInstanceTypes;
 	}
@@ -210,6 +230,12 @@ public final class DisambiguationMainService {
 	public Model getYagoTransitiveTypes() {
 		return this.hdtyagoTransTypes;
 	}
+
+	public Parser getOpenNLP_parser() {
+		return openNLP_parser;
+	}
+
+
 
 	/**
 	 * A seperate thread class to initialize our knowledgebases

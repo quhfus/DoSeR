@@ -31,10 +31,10 @@ public abstract class Word2VecPageRank extends Word2Vec {
 
 	protected BitSet disambiguatedSurfaceForms;
 
-	protected List<CollectiveSFRepresentation> allCandidates;
+	protected List<SurfaceForm> allCandidates;
 
 	public Word2VecPageRank(EnCenExtFeatures featureDefinition,
-			List<CollectiveSFRepresentation> rep) {
+			List<SurfaceForm> rep) {
 		super(rep);
 		this.featureDefinition = featureDefinition;
 		setup(rep);
@@ -59,7 +59,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		return pr;
 	}
 
-	public void setup(List<CollectiveSFRepresentation> rep) {
+	public void setup(List<SurfaceForm> rep) {
 		this.graph = new DirectedSparseMultigraph<Vertex, Edge>();
 		this.edgeWeights = new HashMap<Edge, Number>();
 		this.edgeFactory = new Factory<Integer>() {
@@ -70,9 +70,9 @@ public abstract class Word2VecPageRank extends Word2Vec {
 			}
 		};
 
-		List<CollectiveSFRepresentation> list = new LinkedList<CollectiveSFRepresentation>();
-		for (CollectiveSFRepresentation r : rep) {
-			list.add((CollectiveSFRepresentation) r.clone());
+		List<SurfaceForm> list = new LinkedList<SurfaceForm>();
+		for (SurfaceForm r : rep) {
+			list.add((SurfaceForm) r.clone());
 		}
 		Collections.sort(list);
 		this.repList = list;
@@ -87,7 +87,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 	protected void buildMainGraph() {
 		List<String> disambiguatedEntities = new LinkedList<String>();
 		// Add Vertexes
-		for (CollectiveSFRepresentation rep : repList) {
+		for (SurfaceForm rep : repList) {
 			List<String> arrList = rep.getCandidates();
 			for (String s : arrList) {
 				int occs = featureDefinition.getOccurrences(
@@ -211,7 +211,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		}
 	}
 
-	protected List<CollectiveSFRepresentation> getRepresentation() {
+	protected List<SurfaceForm> getRepresentation() {
 		return this.repList;
 	}
 
@@ -246,7 +246,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		return distribution;
 	}
 
-	protected List<CollectiveSFRepresentation> getCollectiveSFRepresentations() {
+	protected List<SurfaceForm> getCollectiveSFRepresentations() {
 		return this.repList;
 	}
 
