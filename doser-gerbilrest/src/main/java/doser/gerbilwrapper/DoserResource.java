@@ -103,6 +103,7 @@ public class DoserResource extends ServerResource {
 				dpoList.add(dpo);
 			};
 
+			System.out.println(document.getText());
 			req.setSurfaceFormsToDisambiguate(dpoList);
 
 			HttpParams my_httpParams = new BasicHttpParams();

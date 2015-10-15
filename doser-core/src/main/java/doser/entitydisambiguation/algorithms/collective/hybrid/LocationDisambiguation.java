@@ -78,11 +78,22 @@ class LocationDisambiguation {
 			String mainlink = doc.get("Mainlink");
 			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
 					sf.getContext(), mainlink);
-			if (docSim > 1.4) {
+			System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
+			String[] stringlabels = doc.getValues("StringLabel");
+			if (docSim > 1.4 || checkStringLabel(sf.getSurfaceForm(), stringlabels)) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	private boolean checkStringLabel(String sf, String[] strLabels) {
+		for (int i = 0; i < strLabels.length; i++) {
+			if(strLabels[i].equals(sf)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void removeUnusedDocs(Set<Document> set, List<String> candidates) {
@@ -108,7 +119,7 @@ class LocationDisambiguation {
 
 	private Set<Document> queryLuceneLabel(String surfaceForm) {
 		Set<Document> documents = new HashSet<Document>();
-		Query query = new TermQuery(new Term("Label", surfaceForm));
+		Query query = new TermQuery(new Term("Label", surfaceForm.toLowerCase()));
 		final IndexSearcher searcher = eckb.getSearcher();
 		final IndexReader reader = searcher.getIndexReader();
 		try {

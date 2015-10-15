@@ -23,15 +23,17 @@ public class TestLucene {
 			searcher = new IndexSearcher(IndexReader.open(FSDirectory.open(new File("/home/quh/Arbeitsfläche/NewIndexTryout/"))));
 			final IndexReader reader = searcher.getIndexReader();
 			try {
-				Query query = new TermQuery(new Term("Label", "Washington"));
+				Query query = new TermQuery(new Term("Label", "washington"));
 				final TopDocs top = searcher.search(query, 25000);
 				final ScoreDoc[] score = top.scoreDocs;
 				System.out.println(score.length);
 				for (int i = 0; i < score.length; i++) {
-					if(reader.document(score[i].doc).get("Mainlink").equals("http://dbpedia.org/resource/Washington,_D.C.")) {
-	//					System.out.println(reader.document(score[i].doc).get("Mainlink"));
+					System.out.println(reader.document(score[i].doc).get("Mainlink"));
+					String[] arr = reader.document(score[i].doc).getValues("StringLabel");
+					for (int j = 0; j < arr.length; j++) {
+						System.out.println(arr[j]);
 					}
-						System.out.println(reader.document(score[i].doc).get("Mainlink"));
+					break;
 				}
 			} catch (IOException e) {
 				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
