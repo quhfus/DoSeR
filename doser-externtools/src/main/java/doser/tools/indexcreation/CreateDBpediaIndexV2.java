@@ -86,6 +86,8 @@ public class CreateDBpediaIndexV2 {
 	public static final String INSTANCEMAPPINGTYPES_NT = "/mnt/ssd1/disambiguation/HDT/instance_types_en.nt";
 	public static final String SKOSBROADER = "/home/zwicklbauer/HDTGeneration/skos_categories_en.nt";
 
+	public static final String EXTERNSFDIRECTORY = "/home/zwicklbauer/SurfaceForms/";
+
 	private HashMap<String, HashSet<String>> LABELS;
 
 	private HashSet<String> entities;
@@ -175,7 +177,7 @@ public class CreateDBpediaIndexV2 {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			if(reader != null) {
+			if (reader != null) {
 				try {
 					reader.close();
 				} catch (IOException e) {
@@ -779,7 +781,8 @@ public class CreateDBpediaIndexV2 {
 
 				for (String s : labelset) {
 					doc.add(new TextField("Label", s.toLowerCase(), Store.YES));
-					doc.add(new StringField("StringLabel", s.toLowerCase(), Store.YES));
+					doc.add(new StringField("StringLabel", s.toLowerCase(),
+							Store.YES));
 				}
 
 				// Add ShortDescriptions
@@ -822,8 +825,6 @@ public class CreateDBpediaIndexV2 {
 					keys = new HashSet<String>();
 				}
 				if (teams.contains(uri)) {
-					System.out.println("URI : " + uri + "    "
-							+ extractSportsTeamNames(labelset).toString());
 					keys.addAll(extractSportsTeamNames(labelset));
 				}
 				// Füge noch weitere Personennamen hinzu
@@ -901,14 +902,14 @@ public class CreateDBpediaIndexV2 {
 					doc.add(new IntField("DbpediaVertexDegree",
 							DBPEDIAGRAPHINLINKS.get(uri), Field.Store.YES));
 				}
-				
+
 				// Add Evidences
-//				if(evidences.containsKey(uri)) {
-//					Set<String> ev = extractEvidences(evidences.get(uri));
-//					for(String s : ev) {
-//						doc.add(new StringField("Evidence", s, Field.Store.YES));
-//					}
-//				}
+				// if(evidences.containsKey(uri)) {
+				// Set<String> ev = extractEvidences(evidences.get(uri));
+				// for(String s : ev) {
+				// doc.add(new StringField("Evidence", s, Field.Store.YES));
+				// }
+				// }
 
 				// Write Document To Index
 				if (doc.get("Label") != null
@@ -1220,7 +1221,6 @@ public class CreateDBpediaIndexV2 {
 				if (obj.getURI().equalsIgnoreCase(
 						"http://dbpedia.org/ontology/SportsTeam")) {
 					teams.add(subject.getURI());
-					System.out.println(subject.getURI());
 				}
 			}
 		}
@@ -1286,22 +1286,46 @@ public class CreateDBpediaIndexV2 {
 		}
 		return set;
 	}
-	
-    private Set<String> extractEvidences(String evidences) {
-    	Set<String> set = new HashSet<String>();
-    	String splitter[] = evidences.split(";");
-    	for (int i = 0; i < splitter.length; i++) {
-			String evidence = splitter[i].replaceAll("(", "").replaceAll(")", "");
+
+	private Set<String> extractEvidences(String evidences) {
+		Set<String> set = new HashSet<String>();
+		String splitter[] = evidences.split(";");
+		for (int i = 0; i < splitter.length; i++) {
+			String evidence = splitter[i].replaceAll("(", "").replaceAll(")",
+					"");
 			String split2[] = evidence.split(",");
 			set.add(split2[0]);
 		}
-    	return set;
-    }
+		return set;
+	}
+
+	public void addSomeAbbreviations() {
+		for (Map.Entry<String, HashSet<String>> entry : this.UNIQUELABELSTRINGS
+				.entrySet()) {
+			String url = entry.getKey();
+			HashSet<String> occs = entry.getValue();
+			String type = filterStandardDomain(getRDFTypesFromEntity(url));
+			if (type.equals("Location")) {
+				String tempuri = url.replaceAll("http://dbpedia.org/resource/",
+						"").toLowerCase();
+				tempuri = tempuri.replaceAll("_", " ");
+				StringBuilder builder = new StringBuilder();
+				String splitter[] = tempuri.split(" ");
+				if (splitter.length > 1) {
+					for (int i = 0; i < splitter.length; i++) {
+						builder.append(splitter[i].substring(0, 1));
+						builder.append(".");
+					}
+					occs.add(builder.toString());
+				}
+			}
+		}
+	}
 
 	public static void main(String[] args) {
 		CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
 		System.out.println("Step-1: Load Evidences");
-//		index.loadEvidences();
+		// index.loadEvidences();
 		System.out.println("Step0: Create DBpediaPriors");
 		index.createDBpediaPriors();
 		System.out.println("Step1: Read Sportsteams");
@@ -1329,7 +1353,9 @@ public class CreateDBpediaIndexV2 {
 		index.workRedirects();
 		System.out.println("Step12: WebOccurrences");
 		index.insertWebOccurrences();
-		System.out.println("Step13: CreateIndex");
+		System.out.println("Step13: CreateSomeAbbreviations");
+		index.addSomeAbbreviations();
+		System.out.println("Step14: CreateIndex");
 		index.createNewIndex();
 	}
 

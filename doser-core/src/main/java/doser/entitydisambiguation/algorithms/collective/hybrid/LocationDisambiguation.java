@@ -1,10 +1,8 @@
 package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -51,26 +49,70 @@ class LocationDisambiguation {
 		// Dont care if no locations are available
 		if (nonLocations.size() < sfDocuments.size()) {
 			if (isLocation(nonLocations, c)) {
-				c.setDisambiguatedEntity(selectLocationWithSensePrior(
-						sfDocuments, candidates, c.getSurfaceForm()));
+				String s = selectLocationWithSensePrior(sfDocuments,
+						candidates, c.getSurfaceForm(), c.getContext());
+				if (s != null) {
+					c.setDisambiguatedEntity(s);
+				}
 			}
 		}
 	}
 
 	private String selectLocationWithSensePrior(Set<Document> relevantEntities,
-			List<String> allRelevantEntities, String surfaceForm) {
-		Set<String> relString = new HashSet<String>();
+			List<String> allRelevantEntities, String surfaceForm, String context) {
 		for (Document d : relevantEntities) {
 			String type = d.get("Type");
+			String mainlink = d.get("Mainlink");
+			String l = mainlink.toLowerCase().replaceAll(
+					"http://dbpedia.org/resource/", "");
+			String sf = surfaceForm.toLowerCase();
 			System.out.println("RELEVANTE ENTITY: " + d.get("Mainlink"));
 			if (type.equals("Location")) {
-				relString.add(d.get("Mainlink"));
+				if (l.contains(",_")) {
+					String addition = l.split(",_")[1];
+					addition = addition.toLowerCase();
+					addition.replaceAll("_", " ");
+					if (!addition.contains(sf) && searchEvidenceInContext(context, addition, sf)) {
+						System.out.println("EAAAAASSSYYYYYYYYYY: " + mainlink);
+						return mainlink;
+					}
+				} else if (surfaceForm.toLowerCase().equals(l)) {
+					return mainlink;
+				}
 			}
 		}
-		// Integrate other Location Check e.g. Tennessee, Tennessee,_Illinois;
-		// Maybe we have indicators for Tennesse,_Illinois.
-		return sensePriorDisambiguation(new LinkedList<String>(relString),
-				surfaceForm);
+		return null;
+	}
+
+	private boolean searchEvidenceInContext(String context, String word, String sf) {
+		String conl = context.toLowerCase();
+		if(sf.equals(word)) {
+			return false;
+		}
+		String sfAbb = sf.replaceAll("[^\\w]", " ");
+		String[] splitter = word.split(" ");
+		StringBuilder buffer = new StringBuilder();
+		for (int i = 0; i < splitter.length; i++) {
+			buffer.append(splitter[i].substring(0, 1));
+			buffer.append(" ");
+		}
+		if(buffer.toString().equals(sfAbb)) {
+			return false;
+		}
+		if (conl.contains(word)) {
+			System.out.println("Ist direkt im Kontext!");
+			return true;
+		}
+		context = context.toLowerCase().trim().replaceAll(" +", " ");
+		String[] words = context.toLowerCase().split(" ");
+		for (int i = 0; i < words.length; i++) {
+			String w = words[i].replaceAll("[^\\w\\s]", "");
+			if (words[i].equals(w + ".") && (word.startsWith(w) || word.endsWith(w)) && words[i].length() > 3) {
+				System.out.println("Context adaptiert: "+words[i]);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isLocation(Set<Document> nonLocationSet, SurfaceForm sf) {
@@ -78,22 +120,12 @@ class LocationDisambiguation {
 			String mainlink = doc.get("Mainlink");
 			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
 					sf.getContext(), mainlink);
-			System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
-			String[] stringlabels = doc.getValues("StringLabel");
-			if (docSim > 1.4 || checkStringLabel(sf.getSurfaceForm(), stringlabels)) {
+			// System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
+			if (docSim > 1.4) {
 				return false;
 			}
 		}
 		return true;
-	}
-	
-	private boolean checkStringLabel(String sf, String[] strLabels) {
-		for (int i = 0; i < strLabels.length; i++) {
-			if(strLabels[i].equals(sf)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void removeUnusedDocs(Set<Document> set, List<String> candidates) {
@@ -119,7 +151,8 @@ class LocationDisambiguation {
 
 	private Set<Document> queryLuceneLabel(String surfaceForm) {
 		Set<Document> documents = new HashSet<Document>();
-		Query query = new TermQuery(new Term("Label", surfaceForm.toLowerCase()));
+		Query query = new TermQuery(
+				new Term("Label", surfaceForm.toLowerCase()));
 		final IndexSearcher searcher = eckb.getSearcher();
 		final IndexReader reader = searcher.getIndexReader();
 		try {
@@ -133,16 +166,5 @@ class LocationDisambiguation {
 			Logger.getRootLogger().error("Lucene Searcher Error: ", e);
 		}
 		return documents;
-	}
-
-	private String sensePriorDisambiguation(List<String> entities, String sf) {
-		List<Candidate> canList = new LinkedList<Candidate>();
-		for (String str : entities) {
-			canList.add(new Candidate(str, eckb.getFeatureDefinition()
-					.getOccurrences(sf, str)));
-		}
-		Collections.sort(canList, Collections.reverseOrder());
-		System.out.println(canList);
-		return canList.get(0).getCandidate();
 	}
 }

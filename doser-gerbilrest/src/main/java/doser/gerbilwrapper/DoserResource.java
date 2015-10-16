@@ -35,7 +35,7 @@ import com.google.gson.Gson;
 public class DoserResource extends ServerResource {
 
 	public static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategories-collective";
-	public static final int CONTEXTAREA = 1200;
+	public static final int CONTEXTAREA = 300;
 
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(DoserResource.class);
