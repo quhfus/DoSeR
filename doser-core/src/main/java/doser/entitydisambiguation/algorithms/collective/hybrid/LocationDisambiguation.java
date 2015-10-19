@@ -11,10 +11,12 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
@@ -244,8 +246,11 @@ class LocationDisambiguation {
 
 	private Set<Document> queryLuceneLabel(String surfaceForm) {
 		Set<Document> documents = new HashSet<Document>();
-		Query query = new TermQuery(
-				new Term("Label", surfaceForm.toLowerCase()));
+		BooleanQuery query = new BooleanQuery();
+		String[] splitter = surfaceForm.split(" ");
+		for (int i = 0; i < splitter.length; i++) {
+			query.add(new TermQuery(new Term("Label", splitter[i])), Occur.MUST);
+		}
 		final IndexSearcher searcher = eckb.getSearcher();
 		final IndexReader reader = searcher.getIndexReader();
 		try {
