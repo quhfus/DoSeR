@@ -98,7 +98,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					SurfaceForm col = new SurfaceForm(
 							dpo.getSelectedText(), dpo.getContext(), l, i);
 					collectiveRep.add(col);
-
+					
 				} else {
 					ArrayList<String> l = new ArrayList<String>();
 					SurfaceForm col = new SurfaceForm(

@@ -46,16 +46,23 @@ class LocationDisambiguation {
 		Set<Document> sfDocuments = queryLuceneLabel(surfaceForm);
 		removeUnusedDocs(sfDocuments, candidates);
 		Set<Document> nonLocations = checkForLocation(sfDocuments);
-
+		System.out.println("ICH TESTE: "+c.getSurfaceForm());
+		
 		// Dont care if no locations are available
 		if (nonLocations.size() < sfDocuments.size()) {
+			System.out.println("BIN DRINNEN bei: "+c.getSurfaceForm());
 			if (isLocation(nonLocations, c)) {
-				String s = solveLocations(sfDocuments,
-						candidates, c.getSurfaceForm(), c.getContext());
+				System.out.println("ZWEIMAL DRINNEN: "+c.getSurfaceForm());
+				String s = solveLocations(sfDocuments, candidates,
+						c.getSurfaceForm(), c.getContext());
 				if (s != null) {
 					c.setDisambiguatedEntity(s);
 				}
+			} else {
+				System.out.println("Wir werfen weg: "+c.getSurfaceForm() + "Candidates: "+c.getCandidates().size());
 			}
+		} else {
+			System.out.println("MERKWÜRDIG!!! "+ c.getSurfaceForm()+ " "+nonLocations.size() + " "+sfDocuments.size());
 		}
 	}
 
@@ -82,15 +89,19 @@ class LocationDisambiguation {
 							.length();
 					int nrSpacesSurfaceForm = surfaceForm.replaceAll(
 							"[^" + " " + "]", "").length();
-					System.out.println("SPACES: "+first+ " "+nrSpacesFirst+" "+surfaceForm+" "+nrSpacesSurfaceForm);
+					System.out.println("SPACES: " + first + " " + nrSpacesFirst
+							+ " " + surfaceForm + " " + nrSpacesSurfaceForm);
+					
+					
 					if (!addition.equals(surfaceForm)
-							&& !checkAdditionAbb(surfaceForm, addition)
+							&& !checkAdditionAbb(surfaceForm, addition, first)
 							&& nrSpacesFirst == nrSpacesSurfaceForm) {
 						strList.add(mainlink);
 					}
 				} else if (surfaceForm.equals(l_w)
-						|| ((surfaceForm.endsWith(".") && l_w
-								.contains(surfaceForm.replaceAll("\\.", ""))))) {
+						|| (surfaceForm.endsWith(".") && l_w
+								.contains(surfaceForm.replaceAll("\\.", "")))
+						|| checkFirstURLPart(surfaceForm, l_w)) {
 					strList.add(mainlink);
 				}
 			}
@@ -98,13 +109,25 @@ class LocationDisambiguation {
 		return solveFinalCandidates(strList, surfaceForm, context);
 	}
 
+	private boolean checkFirstURLPart(String sf, String urlpart) {
+		if (sf.contains(".")) {
+			sf = sf.replaceAll("\\.", "");
+			String[] splitter = urlpart.split(" ");
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < splitter.length; i++) {
+				builder.append(splitter[i].substring(0, 1));
+			}
+			if (builder.toString().equals(sf)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private String solveFinalCandidates(List<String> candidates, String sf,
 			String context) {
 		String result = null;
-		System.out.print("FINAL CANDIDATES: "+candidates.toString());
-		if (candidates.size() == 1) {
-			result = candidates.get(0);
-		}
+		System.out.print("FINAL CANDIDATES: " + candidates.toString());
 
 		if (result == null) {
 			for (String can : candidates) {
@@ -131,46 +154,61 @@ class LocationDisambiguation {
 				}
 			}
 		}
-		System.out.println(" --->: "+result);
+		System.out.println(" --->: " + result);
 		return result;
 	}
 
-	private String selectLocationWithSensePrior(Set<Document> relevantEntities,
-			List<String> allRelevantEntities, String surfaceForm, String context) {
-		for (Document d : relevantEntities) {
-			String type = d.get("Type");
-			String mainlink = d.get("Mainlink");
-			String l = mainlink.toLowerCase().replaceAll(
-					"http://dbpedia.org/resource/", "");
-			String sf = surfaceForm.toLowerCase();
-			System.out.println("RELEVANTE ENTITY: " + d.get("Mainlink"));
-			if (type.equals("Location")) {
-				if (l.contains(",_")) {
-					String addition = l.split(",_")[1];
-					addition = addition.toLowerCase();
-					addition.replaceAll("_", " ");
-					if (!addition.equals(sf) && !checkAdditionAbb(sf, addition)
-							&& searchEvidenceInContext(context, addition, sf)) {
-						System.out.println("EAAAAASSSYYYYYYYYYY: " + mainlink);
-						return mainlink;
-					}
-				} else if (sf.equals(l.replaceAll("_", " "))
-						|| (sf.endsWith(".") && l.replaceAll("_", " ")
-								.contains(sf.replaceAll("\\.", "")))) {
-					return mainlink;
-				}
-			}
-		}
-		return null;
-	}
+//	private String selectLocationWithSensePrior(Set<Document> relevantEntities,
+//			List<String> allRelevantEntities, String surfaceForm, String context) {
+//		for (Document d : relevantEntities) {
+//			String type = d.get("Type");
+//			String mainlink = d.get("Mainlink");
+//			String l = mainlink.toLowerCase().replaceAll(
+//					"http://dbpedia.org/resource/", "");
+//			String sf = surfaceForm.toLowerCase();
+//			System.out.println("RELEVANTE ENTITY: " + d.get("Mainlink"));
+//			if (type.equals("Location")) {
+//				if (l.contains(",_")) {
+//					String addition = l.split(",_")[1];
+//					addition = addition.toLowerCase();
+//					addition.replaceAll("_", " ");
+//					if (!addition.equals(sf) && !checkAdditionAbb(sf, addition)
+//							&& searchEvidenceInContext(context, addition, sf)) {
+//						System.out.println("EAAAAASSSYYYYYYYYYY: " + mainlink);
+//						return mainlink;
+//					}
+//				} else if (sf.equals(l.replaceAll("_", " "))
+//						|| (sf.endsWith(".") && l.replaceAll("_", " ")
+//								.contains(sf.replaceAll("\\.", "")))) {
+//					return mainlink;
+//				}
+//			}
+//		}
+//		return null;
+//	}
 
-	private boolean checkAdditionAbb(String sf, String addition) {
+	private boolean checkAdditionAbb(String sf, String addition, String first) {
 		if (!sf.endsWith(".")) {
 			return false;
 		}
 		if (sf.endsWith(".") && addition.contains(sf.replaceAll("\\.", ""))) {
 			return true;
 		}
+		if(sf.endsWith(".")) {
+			sf = sf.replaceAll("\\.", "");
+			if(first.contains("sf") && first.length() > 1) {
+				return false;
+			}
+			String[] splitter = first.split(" ");
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < splitter.length; i++) {
+				builder.append(splitter[i].substring(0, 1));
+			}
+			if (!builder.toString().equals(sf)) {
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
@@ -215,6 +253,7 @@ class LocationDisambiguation {
 					sf.getContext(), mainlink);
 			// System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
 			if (docSim > 1.4) {
+				System.out.println("DOC2VEC EXCEED: "+sf);
 				return false;
 			}
 		}
