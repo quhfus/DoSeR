@@ -20,7 +20,7 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	private double difference;
 	private Set<String> nouns;
 
-	SurfaceForm(String surfaceForm, String context, List<String> candidates,
+	public SurfaceForm(String surfaceForm, String context, List<String> candidates,
 			int qryNr) {
 		super();
 		this.ambiguity = candidates.size();

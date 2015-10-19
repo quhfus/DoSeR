@@ -9,10 +9,13 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
@@ -28,6 +31,7 @@ import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
+import doser.lucene.query.TermQuery;
 
 /**
  * Collective Disambiguation Approach by Stefan Zwicklbauer
@@ -203,29 +207,9 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 	private Query createQuery(EntityDisambiguationDPO dpo,
 			EntityCentricKnowledgeBaseDefault kb) {
-		LearnToRankQuery query = new LearnToRankQuery();
-		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
-		DefaultSimilarity defaultSim = new DefaultSimilarity();
+		String sf = dpo.getSelectedText().toLowerCase();
+		TermQuery query = new TermQuery(new Term("UniqueLabel", sf));
 
-		// Feature 1
-		features.add(query.add(LuceneFeatures.queryLabelTerm(
-				dpo.getSelectedText(), "UniqueLabel", defaultSim), "Feature1",
-				true));
-		// Feature 2
-		// features.add(query.add(LuceneFeatures.queryStringTerm(dpo.getContext(),
-		// "Evidence", defaultSim, Occur.SHOULD, 2048), "Feature2", true));
-		//
-		// // Feature 3
-		// features.add(query.add(LuceneFeatures.queryLabelTerm(
-		// dpo.getSelectedText(), "Label", defaultSim), "Feature 3", true));
-
-		// features.add(query.add(
-		// LuceneFeatures.querySensePrior(dpo.getSelectedText(),
-		// kb.getFeatureDefinition()), "Feature2", false));
-
-		features.get(0).setWeight(1f);
-		// features.get(1).setWeight(1f);
-		// features.get(2).setWeight(1f);
 		return query;
 	}
 

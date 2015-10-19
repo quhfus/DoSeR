@@ -13,7 +13,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -48,23 +47,16 @@ class LocationDisambiguation {
 		Set<Document> sfDocuments = queryLuceneLabel(surfaceForm);
 		removeUnusedDocs(sfDocuments, candidates);
 		Set<Document> nonLocations = checkForLocation(sfDocuments);
-		System.out.println("ICH TESTE: "+c.getSurfaceForm());
 		
 		// Dont care if no locations are available
 		if (nonLocations.size() < sfDocuments.size()) {
-			System.out.println("BIN DRINNEN bei: "+c.getSurfaceForm());
 			if (isLocation(nonLocations, c)) {
-				System.out.println("ZWEIMAL DRINNEN: "+c.getSurfaceForm());
 				String s = solveLocations(sfDocuments, candidates,
 						c.getSurfaceForm(), c.getContext());
 				if (s != null) {
 					c.setDisambiguatedEntity(s);
 				}
-			} else {
-				System.out.println("Wir werfen weg: "+c.getSurfaceForm() + "Candidates: "+c.getCandidates().size());
 			}
-		} else {
-			System.out.println("MERKWÜRDIG!!! "+ c.getSurfaceForm()+ " "+nonLocations.size() + " "+sfDocuments.size());
 		}
 	}
 
@@ -160,35 +152,6 @@ class LocationDisambiguation {
 		return result;
 	}
 
-//	private String selectLocationWithSensePrior(Set<Document> relevantEntities,
-//			List<String> allRelevantEntities, String surfaceForm, String context) {
-//		for (Document d : relevantEntities) {
-//			String type = d.get("Type");
-//			String mainlink = d.get("Mainlink");
-//			String l = mainlink.toLowerCase().replaceAll(
-//					"http://dbpedia.org/resource/", "");
-//			String sf = surfaceForm.toLowerCase();
-//			System.out.println("RELEVANTE ENTITY: " + d.get("Mainlink"));
-//			if (type.equals("Location")) {
-//				if (l.contains(",_")) {
-//					String addition = l.split(",_")[1];
-//					addition = addition.toLowerCase();
-//					addition.replaceAll("_", " ");
-//					if (!addition.equals(sf) && !checkAdditionAbb(sf, addition)
-//							&& searchEvidenceInContext(context, addition, sf)) {
-//						System.out.println("EAAAAASSSYYYYYYYYYY: " + mainlink);
-//						return mainlink;
-//					}
-//				} else if (sf.equals(l.replaceAll("_", " "))
-//						|| (sf.endsWith(".") && l.replaceAll("_", " ")
-//								.contains(sf.replaceAll("\\.", "")))) {
-//					return mainlink;
-//				}
-//			}
-//		}
-//		return null;
-//	}
-
 	private boolean checkAdditionAbb(String sf, String addition, String first) {
 		if (!sf.endsWith(".")) {
 			return false;
@@ -255,7 +218,6 @@ class LocationDisambiguation {
 					sf.getContext(), mainlink);
 			// System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
 			if (docSim > 1.4) {
-				System.out.println("DOC2VEC EXCEED: "+sf);
 				return false;
 			}
 		}
@@ -286,7 +248,7 @@ class LocationDisambiguation {
 	private Set<Document> queryLuceneLabel(String surfaceForm) {
 		Set<Document> documents = new HashSet<Document>();
 		BooleanQuery query = new BooleanQuery();
-		String[] splitter = surfaceForm.split(" ");
+		String[] splitter = surfaceForm.toLowerCase().split(" ");
 		for (int i = 0; i < splitter.length; i++) {
 			query.add(new TermQuery(new Term("Label", splitter[i])), Occur.MUST);
 		}
