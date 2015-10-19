@@ -1,6 +1,7 @@
 package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -49,13 +50,89 @@ class LocationDisambiguation {
 		// Dont care if no locations are available
 		if (nonLocations.size() < sfDocuments.size()) {
 			if (isLocation(nonLocations, c)) {
-				String s = selectLocationWithSensePrior(sfDocuments,
+				String s = solveLocations(sfDocuments,
 						candidates, c.getSurfaceForm(), c.getContext());
 				if (s != null) {
 					c.setDisambiguatedEntity(s);
 				}
 			}
 		}
+	}
+
+	private String solveLocations(Set<Document> relevantEntities,
+			List<String> allRelevantEntities, String surfaceForm, String context) {
+		List<String> strList = new ArrayList<String>();
+
+		// Preprocessing
+		surfaceForm = surfaceForm.toLowerCase();
+
+		for (Document d : relevantEntities) {
+			String type = d.get("Type");
+			if (type.equals("Location")) {
+				String mainlink = d.get("Mainlink");
+				String l = mainlink.toLowerCase().replaceAll(
+						"http://dbpedia.org/resource/", "");
+				String l_w = l.replaceAll("_", " ");
+				if (l.contains(",_")) {
+					String splitter[] = l.split(",_");
+					String addition = splitter[1].toLowerCase().replaceAll("_",
+							" ");
+					String first = splitter[0].toLowerCase();
+					int nrSpacesFirst = first.replaceAll("[^" + "_" + "]", "")
+							.length();
+					int nrSpacesSurfaceForm = surfaceForm.replaceAll(
+							"[^" + " " + "]", "").length();
+					System.out.println("SPACES: "+first+ " "+nrSpacesFirst+" "+surfaceForm+" "+nrSpacesSurfaceForm);
+					if (!addition.equals(surfaceForm)
+							&& !checkAdditionAbb(surfaceForm, addition)
+							&& nrSpacesFirst == nrSpacesSurfaceForm) {
+						strList.add(mainlink);
+					}
+				} else if (surfaceForm.equals(l_w)
+						|| ((surfaceForm.endsWith(".") && l_w
+								.contains(surfaceForm.replaceAll("\\.", ""))))) {
+					strList.add(mainlink);
+				}
+			}
+		}
+		return solveFinalCandidates(strList, surfaceForm, context);
+	}
+
+	private String solveFinalCandidates(List<String> candidates, String sf,
+			String context) {
+		String result = null;
+		System.out.print("FINAL CANDIDATES: "+candidates.toString());
+		if (candidates.size() == 1) {
+			result = candidates.get(0);
+		}
+
+		if (result == null) {
+			for (String can : candidates) {
+				String l = can.toLowerCase().replaceAll(
+						"http://dbpedia.org/resource/", "");
+				if (l.contains(",_")) {
+					String splitter[] = l.split(",_");
+					String addition = splitter[1].toLowerCase().replaceAll("_",
+							" ");
+					if (searchEvidenceInContext(context, addition, sf)) {
+						result = can;
+						break;
+					}
+				}
+			}
+		}
+		if (result == null) {
+			for (String can : candidates) {
+				String l = can.toLowerCase().replaceAll(
+						"http://dbpedia.org/resource/", "");
+				if (!l.contains(",_")) {
+					result = can;
+					break;
+				}
+			}
+		}
+		System.out.println(" --->: "+result);
+		return result;
 	}
 
 	private String selectLocationWithSensePrior(Set<Document> relevantEntities,
@@ -72,11 +149,14 @@ class LocationDisambiguation {
 					String addition = l.split(",_")[1];
 					addition = addition.toLowerCase();
 					addition.replaceAll("_", " ");
-					if (!addition.contains(sf) && searchEvidenceInContext(context, addition, sf)) {
+					if (!addition.equals(sf) && !checkAdditionAbb(sf, addition)
+							&& searchEvidenceInContext(context, addition, sf)) {
 						System.out.println("EAAAAASSSYYYYYYYYYY: " + mainlink);
 						return mainlink;
 					}
-				} else if (surfaceForm.toLowerCase().equals(l)) {
+				} else if (sf.equals(l.replaceAll("_", " "))
+						|| (sf.endsWith(".") && l.replaceAll("_", " ")
+								.contains(sf.replaceAll("\\.", "")))) {
 					return mainlink;
 				}
 			}
@@ -84,9 +164,20 @@ class LocationDisambiguation {
 		return null;
 	}
 
-	private boolean searchEvidenceInContext(String context, String word, String sf) {
+	private boolean checkAdditionAbb(String sf, String addition) {
+		if (!sf.endsWith(".")) {
+			return false;
+		}
+		if (sf.endsWith(".") && addition.contains(sf.replaceAll("\\.", ""))) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean searchEvidenceInContext(String context, String word,
+			String sf) {
 		String conl = context.toLowerCase();
-		if(sf.equals(word)) {
+		if (sf.equals(word)) {
 			return false;
 		}
 		String sfAbb = sf.replaceAll("[^\\w]", " ");
@@ -96,7 +187,7 @@ class LocationDisambiguation {
 			buffer.append(splitter[i].substring(0, 1));
 			buffer.append(" ");
 		}
-		if(buffer.toString().equals(sfAbb)) {
+		if (buffer.toString().equals(sfAbb)) {
 			return false;
 		}
 		if (conl.contains(word)) {
@@ -107,8 +198,10 @@ class LocationDisambiguation {
 		String[] words = context.toLowerCase().split(" ");
 		for (int i = 0; i < words.length; i++) {
 			String w = words[i].replaceAll("[^\\w\\s]", "");
-			if (words[i].equals(w + ".") && (word.startsWith(w) || word.endsWith(w)) && words[i].length() > 3) {
-				System.out.println("Context adaptiert: "+words[i]);
+			if (words[i].equals(w + ".")
+					&& (word.startsWith(w) || word.endsWith(w))
+					&& words[i].length() > 3) {
+				System.out.println("Context adaptiert: " + words[i]);
 				return true;
 			}
 		}
