@@ -81,7 +81,7 @@ public class EntityCentricAlgorithmCSTable extends DisambiguationAlgorithm {
 				disList.add(entity);
 				Response response = new Response();
 				response.setSelectedText(dpo.getSelectedText());
-				response.setPosition(dpo.getPosition());
+				response.setStartPosition(dpo.getStartPosition());
 				response.setDisEntities(disList);
 				List<Response> resList = new LinkedList<Response>();
 				resList.add(response);

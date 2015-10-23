@@ -1,6 +1,5 @@
 package doser.gerbilwrapper;
 
-import java.util.List;
 
 /**
  * Represents surfaceform which should be disambiguated. Positions is used as an
@@ -26,9 +25,8 @@ import java.util.List;
 public class EntityDisambiguationDPO {
 
 	private String documentId;
-	private List<Fact> factList;
 	private String context;
-	private List<Position> position;
+	private int startPosition;
 	private String selectedText;
 	private String setting;
 	private String kbversion;
@@ -41,20 +39,12 @@ public class EntityDisambiguationDPO {
 		return this.context;
 	}
 
-	public List<Position> getPosition() {
-		return this.position;
-	}
-
 	public String getSelectedText() {
 		return this.selectedText;
 	}
 
 	public void setContext(final String context) {
 		this.context = context;
-	}
-
-	public void setPosition(final List<Position> position) {
-		this.position = position;
 	}
 
 	public void setSelectedText(final String selectedText) {
@@ -73,16 +63,8 @@ public class EntityDisambiguationDPO {
 		this.documentId = documentId;
 	}
 
-	public void setFactList(final List<Fact> factList) {
-		this.factList = factList;
-	}
-	
 	public String getDocumentId() {
 		return this.documentId;
-	}
-
-	public List<Fact> getFactList() {
-		return this.factList;
 	}
 
 	public void setInternSetting(final String setting) {
@@ -96,4 +78,13 @@ public class EntityDisambiguationDPO {
 	public void setKbversion(String kbversion) {
 		this.kbversion = kbversion;
 	}
+
+	public int getStartPosition() {
+		return startPosition;
+	}
+
+	public void setStartPosition(int startPosition) {
+		this.startPosition = startPosition;
+	}
+
 }

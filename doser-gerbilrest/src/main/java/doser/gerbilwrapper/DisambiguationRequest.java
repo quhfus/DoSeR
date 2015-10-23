@@ -22,16 +22,11 @@ import java.util.List;
  */
 public class DisambiguationRequest {
 	private String documentUri;
-	private List<Fact> facts;
 	private List<EntityDisambiguationDPO> surfaceFormsToDisambiguate;
 	private Integer docsToReturn;
 
 	public String getDocumentUri() {
 		return this.documentUri;
-	}
-
-	public List<Fact> getFacts() {
-		return this.facts;
 	}
 
 	public List<EntityDisambiguationDPO> getSurfaceFormsToDisambiguate() {
@@ -40,10 +35,6 @@ public class DisambiguationRequest {
 
 	public void setDocumentUri(final String documentUri) {
 		this.documentUri = documentUri;
-	}
-
-	public void setFacts(final List<Fact> facts) {
-		this.facts = facts;
 	}
 
 	public void setSurfaceFormsToDisambiguate(

@@ -24,7 +24,6 @@ import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
-import doser.entitydisambiguation.properties.Properties;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LTRBooleanQuery;
 import doser.lucene.query.LearnToRankClause;
@@ -83,14 +82,14 @@ public class EntityCentricAlgorithmTableDefault extends DisambiguationAlgorithm 
 //				}
 			}
 
-			if (Properties.getInstance().getHBaseStorage()) {
-				task.getOutput().storeQuery(dpo.getDocumentId(),
-						dpo.getSelectedText(), dpo.getPosition(),
-						entityMainLinks, dpo.getContext());
-			}
+//			if (Properties.getInstance().getHBaseStorage()) {
+//				task.getOutput().storeQuery(dpo.getDocumentId(),
+//						dpo.getSelectedText(), dpo.getPosition(),
+//						entityMainLinks, dpo.getContext());
+//			}
 			Response response = new Response();
 			response.setSelectedText(dpo.getSelectedText());
-			response.setPosition(dpo.getPosition());
+			response.setStartPosition(dpo.getStartPosition());
 			response.setDisEntities(disList);
 			List<Response> resList = new LinkedList<Response>();
 			resList.add(response);
@@ -130,7 +129,7 @@ public class EntityCentricAlgorithmTableDefault extends DisambiguationAlgorithm 
 			disEntityList.add(disEntity);
 			Response response = new Response();
 			response.setSelectedText(toDis.getSelectedText());
-			response.setPosition(toDis.getPosition());
+			response.setStartPosition(toDis.getStartPosition());
 			response.setDisEntities(disEntityList);
 			List<Response> resList = new LinkedList<Response>();
 			resList.add(response);

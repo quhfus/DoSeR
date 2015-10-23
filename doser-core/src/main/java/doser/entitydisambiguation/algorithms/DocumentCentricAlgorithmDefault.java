@@ -33,7 +33,7 @@ import doser.lucene.query.LearnToRankQuery;
 /**
  * Algorithmus verallgemeinern sodass nicht nur Calbc funktioniert.
  * 
- * Algemein optimieren. Stichwort HashMaps
+ * Allgemein optimieren. Stichwort HashMaps
  * 
  * @author quhfus
  * 
@@ -94,7 +94,7 @@ public class DocumentCentricAlgorithmDefault extends DisambiguationAlgorithm {
 				disEntityList.add(disEntity);
 				Response response = new Response();
 				response.setSelectedText(toDis.getSelectedText());
-				response.setPosition(toDis.getPosition());
+				response.setStartPosition(toDis.getStartPosition());
 				response.setDisEntities(disEntityList);
 				List<Response> resList = new LinkedList<Response>();
 				resList.add(response);
@@ -146,7 +146,7 @@ public class DocumentCentricAlgorithmDefault extends DisambiguationAlgorithm {
 
 			Response response = new Response();
 			response.setSelectedText(dpo.getSelectedText());
-			response.setPosition(dpo.getPosition());
+			response.setStartPosition(dpo.getStartPosition());
 			response.setDisEntities(disList);
 			List<Response> resList = new LinkedList<Response>();
 			resList.add(response);

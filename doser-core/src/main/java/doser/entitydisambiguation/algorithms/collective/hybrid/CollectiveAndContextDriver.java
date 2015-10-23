@@ -4,6 +4,7 @@ import java.util.List;
 
 import doser.entitydisambiguation.algorithms.collective.AlgorithmDriver;
 import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
+import doser.entitydisambiguation.algorithms.collective.rules.RuleAdapation;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
@@ -25,6 +26,8 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 		pruning.prune(rep);
 		LocationDisambiguation locationDis = new LocationDisambiguation(w2v, eckb);
 		locationDis.solve(rep);
+		RuleAdapation rules = new RuleAdapation(eckb);
+		rules.performRuleChainBeforeCandidateSelection(rep);
 //		DisambiguateSimpleCases simpleCases = new DisambiguateSimpleCases(w2v);
 //		simpleCases.solve(rep);
 	}

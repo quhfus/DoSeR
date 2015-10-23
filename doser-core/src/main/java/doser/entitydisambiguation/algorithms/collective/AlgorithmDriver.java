@@ -38,7 +38,7 @@ public abstract class AlgorithmDriver {
 				ent.setText("ToDoText");
 				entList.add(ent);
 				res.setDisEntities(entList);
-				res.setPosition(null);
+				res.setStartPosition(-1);
 				res.setSelectedText(r.getSurfaceForm());
 				currentResponse[i] = res;
 			}

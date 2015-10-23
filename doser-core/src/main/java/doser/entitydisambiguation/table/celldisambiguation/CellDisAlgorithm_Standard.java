@@ -25,7 +25,6 @@ import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.DisambiguationRequest;
 import doser.entitydisambiguation.dpo.DisambiguationResponse;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
-import doser.entitydisambiguation.dpo.Position;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.table.logic.TableCell;
 import doser.entitydisambiguation.table.logic.TableColumn;
@@ -285,8 +284,7 @@ public final class CellDisAlgorithm_Standard implements
 			ent.setContext("");
 			String sfs = cellContent;
 			ent.setSelectedText(sfs);
-			final List<Position> posList = new LinkedList<Position>();
-			ent.setPosition(posList);
+			ent.setStartPosition(-1);
 			lst.add(ent);
 		}
 		disRequest.setSurfaceFormsToDisambiguate(lst);

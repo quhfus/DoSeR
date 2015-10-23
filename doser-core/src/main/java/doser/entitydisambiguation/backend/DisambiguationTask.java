@@ -5,11 +5,8 @@ import java.util.List;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
-import doser.entitydisambiguation.logic.StoreDisambiguationOutput;
 
 public abstract class DisambiguationTask {
-
-	protected StoreDisambiguationOutput output;
 
 	protected int returnNr;
 
@@ -20,14 +17,6 @@ public abstract class DisambiguationTask {
 	protected boolean retrieveDocClasses;
 	
 	protected List<Response> responses;
-	
-	public StoreDisambiguationOutput getOutput() {
-		return output;
-	}
-
-	public void setOutput(StoreDisambiguationOutput output) {
-		this.output = output;
-	}
 
 	public int getReturnNr() {
 		return returnNr;

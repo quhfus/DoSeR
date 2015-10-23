@@ -82,7 +82,7 @@ public class EntityCentricAlgorithmDefault extends DisambiguationAlgorithm {
 			disEntityList.add(disEntity);
 			Response response = new Response();
 			response.setSelectedText(toDis.getSelectedText());
-			response.setPosition(toDis.getPosition());
+			response.setStartPosition(toDis.getStartPosition());
 			response.setDisEntities(disEntityList);
 			List<Response> resList = new LinkedList<Response>();
 			resList.add(response);
@@ -119,15 +119,15 @@ public class EntityCentricAlgorithmDefault extends DisambiguationAlgorithm {
 				disList.add(entity);
 			}
 
-			if (Properties.getInstance().getHBaseStorage()) {
-
-				task.getOutput().storeQuery(dpo.getDocumentId(),
-						dpo.getSelectedText(), dpo.getPosition(),
-						entityMainLinks, dpo.getContext());
-			}
+//			if (Properties.getInstance().getHBaseStorage()) {
+//
+//				task.getOutput().storeQuery(dpo.getDocumentId(),
+//						dpo.getSelectedText(), dpo.getStartPosition(),
+//						entityMainLinks, dpo.getContext());
+//			}
 			Response response = new Response();
 			response.setSelectedText(dpo.getSelectedText());
-			response.setPosition(dpo.getPosition());
+			response.setStartPosition(dpo.getStartPosition());
 			response.setDisEntities(disList);
 			List<Response> resList = new LinkedList<Response>();
 			resList.add(response);

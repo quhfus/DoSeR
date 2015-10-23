@@ -35,7 +35,8 @@ import com.google.gson.Gson;
 public class DoserResource extends ServerResource {
 
 	public static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategories-collective";
-	public static final int CONTEXTAREA = 200;
+	// We take the entire context
+	//	public static final int CONTEXTAREA = 200;
 
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(DoserResource.class);
@@ -96,10 +97,12 @@ public class DoserResource extends ServerResource {
 				System.out.println("------------------------------------------------------------------------------------");
 				EntityDisambiguationDPO dpo = new EntityDisambiguationDPO();
 				dpo.setDocumentId(document.getDocumentURI());
-				String context = extractContext(span.getStartPosition(),
-						document.getText());
+				String context = document.getText();
+		//				extractContext(span.getStartPosition(),
+		//				document.getText());
 				dpo.setContext(context);
 				dpo.setSelectedText(sf);
+				dpo.setStartPosition(span.getStartPosition());
 				dpoList.add(dpo);
 			};
 
@@ -190,5 +193,4 @@ public class DoserResource extends ServerResource {
 		}
 		return result;
 	}
-
 }

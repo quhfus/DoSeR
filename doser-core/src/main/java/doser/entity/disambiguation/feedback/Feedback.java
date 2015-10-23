@@ -1,11 +1,5 @@
 package doser.entity.disambiguation.feedback;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-import doser.entitydisambiguation.dpo.Position;
-import doser.entitydisambiguation.feedback.dpo.FeedbackItem;
 import doser.entitydisambiguation.feedback.dpo.RequestFeedbackProxy;
 
 /**
@@ -110,21 +104,21 @@ public class Feedback {
 		return response;
 	}
 
-	private static int createQueryHash(final String docId, final String text,
-			final List<Position> posList) {
-
-		final StringBuffer buffer = new StringBuffer();
-		if (posList != null) {
-			for (final Position position2 : posList) {
-				final Position position = position2;
-				buffer.append(position.toString());
-			}
-		}
-
-		final String uniqueQuery = new StringBuffer().append(docId)
-				.append(text.toLowerCase(Locale.US)).append(buffer.toString())
-				.toString();
-		return uniqueQuery.hashCode();
-	}
+//	private static int createQueryHash(final String docId, final String text,
+//			final List<Position> posList) {
+//
+//		final StringBuffer buffer = new StringBuffer();
+//		if (posList != null) {
+//			for (final Position position2 : posList) {
+//				final Position position = position2;
+//				buffer.append(position.toString());
+//			}
+//		}
+//
+//		final String uniqueQuery = new StringBuffer().append(docId)
+//				.append(text.toLowerCase(Locale.US)).append(buffer.toString())
+//				.toString();
+//		return uniqueQuery.hashCode();
+//	}
 
 }

@@ -1,8 +1,5 @@
 package doser.entitydisambiguation.feedback.dpo;
 
-import java.util.List;
-
-import doser.entitydisambiguation.dpo.Position;
 
 /**
  * Class representing the user feedback for a disambiguated entity. The type of
@@ -17,16 +14,12 @@ import doser.entitydisambiguation.dpo.Position;
  */
 public class FeedbackItem {
 	private String entityUri;
-	private List<Position> position;
+	private int startPosition;
 	private String selectedText;
 	private int typeOfFeedback;
 
 	public String getEntityUri() {
 		return this.entityUri;
-	}
-
-	public List<Position> getPosition() {
-		return this.position;
 	}
 
 	public String getSelectedText() {
@@ -41,15 +34,19 @@ public class FeedbackItem {
 		this.entityUri = entityUri;
 	}
 
-	public void setPosition(final List<Position> position) {
-		this.position = position;
-	}
-
 	public void setSelectedText(final String selectedText) {
 		this.selectedText = selectedText;
 	}
 
 	public void setTypeOfFeedback(final int typeOfFeedback) {
 		this.typeOfFeedback = typeOfFeedback;
+	}
+
+	public int getStartPosition() {
+		return startPosition;
+	}
+
+	public void setStartPosition(int startPosition) {
+		this.startPosition = startPosition;
 	}
 }

@@ -17,21 +17,16 @@ import java.util.List;
 public class Response {
 
 	private List<DisambiguatedEntity> disEntities;
-	private List<Position> position;
+	private int startPosition;
 	private String selectedText;
 
 	public Response() {
 		super();
 		this.disEntities = new LinkedList<DisambiguatedEntity>();
-		this.position = new LinkedList<Position>();
 	}
 
 	public List<DisambiguatedEntity> getDisEntities() {
 		return this.disEntities;
-	}
-
-	public List<Position> getPosition() {
-		return this.position;
 	}
 
 	public String getSelectedText() {
@@ -40,10 +35,6 @@ public class Response {
 
 	public void setDisEntities(final List<DisambiguatedEntity> disEntities) {
 		this.disEntities = disEntities;
-	}
-
-	public void setPosition(final List<Position> position) {
-		this.position = position;
 	}
 
 	public void setSelectedText(final String selectedText) {

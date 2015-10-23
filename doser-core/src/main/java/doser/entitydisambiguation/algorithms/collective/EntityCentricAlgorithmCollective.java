@@ -10,17 +10,13 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.collective.hybrid.CollectiveAndContextDriver;
-import doser.entitydisambiguation.algorithms.collective.rules.RuleAdapation;
 import doser.entitydisambiguation.backend.DisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskCollective;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
@@ -28,9 +24,6 @@ import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
-import doser.lucene.features.LuceneFeatures;
-import doser.lucene.query.LearnToRankClause;
-import doser.lucene.query.LearnToRankQuery;
 import doser.lucene.query.TermQuery;
 
 /**
@@ -116,8 +109,6 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 			}
 		}
 
-		RuleAdapation rules = new RuleAdapation(eckb);
-		rules.performRuleChainBeforeCandidateSelection(collectiveRep);
 //		AlgorithmDriver solver = new CollectiveOnlyDriver(
 //				responseArray, collectiveRep, eckb);
 		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb);
@@ -143,7 +134,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 				ent.setText("ToDoText");
 				entList.add(ent);
 				res.setDisEntities(entList);
-				res.setPosition(null);
+				res.setStartPosition(-1);
 				res.setSelectedText(r.getSurfaceForm());
 				responseArray[i] = res;
 			}
