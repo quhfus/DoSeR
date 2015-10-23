@@ -175,22 +175,4 @@ public class DoserResource extends ServerResource {
 		String nifDocument = creator.getDocumentAsNIFString(document);
 		return nifDocument;
 	}
-
-	private String extractContext(int position, String text) {
-		long startArea = position - CONTEXTAREA;
-		long endArea = position + CONTEXTAREA;
-		if (startArea < 0) {
-			startArea = 0;
-		}
-		if (endArea > text.length() - 1) {
-			endArea = text.length() - 1;
-		}
-		String tempText = text.substring((int) startArea, (int) endArea);
-		String[] splitter = tempText.split(" ");
-		String result = "";
-		for (int i = 1; i < splitter.length - 1; i++) {
-			result += splitter[i] + " ";
-		}
-		return result;
-	}
 }

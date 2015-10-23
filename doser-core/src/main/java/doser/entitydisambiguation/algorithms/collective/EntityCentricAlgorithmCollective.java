@@ -81,8 +81,8 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					final Document doc = reader.document(score[0].doc);
 					ArrayList<String> l = new ArrayList<String>();
 					l.add(doc.get("Mainlink"));
-					SurfaceForm col = new SurfaceForm(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
+							dpo.getContext(), l, i, dpo.getStartPosition());
 					collectiveRep.add(col);
 					System.out.println("Save Disambiguation: "
 							+ doc.get("Mainlink"));
@@ -92,14 +92,14 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 						final Document doc = reader.document(score[j].doc);
 						l.add(doc.get("Mainlink"));
 					}
-					SurfaceForm col = new SurfaceForm(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
+							dpo.getContext(), l, i, dpo.getStartPosition());
 					collectiveRep.add(col);
-					
+
 				} else {
 					ArrayList<String> l = new ArrayList<String>();
-					SurfaceForm col = new SurfaceForm(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
+							dpo.getContext(), l, i, dpo.getStartPosition());
 					collectiveRep.add(col);
 				}
 
@@ -109,9 +109,10 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 			}
 		}
 
-//		AlgorithmDriver solver = new CollectiveOnlyDriver(
-//				responseArray, collectiveRep, eckb);
-		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb);
+		// AlgorithmDriver solver = new CollectiveOnlyDriver(
+		// responseArray, collectiveRep, eckb);
+		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray,
+				collectiveRep, eckb);
 		solver.solve();
 
 		solver.generateResult();
@@ -121,8 +122,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		eckb.release();
 	}
 
-	public void generateResult(Response[] responseArray,
-			List<SurfaceForm> cols) {
+	public void generateResult(Response[] responseArray, List<SurfaceForm> cols) {
 		for (int i = 0; i < responseArray.length; i++) {
 			SurfaceForm r = search(i, cols);
 			if (responseArray[i] == null && r != null
@@ -141,8 +141,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		}
 	}
 
-	private SurfaceForm search(int qryNr,
-			List<SurfaceForm> rep) {
+	private SurfaceForm search(int qryNr, List<SurfaceForm> rep) {
 		for (SurfaceForm r : rep) {
 			if (r.getQueryNr() == qryNr) {
 				return r;
@@ -151,19 +150,19 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		return null;
 	}
 
-//	protected void sensePriorDisambiguation(CollectiveSFRepresentation col) {
-//		if (col.getCandidates().size() > 1) {
-//			List<String> s = col.getCandidates();
-//			List<Candidate> canList = new LinkedList<Candidate>();
-//			for (String str : s) {
-//				canList.add(new Candidate(str, eckb.getFeatureDefinition()
-//						.getOccurrences(col.getSurfaceForm(), str)));
-//			}
-//
-//			Collections.sort(canList, Collections.reverseOrder());
-//			col.setDisambiguatedEntity(canList.get(0).getCandidate());
-//		}
-//	}
+	// protected void sensePriorDisambiguation(CollectiveSFRepresentation col) {
+	// if (col.getCandidates().size() > 1) {
+	// List<String> s = col.getCandidates();
+	// List<Candidate> canList = new LinkedList<Candidate>();
+	// for (String str : s) {
+	// canList.add(new Candidate(str, eckb.getFeatureDefinition()
+	// .getOccurrences(col.getSurfaceForm(), str)));
+	// }
+	//
+	// Collections.sort(canList, Collections.reverseOrder());
+	// col.setDisambiguatedEntity(canList.get(0).getCandidate());
+	// }
+	// }
 
 	protected class Candidate implements Comparable<Candidate> {
 

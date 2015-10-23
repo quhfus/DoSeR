@@ -24,60 +24,39 @@ import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
 import doser.lucene.query.LearnToRankTermQuery;
 
-
-
-
 public class TestLucene {
-
+	//
 	public static void main(String[] args) {
-		
+
 		IndexSearcher searcher;
 		try {
-			searcher = new IndexSearcher(IndexReader.open(FSDirectory.open(new File("/home/quh/Arbeitsfläche/NewIndexTryout/"))));
+			searcher = new IndexSearcher(IndexReader.open(FSDirectory
+					.open(new File("/home/quh/Arbeitsfläche/NewIndexTryout/"))));
 			final IndexReader reader = searcher.getIndexReader();
 			LearnToRankQuery query = new LearnToRankQuery();
 			List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
-			final LearnToRankTermQuery q = new LearnToRankTermQuery(new Term("UniqueLabel",
-					"birmingham"), new DefaultSimilarity());
+			final LearnToRankTermQuery q = new LearnToRankTermQuery(new Term(
+					"Mainlink", "http://dbpedia.org/resource/North_Carolina"), new DefaultSimilarity());
 
 			query.add(q, "Feature1", true);
 			try {
+				long time = System.currentTimeMillis();
 				final TopDocs top = searcher.search(query, 3000);
 				final ScoreDoc[] score = top.scoreDocs;
-				if (score.length == 1) {
-					final Document doc = reader.document(score[0].doc);
-					ArrayList<String> l = new ArrayList<String>();
-					l.add(doc.get("Mainlink"));
-					SurfaceForm col = new SurfaceForm(
-							"BIRMINGHAM", "", l, 0);
-				
-					System.out.println("Save Disambiguation: "
-							+ doc.get("Mainlink"));
-				} else if (score.length > 1) {
-					ArrayList<String> l = new ArrayList<String>();
-					for (int j = 0; j < score.length; j++) {
-						final Document doc = reader.document(score[j].doc);
-						l.add(doc.get("Mainlink"));
-					}
-					SurfaceForm col = new SurfaceForm(
-							"BIRMINGHAM", "", l, 0);
+				for (int i = 0; i < score.length; i++) {
 
+						System.out.println(reader.document(score[i].doc).get(
+								"Mainlink"));
 					
-				} else {
-					ArrayList<String> l = new ArrayList<String>();
-					SurfaceForm col = new SurfaceForm(
-							"BIRMINGHAM", "", l, 0);
-
 				}
-
+				System.out.println(System.currentTimeMillis() - time);
 			} catch (final IOException e) {
 				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
 				e.printStackTrace();
 			}
-		} catch(IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-		
 
 }

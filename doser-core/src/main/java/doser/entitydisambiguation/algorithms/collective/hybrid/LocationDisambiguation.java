@@ -17,12 +17,14 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 
+import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.query.TermQuery;
 
 class LocationDisambiguation {
-
+//	private static final float DOC2VECTHRESHOLD = 1.35f;
+	private static final float DOC2VECTHRESHOLD = 1.35f;
 	private EntityCentricKnowledgeBaseDefault eckb;
 	private Word2Vec w2v;
 
@@ -42,17 +44,21 @@ class LocationDisambiguation {
 	}
 
 	private void disambiguate(SurfaceForm c) {
+		String context = DisambiguationAlgorithm.extractContext(
+				c.getPosition(), c.getContext(),
+				CollectiveAndContextDriver.PREPROCESSINGCONTEXTSIZE);
+
 		List<String> candidates = c.getCandidates();
 		String surfaceForm = c.getSurfaceForm();
-		Set<Document> sfDocuments = queryLuceneLabel(surfaceForm);
+		Set<Document> sfDocuments = queryLuceneLabel(surfaceForm, candidates);
 		removeUnusedDocs(sfDocuments, candidates);
 		Set<Document> nonLocations = checkForLocation(sfDocuments);
-		
+
 		// Dont care if no locations are available
 		if (nonLocations.size() < sfDocuments.size()) {
 			if (isLocation(nonLocations, c)) {
 				String s = solveLocations(sfDocuments, candidates,
-						c.getSurfaceForm(), c.getContext());
+						c.getSurfaceForm(), context);
 				if (s != null) {
 					c.setDisambiguatedEntity(s);
 				}
@@ -63,7 +69,6 @@ class LocationDisambiguation {
 	private String solveLocations(Set<Document> relevantEntities,
 			List<String> allRelevantEntities, String surfaceForm, String context) {
 		List<String> strList = new ArrayList<String>();
-
 		// Preprocessing
 		surfaceForm = surfaceForm.toLowerCase();
 
@@ -85,8 +90,7 @@ class LocationDisambiguation {
 							"[^" + " " + "]", "").length();
 					System.out.println("SPACES: " + first + " " + nrSpacesFirst
 							+ " " + surfaceForm + " " + nrSpacesSurfaceForm);
-					
-					
+
 					if (!addition.equals(surfaceForm)
 							&& !checkAdditionAbb(surfaceForm, addition, first)
 							&& nrSpacesFirst == nrSpacesSurfaceForm) {
@@ -121,7 +125,6 @@ class LocationDisambiguation {
 	private String solveFinalCandidates(List<String> candidates, String sf,
 			String context) {
 		String result = null;
-		System.out.print("FINAL CANDIDATES: " + candidates.toString());
 
 		if (result == null) {
 			for (String can : candidates) {
@@ -159,9 +162,9 @@ class LocationDisambiguation {
 		if (sf.endsWith(".") && addition.contains(sf.replaceAll("\\.", ""))) {
 			return true;
 		}
-		if(sf.endsWith(".")) {
+		if (sf.endsWith(".")) {
 			sf = sf.replaceAll("\\.", "");
-			if(first.contains("sf") && first.length() > 1) {
+			if (first.contains("sf") && first.length() > 1) {
 				return false;
 			}
 			String[] splitter = first.split(" ");
@@ -173,7 +176,7 @@ class LocationDisambiguation {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -216,8 +219,8 @@ class LocationDisambiguation {
 			String mainlink = doc.get("Mainlink");
 			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
 					sf.getContext(), mainlink);
-			// System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
-			if (docSim > 1.4) {
+			System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
+			if (docSim > DOC2VECTHRESHOLD) {
 				return false;
 			}
 		}
@@ -245,7 +248,8 @@ class LocationDisambiguation {
 		return nonLocations;
 	}
 
-	private Set<Document> queryLuceneLabel(String surfaceForm) {
+	private Set<Document> queryLuceneLabel(String surfaceForm,
+			List<String> candidates) {
 		Set<Document> documents = new HashSet<Document>();
 		BooleanQuery query = new BooleanQuery();
 		String[] splitter = surfaceForm.toLowerCase().split(" ");
@@ -264,6 +268,17 @@ class LocationDisambiguation {
 		} catch (IOException e) {
 			Logger.getRootLogger().error("Lucene Searcher Error: ", e);
 		}
+
 		return documents;
 	}
+
+	// private int countChar(String s, char search) {
+	// int tmp = 0;
+	// for (int i = 0; i < s.length(); i++) {
+	// if (s.charAt(i) == search) {
+	// tmp++;
+	// }
+	// }
+	// return tmp;
+	// }
 }

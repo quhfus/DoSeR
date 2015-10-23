@@ -13,7 +13,7 @@ import doser.general.HelpfulMethods;
 
 public class CandidatePruning {
 
-	private static int ENTITYTHRESHOLD = 10;
+	private static final int ENTITYTHRESHOLD = 10;
 
 	private Word2Vec w2v;
 
@@ -28,7 +28,6 @@ public class CandidatePruning {
 	void prune(List<SurfaceForm> rep) {
 		for (SurfaceForm c : rep) {
 			List<String> candidates = c.getCandidates();
-
 			if (candidates.size() > ENTITYTHRESHOLD) {
 				Set<String> prunedCandidates = new HashSet<String>();
 
@@ -43,16 +42,15 @@ public class CandidatePruning {
 						.sortByValue(map);
 				for (int i = 0; i < ENTITYTHRESHOLD; ++i) {
 					prunedCandidates.add(l.get(i).getKey());
-					//System.out.println("SensePrior ADd: "+l.get(i).getKey()+"  "+l.get(i).getValue());
+					// System.out.println("SensePrior ADd: "+l.get(i).getKey()+"  "+l.get(i).getValue());
 				}
 
 				// Doc2Vec ContextSimilarity
 				Map<String, Float> map_doc2vec = new HashMap<String, Float>();
 				for (String candidate : candidates) {
-					map_doc2vec.put(
-							candidate,
-							w2v.getDoc2VecSimilarity(c.getSurfaceForm(),
-									c.getContext(), candidate));
+
+					map_doc2vec.put(candidate, w2v.getDoc2VecSimilarity(
+							c.getSurfaceForm(), c.getContext(), candidate));
 				}
 				@SuppressWarnings("deprecation")
 				List<Map.Entry<String, Float>> l_doc2vec = HelpfulMethods

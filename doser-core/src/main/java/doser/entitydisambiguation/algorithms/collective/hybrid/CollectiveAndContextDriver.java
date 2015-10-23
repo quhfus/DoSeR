@@ -10,13 +10,14 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefau
 
 public class CollectiveAndContextDriver extends AlgorithmDriver {
 
+	static final int PREPROCESSINGCONTEXTSIZE = 200;
+
 	private Word2Vec w2v;
-	
-	public CollectiveAndContextDriver(Response[] res,
-			List<SurfaceForm> rep,
+
+	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep,
 			EntityCentricKnowledgeBaseDefault eckb) {
 		super(res, rep, eckb);
-		this.w2v = new Word2Vec(rep);
+		this.w2v = new Word2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 	}
 
 	@Override
@@ -24,11 +25,13 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 		// First candidate pruning
 		CandidatePruning pruning = new CandidatePruning(w2v, eckb);
 		pruning.prune(rep);
-		LocationDisambiguation locationDis = new LocationDisambiguation(w2v, eckb);
+		LocationDisambiguation locationDis = new LocationDisambiguation(w2v,
+				eckb);
 		locationDis.solve(rep);
 		RuleAdapation rules = new RuleAdapation(eckb);
 		rules.performRuleChainBeforeCandidateSelection(rep);
-//		DisambiguateSimpleCases simpleCases = new DisambiguateSimpleCases(w2v);
-//		simpleCases.solve(rep);
+		// DisambiguateSimpleCases simpleCases = new
+		// DisambiguateSimpleCases(w2v);
+		// simpleCases.solve(rep);
 	}
 }
