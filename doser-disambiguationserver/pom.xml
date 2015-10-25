@@ -45,9 +45,9 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<path>/standalone</path>
+							<path>/doser</path>
 							<enableNaming>false</enableNaming>
-							<finalName>standalone.jar</finalName>
+							<finalName>eexcess_doser.jar</finalName>
 							<charset>utf-8</charset>
 						</configuration>
 					</execution>

@@ -22,6 +22,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import doser.nlp.NLPTools;
 import doser.tools.indexcreation.WikiPediaUriConverter;
 
 public class CreateD2VCorpus_Wikipedia {
@@ -88,13 +89,19 @@ public class CreateD2VCorpus_Wikipedia {
 						xmlReader.parse(inputSource);
 						builder.append(handler.getDocumentText());
 						String wikitext = builder.toString();
-						wikitext = wikitext.toLowerCase();
+						wikitext = NLPTools.getInstance()
+								.performLemmatizationAndStopWordRemoval(
+										wikitext);
 						wikitext = wikitext.replaceAll("\\.", " ");
 						wikitext = wikitext.replaceAll("\\,", " ");
 						wikitext = wikitext.replaceAll("\\!", " ");
 						wikitext = wikitext.replaceAll("\\?", " ");
 						wikitext = wikitext.replaceAll(" +", " ");
-						if (!wikitext.equalsIgnoreCase("") && !finalLink.equalsIgnoreCase("") && !finalLink.equalsIgnoreCase(" ") && !finalLink.equalsIgnoreCase("http://dbpedia.org/resource/")) {
+						if (!wikitext.equalsIgnoreCase("")
+								&& !finalLink.equalsIgnoreCase("")
+								&& !finalLink.equalsIgnoreCase(" ")
+								&& !finalLink
+										.equalsIgnoreCase("http://dbpedia.org/resource/")) {
 							writer.println(finalLink + " " + wikitext);
 						}
 					} catch (SAXException e) {
