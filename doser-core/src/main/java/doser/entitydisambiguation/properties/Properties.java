@@ -1,5 +1,8 @@
 package doser.entitydisambiguation.properties;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
@@ -23,7 +26,9 @@ public final class Properties {
 
 	private Properties() {
 		try {
-			this.config = new PropertiesConfiguration(RESOURCE_NAME);
+//			this.config = new PropertiesConfiguration(RESOURCE_NAME);
+			System.out.println("JUHUUUUUUUU");
+			this.config = new PropertiesConfiguration(new File("./main.properties"));
 		} catch (final ConfigurationException e) {
 			Logger.getRootLogger().error("Failed to load properties file: "	+ RESOURCE_NAME, e);
 		}

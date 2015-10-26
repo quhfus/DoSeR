@@ -163,22 +163,22 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 				
 				
 				
-				
-					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
-					for (final String element : splitter) {
-						final String[] value = element.split(TRIMOCCOCC);
-						int check = 1;
-						try {
-							check = Integer.valueOf(value[1]);
-						} catch (final NumberFormatException e) {
-							Logger.getRootLogger().error(
-									"Warning NumberFormatException while Initialization: "
-											+ val);
-						}
-						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
-								check);
-					}
-					indexsensePriorHashMapBlanc.put(entity, hash);
+//				
+//					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
+//					for (final String element : splitter) {
+//						final String[] value = element.split(TRIMOCCOCC);
+//						int check = 1;
+//						try {
+//							check = Integer.valueOf(value[1]);
+//						} catch (final NumberFormatException e) {
+//							Logger.getRootLogger().error(
+//									"Warning NumberFormatException while Initialization: "
+//											+ val);
+//						}
+//						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
+//								check);
+//					}
+//					indexsensePriorHashMapBlanc.put(entity, hash);
 
 					
 					

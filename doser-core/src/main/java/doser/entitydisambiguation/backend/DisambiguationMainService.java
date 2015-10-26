@@ -68,10 +68,10 @@ public final class DisambiguationMainService {
 		super();
 		this.knowledgebases = new EnumMap<KnowledgeBaseIdentifiers, KnowledgeBase>(
 				KnowledgeBaseIdentifiers.class);
-		this.knowledgebases.put(KnowledgeBaseIdentifiers.Standard,
-				new EntityCentricKnowledgeBaseDefault(Properties.getInstance()
-						.getEntityCentricKBWikipedia(), false,
-						new DefaultSimilarity()));
+//		this.knowledgebases.put(KnowledgeBaseIdentifiers.Standard,
+//				new EntityCentricKnowledgeBaseDefault(Properties.getInstance()
+//						.getEntityCentricKBWikipedia(), false,
+//						new DefaultSimilarity()));
 		// this.knowledgebases.put(KnowledgeBaseIdentifiers.CSTable,
 		// new EnCenKBCStable(Properties.getInstance().getCSTableIndex(),
 		// false, new DefaultSimilarity()));
@@ -160,16 +160,16 @@ public final class DisambiguationMainService {
 		}
 
 		// Load OpenNLP Model
-		ParserModel model = null;
-		try {
-			model = new ParserModel(new FileInputStream(new File(Properties
-					.getInstance().getNounPhraseModel())));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (model != null) {
-			this.openNLP_parser = ParserFactory.create(model);
-		}
+//		ParserModel model = null;
+//		try {
+//			model = new ParserModel(new FileInputStream(new File(Properties
+//					.getInstance().getNounPhraseModel())));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		if (model != null) {
+//			this.openNLP_parser = ParserFactory.create(model);
+//		}
 	}
 
 	public synchronized static DisambiguationMainService getInstance() {
