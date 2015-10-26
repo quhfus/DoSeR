@@ -1,7 +1,5 @@
 package doser.entitydisambiguation.backend;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -14,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
@@ -24,13 +21,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.DisambiguationHandler;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 import doser.entitydisambiguation.properties.Properties;
 import opennlp.tools.parser.Parser;
-import opennlp.tools.parser.ParserFactory;
-import opennlp.tools.parser.ParserModel;
 
 public final class DisambiguationMainService {
 
@@ -119,14 +113,14 @@ public final class DisambiguationMainService {
 		try {
 			final HDT hdt = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBPediaArticleCategories(), null);
-			final HDT hdt1 = HDTManager.mapIndexedHDT(Properties.getInstance()
-					.getYagoTransitiveTypes(), null);
-			final HDT hdt2 = HDTManager.mapIndexedHDT(Properties.getInstance()
-					.getYagoTaxonomy(), null);
+//			final HDT hdt1 = HDTManager.mapIndexedHDT(Properties.getInstance()
+//					.getYagoTransitiveTypes(), null);
+//			final HDT hdt2 = HDTManager.mapIndexedHDT(Properties.getInstance()
+//					.getYagoTaxonomy(), null);
 			final HDT hdt3 = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBPediaCategoryLabels(), null);
-			final HDT hdt4 = HDTManager.mapIndexedHDT(Properties.getInstance()
-					.getYagoCategoryLabels(), null);
+//			final HDT hdt4 = HDTManager.mapIndexedHDT(Properties.getInstance()
+//					.getYagoCategoryLabels(), null);
 			final HDT hdt5 = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBPediaLabels(), null);
 			final HDT hdt6 = HDTManager.mapIndexedHDT(Properties.getInstance()
@@ -136,19 +130,19 @@ public final class DisambiguationMainService {
 			final HDT hdt8 = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBpediaInstanceTypes(), null);
 			final HDTGraph graph = new HDTGraph(hdt);
-			final HDTGraph graph1 = new HDTGraph(hdt1);
-			final HDTGraph graph2 = new HDTGraph(hdt2);
+//			final HDTGraph graph1 = new HDTGraph(hdt1);
+//			final HDTGraph graph2 = new HDTGraph(hdt2);
 			final HDTGraph graph3 = new HDTGraph(hdt3);
-			final HDTGraph graph4 = new HDTGraph(hdt4);
+//			final HDTGraph graph4 = new HDTGraph(hdt4);
 			final HDTGraph graph5 = new HDTGraph(hdt5);
 			final HDTGraph graph6 = new HDTGraph(hdt6);
 			final HDTGraph graph7 = new HDTGraph(hdt7);
 			final HDTGraph graph8 = new HDTGraph(hdt8);
 			this.hdtdbpediaCats = ModelFactory.createModelForGraph(graph);
-			this.hdtyagoTransTypes = ModelFactory.createModelForGraph(graph1);
-			this.hdtyagoTaxonomy = ModelFactory.createModelForGraph(graph2);
+//			this.hdtyagoTransTypes = ModelFactory.createModelForGraph(graph1);
+//			this.hdtyagoTaxonomy = ModelFactory.createModelForGraph(graph2);
 			this.hdtdbpediaCatsL = ModelFactory.createModelForGraph(graph3);
-			this.hdtYagoCatsLab = ModelFactory.createModelForGraph(graph4);
+//			this.hdtYagoCatsLab = ModelFactory.createModelForGraph(graph4);
 			this.hdtdbpediaLabels = ModelFactory.createModelForGraph(graph5);
 			this.hdtdbpediaDesc = ModelFactory.createModelForGraph(graph6);
 			this.hdtdbpediaSkosCategories = ModelFactory
