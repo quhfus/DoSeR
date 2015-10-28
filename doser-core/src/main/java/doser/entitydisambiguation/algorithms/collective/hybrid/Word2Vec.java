@@ -14,6 +14,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
+import doser.nlp.NLPTools;
 import doser.word2vec.Data;
 import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
@@ -91,6 +92,7 @@ public class Word2Vec {
 			String context = DisambiguationAlgorithm.extractContext(
 					sf.getPosition(), sf.getContext(), this.contextSize);
 
+//			context = NLPTools.getInstance().performLemmatizationAndStopWordRemoval(context);
 			context = context.toLowerCase();
 			context = context.replaceAll("[\\.\\,\\!\\? ]+", " ");
 

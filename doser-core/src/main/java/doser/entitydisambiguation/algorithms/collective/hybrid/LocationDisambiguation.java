@@ -24,7 +24,7 @@ import doser.lucene.query.TermQuery;
 
 class LocationDisambiguation {
 //	private static final float DOC2VECTHRESHOLD = 1.35f;
-	private static final float DOC2VECTHRESHOLD = 1.35f;
+	private static final float DOC2VECTHRESHOLD = 1.37f;
 	private EntityCentricKnowledgeBaseDefault eckb;
 	private Word2Vec w2v;
 

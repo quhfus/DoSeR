@@ -10,7 +10,7 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefau
 
 public class CollectiveAndContextDriver extends AlgorithmDriver {
 
-	static final int PREPROCESSINGCONTEXTSIZE = 200;
+	static final int PREPROCESSINGCONTEXTSIZE = 350;
 
 	private Word2Vec w2v;
 
@@ -30,8 +30,7 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 		locationDis.solve(rep);
 		RuleAdapation rules = new RuleAdapation(eckb);
 		rules.performRuleChainBeforeCandidateSelection(rep);
-		// DisambiguateSimpleCases simpleCases = new
-		// DisambiguateSimpleCases(w2v);
-		// simpleCases.solve(rep);
+		FinalSolving finalSolve = new FinalSolving(rep, eckb);
+		finalSolve.solve();
 	}
 }

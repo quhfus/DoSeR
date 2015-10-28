@@ -1,13 +1,7 @@
 package doser.entitydisambiguation.algorithms.collective;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import doser.entitydisambiguation.backend.DisambiguationMainService;
-import opennlp.tools.cmdline.parser.ParserTool;
-import opennlp.tools.parser.Parse;
 
 public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 
@@ -19,7 +13,6 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	private boolean isACandidate;
 	private double difference;
 	private int position;
-	private Set<String> nouns;
 
 	public SurfaceForm(String surfaceForm, String context, List<String> candidates,
 			int qryNr, int position) {
@@ -32,26 +25,6 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		this.isACandidate = true;
 		this.difference = 0;
 		this.position = position;
-//		this.nouns = extractNounsOfContext(context);
-	}
-
-	private Set<String> extractNounsOfContext(String context) {
-		Parse topParses[] = ParserTool.parseLine(context,
-				DisambiguationMainService.getInstance().getOpenNLP_parser(), 1);
-		Set<String> nouns = new HashSet<String>();
-		for (Parse p : topParses) {
-			getNounPhrases(p, nouns);
-		}
-		return nouns;
-	}
-
-	private void getNounPhrases(Parse p, Set<String> set) {
-		if (p.getType().equals("NN") || p.getType().equals("NNP")) {
-			set.add(p.getCoveredText());
-		}
-		for (Parse child : p.getChildren()) {
-			getNounPhrases(child, set);
-		}
 	}
 
 	public void setCandidates(List<String> candidates) {

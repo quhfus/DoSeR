@@ -85,7 +85,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 							dpo.getContext(), l, i, dpo.getStartPosition());
 					collectiveRep.add(col);
 					System.out.println("Save Disambiguation: "
-							+ doc.get("Mainlink"));
+							+ doc.get("Mainlink") + "    "+dpo.getSelectedText());
 				} else if (score.length > 1) {
 					ArrayList<String> l = new ArrayList<String>();
 					for (int j = 0; j < score.length; j++) {

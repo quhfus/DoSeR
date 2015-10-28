@@ -34,7 +34,7 @@ public class Word2Vec {
 		super();
 		this.repList = rep;
 		this.computeWord2VecSimilarities(rep);
-		this.computeLocalContextCompatibility(rep);
+//		this.computeLocalContextCompatibility(rep);
 	}
 
 	protected float getWord2VecSimilarity(String source, String target) {

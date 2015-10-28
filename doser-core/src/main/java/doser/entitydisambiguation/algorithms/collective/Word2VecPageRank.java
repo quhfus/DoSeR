@@ -120,12 +120,12 @@ public abstract class Word2VecPageRank extends Word2Vec {
 								l2.get(0));
 						// Add Doc2Vec Local Compatibility
 						// First experiment: Harmonic mean
-						double localComp = super.getDoc2VecSimilarity(
-								v2.getText(), v2.getContext(), l2.get(0));
-						double hm = 2 * (localComp * weight)
-								/ (localComp + weight);
+//						double localComp = super.getDoc2VecSimilarity(
+//								v2.getText(), v2.getContext(), l2.get(0));
+//						double hm = 2 * (localComp * weight)
+//								/ (localComp + weight);
 //						System.out.println(l1.get(0) + " "+l2.get(0) +"  Connection: "+ weight+ " Localcomp: "+ localComp + "HarmonicMean: "+ hm);
-						addEdge(v1, v2, edgeFactory.create(), hm);
+						addEdge(v1, v2, edgeFactory.create(), weight);
 					} else if (l1.size() > 1 && l2.size() == 1) {
 						// double weight = super.getWord2VecSimilarity(l1,
 						// l2.get(0));
@@ -211,7 +211,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		}
 	}
 
-	protected List<SurfaceForm> getRepresentation() {
+	public List<SurfaceForm> getRepresentation() {
 		return this.repList;
 	}
 

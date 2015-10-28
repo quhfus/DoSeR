@@ -1,7 +1,5 @@
 package doser.entitydisambiguation.backend;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -28,9 +26,6 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefau
 import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 import doser.entitydisambiguation.properties.Properties;
-import opennlp.tools.parser.Parser;
-import opennlp.tools.parser.ParserFactory;
-import opennlp.tools.parser.ParserModel;
 
 public final class DisambiguationMainService {
 
@@ -49,8 +44,6 @@ public final class DisambiguationMainService {
 	private Model hdtYagoCatsLab;
 	private Model hdtyagoTaxonomy;
 	private Model hdtyagoTransTypes;
-
-	private Parser openNLP_parser;
 
 	private Map<KnowledgeBaseIdentifiers, KnowledgeBase> knowledgebases;
 
@@ -158,18 +151,6 @@ public final class DisambiguationMainService {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-
-		// Load OpenNLP Model
-		ParserModel model = null;
-		try {
-			model = new ParserModel(new FileInputStream(new File(Properties
-					.getInstance().getNounPhraseModel())));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (model != null) {
-			this.openNLP_parser = ParserFactory.create(model);
-		}
 	}
 
 	public synchronized static DisambiguationMainService getInstance() {
@@ -230,11 +211,6 @@ public final class DisambiguationMainService {
 	public Model getYagoTransitiveTypes() {
 		return this.hdtyagoTransTypes;
 	}
-
-	public Parser getOpenNLP_parser() {
-		return openNLP_parser;
-	}
-
 
 
 	/**
