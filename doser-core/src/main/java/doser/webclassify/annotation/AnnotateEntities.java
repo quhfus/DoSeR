@@ -57,11 +57,13 @@ public class AnnotateEntities {
 		EntitySignificanceAlgorithm_Doc2Vec sig = new EntitySignificanceAlgorithm_Doc2Vec();
 		String topicEntityString = sig.process(map, p);
 		DisambiguatedEntity topicEntity = null;
-		if(!topicEntityString.equalsIgnoreCase("")) {
+		if (!topicEntityString.equalsIgnoreCase("")) {
 			topicEntity = new DisambiguatedEntity();
 			topicEntity.setEntityUri(topicEntityString);
-			List<String> labels = RDFGraphOperations.getDbPediaLabel(topicEntity
-					.getEntityUri());
+			topicEntity.setType(filterStandardDomain(RDFGraphOperations
+					.getRDFTypesFromEntity(topicEntityString)));
+			List<String> labels = RDFGraphOperations
+					.getDbPediaLabel(topicEntity.getEntityUri());
 			if (labels.size() > 0) {
 				topicEntity.setText(labels.get(0));
 			}
@@ -89,6 +91,17 @@ public class AnnotateEntities {
 							e.setText(labels.get(0));
 						}
 						if (map.containsKey(e)) {
+
+							// BugFix Issue: Only offset of the first entity is
+							// stored, if an entity occurs multiple times in a
+							// paragraph
+							Set<DisambiguatedEntity> keySet = map.keySet();
+							for (DisambiguatedEntity ent : keySet) {
+								if (ent.equals(e)) {
+									ent.addOffset(Integer.parseInt(offset));
+									break;
+								}
+							}
 							Integer amount = map.get(e);
 							map.put(e, ++amount);
 						} else {

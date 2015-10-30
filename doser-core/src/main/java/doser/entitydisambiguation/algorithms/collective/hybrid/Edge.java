@@ -1,4 +1,5 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.entitydisambiguation.algorithms.collective.hybrid;
+
 
 public class Edge {
 	

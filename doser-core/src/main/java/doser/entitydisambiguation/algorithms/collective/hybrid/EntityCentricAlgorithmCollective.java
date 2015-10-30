@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
-import doser.entitydisambiguation.algorithms.collective.hybrid.CollectiveAndContextDriver;
 import doser.entitydisambiguation.backend.DisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskCollective;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;

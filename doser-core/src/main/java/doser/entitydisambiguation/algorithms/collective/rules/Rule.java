@@ -2,7 +2,7 @@ package doser.entitydisambiguation.algorithms.collective.rules;
 
 import java.util.List;
 
-import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
+import doser.entitydisambiguation.algorithms.collective.hybrid.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 
 public abstract class Rule {

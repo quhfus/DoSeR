@@ -18,7 +18,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
-import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.query.TermQuery;
 
@@ -26,9 +25,9 @@ class LocationDisambiguation {
 //	private static final float DOC2VECTHRESHOLD = 1.35f;
 	private static final float DOC2VECTHRESHOLD = 1.37f;
 	private EntityCentricKnowledgeBaseDefault eckb;
-	private Word2Vec w2v;
+	private Doc2Vec w2v;
 
-	public LocationDisambiguation(Word2Vec w2v,
+	public LocationDisambiguation(Doc2Vec w2v,
 			EntityCentricKnowledgeBaseDefault eckb) {
 		super();
 		this.eckb = eckb;
@@ -88,8 +87,6 @@ class LocationDisambiguation {
 							.length();
 					int nrSpacesSurfaceForm = surfaceForm.replaceAll(
 							"[^" + " " + "]", "").length();
-					System.out.println("SPACES: " + first + " " + nrSpacesFirst
-							+ " " + surfaceForm + " " + nrSpacesSurfaceForm);
 
 					if (!addition.equals(surfaceForm)
 							&& !checkAdditionAbb(surfaceForm, addition, first)
@@ -151,7 +148,6 @@ class LocationDisambiguation {
 				}
 			}
 		}
-		System.out.println(" --->: " + result);
 		return result;
 	}
 
@@ -197,7 +193,6 @@ class LocationDisambiguation {
 			return false;
 		}
 		if (conl.contains(word)) {
-			System.out.println("Ist direkt im Kontext!");
 			return true;
 		}
 		context = context.toLowerCase().trim().replaceAll(" +", " ");
@@ -219,7 +214,6 @@ class LocationDisambiguation {
 			String mainlink = doc.get("Mainlink");
 			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
 					sf.getContext(), mainlink);
-			System.out.println("Doc2Vec : "+mainlink+" Value: "+docSim);
 			if (docSim > DOC2VECTHRESHOLD) {
 				return false;
 			}
@@ -271,14 +265,4 @@ class LocationDisambiguation {
 
 		return documents;
 	}
-
-	// private int countChar(String s, char search) {
-	// int tmp = 0;
-	// for (int i = 0; i < s.length(); i++) {
-	// if (s.charAt(i) == search) {
-	// tmp++;
-	// }
-	// }
-	// return tmp;
-	// }
 }

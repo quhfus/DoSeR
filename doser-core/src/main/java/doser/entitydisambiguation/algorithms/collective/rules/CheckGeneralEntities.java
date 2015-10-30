@@ -11,7 +11,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
+import doser.entitydisambiguation.algorithms.collective.hybrid.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.query.TermQuery;
 

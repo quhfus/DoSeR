@@ -1,8 +1,9 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import doser.entitydisambiguation.algorithms.collective.hybrid.SurfaceForm;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;

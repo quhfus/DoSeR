@@ -7,19 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.general.HelpfulMethods;
 
 public class CandidatePruning {
 
-	private static final int ENTITYTHRESHOLD = 10;
+	private static final int ENTITYTHRESHOLD = 6;
 
-	private Word2Vec w2v;
+	private Doc2Vec w2v;
 
 	private EntityCentricKnowledgeBaseDefault eckb;
 
-	CandidatePruning(Word2Vec w2v, EntityCentricKnowledgeBaseDefault eckb) {
+	CandidatePruning(Doc2Vec w2v, EntityCentricKnowledgeBaseDefault eckb) {
 		super();
 		this.w2v = w2v;
 		this.eckb = eckb;

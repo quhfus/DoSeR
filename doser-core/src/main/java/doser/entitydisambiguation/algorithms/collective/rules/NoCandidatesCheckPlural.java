@@ -12,7 +12,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
-import doser.entitydisambiguation.algorithms.collective.SurfaceForm;
+import doser.entitydisambiguation.algorithms.collective.hybrid.SurfaceForm;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;

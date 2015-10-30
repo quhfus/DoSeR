@@ -1,10 +1,11 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
-public abstract class Word2VecPageRank extends Word2Vec {
+public abstract class Word2VecPageRank {
 
 	protected EnCenExtFeatures featureDefinition;
 
@@ -33,10 +34,16 @@ public abstract class Word2VecPageRank extends Word2Vec {
 
 	protected List<SurfaceForm> allCandidates;
 
+	protected List<SurfaceForm> repList;
+
+	private Word2Vec w2v;
+
 	public Word2VecPageRank(EnCenExtFeatures featureDefinition,
-			List<SurfaceForm> rep) {
-		super(rep);
+			List<SurfaceForm> rep, Word2Vec w2v) {
+		super();
 		this.featureDefinition = featureDefinition;
+		this.w2v = w2v;
+		this.repList = rep;
 		setup(rep);
 		buildMainGraph();
 	}
@@ -110,32 +117,45 @@ public abstract class Word2VecPageRank extends Word2Vec {
 
 		// Add Edges
 		List<Vertex> vertexList = new ArrayList<Vertex>(graph.getVertices());
+
+		// Create Word2Vec Queries
+		Set<String> w2vFormatStrings = new HashSet<String>();
 		for (Vertex v1 : vertexList) {
 			for (Vertex v2 : vertexList) {
 				if (!v1.equals(v2) && !areCandidatesofSameSF(v1, v2)) {
 					List<String> l1 = v1.getUris();
 					List<String> l2 = v2.getUris();
 					if (l1.size() == 1 && l2.size() == 1) {
-						double weight = super.getWord2VecSimilarity(l1.get(0),
-								l2.get(0));
+						String format = this.w2v.generateWord2VecFormatString(
+								l1.get(0), l2.get(0));
+						w2vFormatStrings.add(format);
+					}
+				}
+			}
+		}
+		Map<String, Float> similarityMap = this.w2v
+				.getWord2VecSimilarities(w2vFormatStrings);
+
+		for (Vertex v1 : vertexList) {
+			for (Vertex v2 : vertexList) {
+				if (!v1.equals(v2) && !areCandidatesofSameSF(v1, v2)) {
+					List<String> l1 = v1.getUris();
+					List<String> l2 = v2.getUris();
+					if (l1.size() == 1 && l2.size() == 1) {
+						double weight = similarityMap.get(this.w2v.generateWord2VecFormatString(l1.get(0), l2.get(0)));
+						if(weight < 0.00000001) {
+							System.out.println(weight + " "+l1.get(0) + "   "+l2.get(0));
+						}
 						// Add Doc2Vec Local Compatibility
 						// First experiment: Harmonic mean
-//						double localComp = super.getDoc2VecSimilarity(
-//								v2.getText(), v2.getContext(), l2.get(0));
-//						double hm = 2 * (localComp * weight)
-//								/ (localComp + weight);
-//						System.out.println(l1.get(0) + " "+l2.get(0) +"  Connection: "+ weight+ " Localcomp: "+ localComp + "HarmonicMean: "+ hm);
+						// double localComp = super.getDoc2VecSimilarity(
+						// v2.getText(), v2.getContext(), l2.get(0));
+						// double hm = 2 * (localComp * weight)
+						// / (localComp + weight);
+						// System.out.println(l1.get(0) + " "+l2.get(0)
+						// +"  Connection: "+ weight+ " Localcomp: "+ localComp
+						// + "HarmonicMean: "+ hm);
 						addEdge(v1, v2, edgeFactory.create(), weight);
-					} else if (l1.size() > 1 && l2.size() == 1) {
-						// double weight = super.getWord2VecSimilarity(l1,
-						// l2.get(0));
-						// // System.out.println("WEIGHT: "+weight);
-						// addEdge(v1, v2, edgeFactory.create(), weight);
-					} else if (l1.size() == 1 && l2.size() > 2) {
-						// double weight = super.getWord2VecSimilarity(l2,
-						// l1.get(0));
-						// // System.out.println("WEIGHT: "+weight);
-						// addEdge(v1, v2, edgeFactory.create(), weight);
 					}
 				}
 			}
@@ -146,7 +166,9 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		for (Vertex v : vertexes) {
 			Set<Edge> edges = v.getOutgoingEdges();
 			for (Edge e : edges) {
-//				System.out.println("From: " + v.getUris().get(0) + " To: "+e.getTarget().getUris().get(0)+ " Probability: "+e.getProbability());
+				// System.out.println("From: " + v.getUris().get(0) +
+				// " To: "+e.getTarget().getUris().get(0)+
+				// " Probability: "+e.getProbability());
 				edgeWeights.put(e, e.getProbability());
 			}
 		}

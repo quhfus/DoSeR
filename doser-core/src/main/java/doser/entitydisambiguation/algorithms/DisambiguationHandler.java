@@ -1,6 +1,6 @@
 package doser.entitydisambiguation.algorithms;
 
-import doser.entitydisambiguation.algorithms.collective.EntityCentricAlgorithmCollective;
+import doser.entitydisambiguation.algorithms.collective.hybrid.EntityCentricAlgorithmCollective;
 import doser.entitydisambiguation.backend.DisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;

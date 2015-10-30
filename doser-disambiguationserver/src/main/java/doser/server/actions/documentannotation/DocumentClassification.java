@@ -82,18 +82,6 @@ public class DocumentClassification {
 		return statistic;
 	}
 
-//	@RequestMapping(value = "/entityDistributionOverDocument", method = RequestMethod.POST)
-//	public @ResponseBody DocumentStatistic<DisambiguatedEntity, Integer> createEntityStatisticOverDocument(
-//			@RequestBody final Document request) {
-//		DocumentStatistic<DisambiguatedEntity, Integer> statistic = new DocumentStatistic<DisambiguatedEntity, Integer>();
-//		Set<Paragraph> set = new HashSet<Paragraph>(request.getParagraphs());
-//		List<Map.Entry<DisambiguatedEntity, Integer>> l = entityAnnotation
-//				.createEntityDistributionDocument(set,
-//						request.getInternLanguage());
-//		statistic.setDocumentStatistic(l);
-//		return statistic;
-//	}
-
 	@RequestMapping(value = "/extractRelevantEntitiesPerParagraph", method = RequestMethod.POST)
 	public @ResponseBody DocumentStatistic<DisambiguatedEntity, Integer> extractSignificantEntities(
 			@RequestBody final Document request) {

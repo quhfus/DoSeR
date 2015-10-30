@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective;
+package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.util.ArrayList;
 import java.util.HashSet;
