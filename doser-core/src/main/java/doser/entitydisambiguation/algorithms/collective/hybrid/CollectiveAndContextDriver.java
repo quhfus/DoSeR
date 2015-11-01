@@ -33,7 +33,7 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 //		CandidateElimination elimination = new CandidateElimination(rep, eckb, w2v);
 //	    rep = elimination.solve();
 		
-		SimpleWord2VecDisambiguator simple = new SimpleWord2VecDisambiguator(
+		Word2VecDisambiguator simple = new Word2VecDisambiguator(
 				eckb.getFeatureDefinition(), rep, w2v);
 		simple.solve();
 	}

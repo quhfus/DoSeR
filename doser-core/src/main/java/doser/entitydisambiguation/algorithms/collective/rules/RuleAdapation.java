@@ -18,6 +18,7 @@ public class RuleAdapation {
 		this.beforerules.add(new NoCandidatesCheckPlural(eckb));
 		this.beforerules.add(new NoCandidatesExpansionRules(eckb));
 		this.beforerules.add(new UnambiguousToAmbiguousRule(eckb));
+		this.beforerules.add(new PatternRule(eckb));
 	}
 
 	public void performRuleChainBeforeCandidateSelection(List<SurfaceForm> rep) {

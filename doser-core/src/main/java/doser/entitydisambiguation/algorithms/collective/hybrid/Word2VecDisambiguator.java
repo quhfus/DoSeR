@@ -16,9 +16,9 @@ import doser.lucene.features.EnCenExtFeatures;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
-public class SimpleWord2VecDisambiguator extends Word2VecPageRank {
+public class Word2VecDisambiguator extends Word2VecPageRank {
 
-	public SimpleWord2VecDisambiguator(EnCenExtFeatures featureDefinition,
+	public Word2VecDisambiguator(EnCenExtFeatures featureDefinition,
 			List<SurfaceForm> rep, Word2Vec w2v) {
 		super(featureDefinition, rep, w2v);
 	}
@@ -47,8 +47,8 @@ public class SimpleWord2VecDisambiguator extends Word2VecPageRank {
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
-				getRootPrior(graph.getVertices()), 0.08);
-		pr.setMaxIterations(100);
+				getRootPrior(graph.getVertices()), 0.09);
+		pr.setMaxIterations(160);
 		pr.evaluate();
 		return pr;
 	}
@@ -69,8 +69,8 @@ public class SimpleWord2VecDisambiguator extends Word2VecPageRank {
 						scores.add(pr.getVertexScore(v));
 						double score = Math.abs(pr.getVertexScore(v));
 						stats.addValue(score);
-						System.out.println("Score für: " + v.getUris() + "  "
-								+ score);
+//						System.out.println("Score für: " + v.getUris() + "  "
+//								+ score);
 						if (score > maxScore) {
 							tempSolution = v.getUris().get(0);
 							maxScore = score;
@@ -82,13 +82,13 @@ public class SimpleWord2VecDisambiguator extends Word2VecPageRank {
 				if (!Double.isInfinite(maxScore)) {
 					double avg = stats.getMean();
 					double threshold = computeThreshold(avg, maxScore);
-					System.out.println(secondMax + "    " + threshold);
+//					System.out.println(secondMax + "    " + threshold);
 					if (secondMax < threshold) {
 						updateGraph(rep.getCandidates(), tempSolution,
 								rep.getQueryNr());
 						rep.setDisambiguatedEntity(tempSolution);
-						System.out.println("Ich setze die Lösung: "
-								+ tempSolution);
+//						System.out.println("Ich setze die Lösung: "
+//								+ tempSolution);
 						disambiguatedSurfaceForms.set(i);
 						disambiguationStop = false;
 						break;
