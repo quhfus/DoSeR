@@ -48,7 +48,7 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
 				getRootPrior(graph.getVertices()), 0.09);
-		pr.setMaxIterations(160);
+		pr.setMaxIterations(250);
 		pr.evaluate();
 		return pr;
 	}
