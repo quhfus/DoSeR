@@ -3,8 +3,10 @@ package doser.entitydisambiguation.algorithms.collective.hybrid;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -18,13 +20,18 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
 public class Word2VecDisambiguator extends Word2VecPageRank {
 
+	private static final int MAXIMUMCANDIDATESPERSF = 8;
+
+	public List<SurfaceForm> origList;
+
 	public Word2VecDisambiguator(EnCenExtFeatures featureDefinition,
 			List<SurfaceForm> rep, Word2Vec w2v) {
 		super(featureDefinition, rep, w2v);
+		this.origList = new ArrayList<SurfaceForm>();
 	}
 
 	@Override
-	public void setup(List<SurfaceForm> rep) {
+	public void setup() {
 		this.graph = new DirectedSparseMultigraph<Vertex, Edge>();
 		this.edgeWeights = new HashMap<Edge, Number>();
 		this.edgeFactory = new Factory<Integer>() {
@@ -35,12 +42,18 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 			}
 		};
 
+		for (SurfaceForm sf : repList) {
+			SurfaceForm clone = (SurfaceForm) sf.clone();
+			this.origList.add(clone);
+		}
+
 		this.disambiguatedSurfaceForms = new BitSet(repList.size());
 		for (int i = 0; i < repList.size(); i++) {
 			if (repList.get(i).getCandidates().size() <= 1) {
 				this.disambiguatedSurfaceForms.set(i);
 			}
 		}
+		buildMainGraph();
 	}
 
 	@Override
@@ -63,35 +76,46 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 				double maxScore = 0;
 				SummaryStatistics stats = new SummaryStatistics();
 				String tempSolution = "";
-				Collection<Double> scores = new ArrayList<Double>();
+				List<Candidate> scores = new ArrayList<Candidate>();
 				for (Vertex v : vertexCol) {
 					if (v.getEntityQuery() == qryNr && v.isCandidate()) {
-						scores.add(pr.getVertexScore(v));
+						scores.add(new Candidate(v.getUris().get(0), pr
+								.getVertexScore(v)));
 						double score = Math.abs(pr.getVertexScore(v));
 						stats.addValue(score);
-//						System.out.println("Score für: " + v.getUris() + "  "
-//								+ score);
 						if (score > maxScore) {
 							tempSolution = v.getUris().get(0);
 							maxScore = score;
 						}
 					}
 				}
-				double secondMax = computeSecondMaxScore(scores);
 				SurfaceForm rep = repList.get(i);
+				SurfaceForm clone = origList.get(i);
+				Collections.sort(scores, Collections.reverseOrder());
+				double secondMax = scores.get(1).score;
+				
+				List<String> newCandidates = new ArrayList<String>();
+				for(int j = 0; j < MAXIMUMCANDIDATESPERSF; j++) {
+					if(scores.size() > j) {
+						newCandidates.add(scores.get(j).can);
+					} else {
+						break;
+					}
+				}
+
 				if (!Double.isInfinite(maxScore)) {
 					double avg = stats.getMean();
 					double threshold = computeThreshold(avg, maxScore);
-//					System.out.println(secondMax + "    " + threshold);
 					if (secondMax < threshold) {
 						updateGraph(rep.getCandidates(), tempSolution,
 								rep.getQueryNr());
 						rep.setDisambiguatedEntity(tempSolution);
-//						System.out.println("Ich setze die Lösung: "
-//								+ tempSolution);
+						clone.setDisambiguatedEntity(tempSolution);
 						disambiguatedSurfaceForms.set(i);
 						disambiguationStop = false;
 						break;
+					} else {
+						clone.setCandidates(newCandidates);
 					}
 				}
 			}
@@ -112,22 +136,30 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 		return highest - min;
 	}
 
-	private double computeSecondMaxScore(Collection<Double> col) {
-		PriorityQueue<Double> topN = new PriorityQueue<Double>(2,
-				new Comparator<Double>() {
-					@Override
-					public int compare(Double d1, Double d2) {
-						return Double.compare(d1, d2);
-					}
-				});
-		for (Double d : col) {
-			if (topN.size() < 2) {
-				topN.add(d);
-			} else if (topN.peek() < d) {
-				topN.poll();
-				topN.add(d);
+	@Override
+	public List<SurfaceForm> getRepresentation() {
+		return this.origList;
+	}
+
+	class Candidate implements Comparable<Candidate> {
+		private double score;
+		private String can;
+
+		Candidate(String can, double score) {
+			super();
+			this.score = score;
+			this.can = can;
+		}
+
+		@Override
+		public int compareTo(Candidate o) {
+			if (score < o.score) {
+				return -1;
+			} else if (score > o.score) {
+				return 1;
+			} else {
+				return 0;
 			}
 		}
-		return topN.peek();
 	}
 }

@@ -36,7 +36,7 @@ public abstract class Word2VecPageRank {
 
 	protected List<SurfaceForm> repList;
 
-	private Word2Vec w2v;
+	protected Word2Vec w2v;
 
 	public Word2VecPageRank(EnCenExtFeatures featureDefinition,
 			List<SurfaceForm> rep, Word2Vec w2v) {
@@ -44,8 +44,6 @@ public abstract class Word2VecPageRank {
 		this.featureDefinition = featureDefinition;
 		this.w2v = w2v;
 		this.repList = rep;
-		setup(rep);
-		buildMainGraph();
 	}
 
 	public void solve() {
@@ -66,7 +64,7 @@ public abstract class Word2VecPageRank {
 		return pr;
 	}
 
-	public void setup(List<SurfaceForm> rep) {
+	public void setup() {
 		this.graph = new DirectedSparseMultigraph<Vertex, Edge>();
 		this.edgeWeights = new HashMap<Edge, Number>();
 		this.edgeFactory = new Factory<Integer>() {
@@ -78,7 +76,7 @@ public abstract class Word2VecPageRank {
 		};
 
 		List<SurfaceForm> list = new LinkedList<SurfaceForm>();
-		for (SurfaceForm r : rep) {
+		for (SurfaceForm r : this.repList) {
 			list.add((SurfaceForm) r.clone());
 		}
 		Collections.sort(list);
@@ -89,6 +87,7 @@ public abstract class Word2VecPageRank {
 				this.disambiguatedSurfaceForms.set(i);
 			}
 		}
+		buildMainGraph();
 	}
 
 	protected void buildMainGraph() {
@@ -302,7 +301,7 @@ public abstract class Word2VecPageRank {
 		}
 	}
 
-	private boolean areCandidatesofSameSF(Vertex v1, Vertex v2) {
+	protected boolean areCandidatesofSameSF(Vertex v1, Vertex v2) {
 		int qryNr1 = v1.getEntityQuery();
 		int qryNr2 = v2.getEntityQuery();
 		if (qryNr1 == -1 || qryNr2 == -1

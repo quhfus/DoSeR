@@ -10,31 +10,39 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 
 	static final int PREPROCESSINGCONTEXTSIZE = 200;
 
-	private Doc2Vec w2v;
+	private Doc2Vec d2v;
 
 	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep,
 			EntityCentricKnowledgeBaseDefault eckb) {
 		super(res, rep, eckb);
-		this.w2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
+		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 	}
 
 	@Override
 	public void solve() {
 		// First candidate pruning
-		CandidatePruning pruning = new CandidatePruning(w2v, eckb);
+		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
 		pruning.prune(rep);
-		LocationDisambiguation locationDis = new LocationDisambiguation(w2v,
+		LocationDisambiguation locationDis = new LocationDisambiguation(d2v,
 				eckb);
 		locationDis.solve(rep);
 		RuleAdapation rules = new RuleAdapation(eckb);
 		rules.performRuleChainBeforeCandidateSelection(rep);
-		
+
 		Word2Vec w2v = new Word2Vec();
-//		CandidateElimination elimination = new CandidateElimination(rep, eckb, w2v);
-//	    rep = elimination.solve();
-		
+
 		Word2VecDisambiguator simple = new Word2VecDisambiguator(
 				eckb.getFeatureDefinition(), rep, w2v);
+		simple.setup();
 		simple.solve();
+//		simple = new Word2VecDisambiguator(
+//				eckb.getFeatureDefinition(), rep, w2v);
+//		simple.setup();
+//		simple.solve();
+		rep = simple.getRepresentation();
+		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(
+				eckb.getFeatureDefinition(), rep, w2v);
+		finalDis.setup();
+		finalDis.solve();
 	}
 }

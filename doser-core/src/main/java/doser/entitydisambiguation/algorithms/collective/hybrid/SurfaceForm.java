@@ -67,6 +67,10 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	public void clearList() {
 		candidates.clear();
 	}
+	
+	public void addCandidate(String can) {
+		candidates.add(can);
+	}
 
 	public double getDifference() {
 		return difference;
@@ -83,6 +87,7 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	public void setPosition(int position) {
 		this.position = position;
 	}
+
 
 	@Override
 	public int compareTo(SurfaceForm o) {
