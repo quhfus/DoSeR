@@ -25,6 +25,8 @@ import doser.general.HelpfulMethods;
 import doser.language.Languages;
 import doser.tools.RDFGraphOperations;
 import doser.tools.ServiceQueries;
+import doser.webclassify.algorithm.EntityRelevanceAlgorithm;
+import doser.webclassify.algorithm.EntitySignificanceAlgorithmPR_W2V;
 import doser.webclassify.algorithm.EntitySignificanceAlgorithm_Doc2Vec;
 import doser.webclassify.dpo.Paragraph;
 
@@ -54,14 +56,16 @@ public class AnnotateEntities {
 
 	public DisambiguatedEntity extractTopicEntity(
 			Map<DisambiguatedEntity, Integer> map, Paragraph p) {
-		EntitySignificanceAlgorithm_Doc2Vec sig = new EntitySignificanceAlgorithm_Doc2Vec();
+		EntityRelevanceAlgorithm sig = new EntitySignificanceAlgorithm_Doc2Vec();
 		String topicEntityString = sig.process(map, p);
 		DisambiguatedEntity topicEntity = null;
 		if (!topicEntityString.equalsIgnoreCase("")) {
 			topicEntity = new DisambiguatedEntity();
 			topicEntity.setEntityUri(topicEntityString);
-			topicEntity.setType(filterStandardDomain(RDFGraphOperations
-					.getRDFTypesFromEntity(topicEntityString)));
+			topicEntity.setCategories(RDFGraphOperations
+					.getRDFTypesFromEntity(topicEntityString));
+			topicEntity.setType(filterStandardDomain(topicEntity
+					.getCategories()));
 			List<String> labels = RDFGraphOperations
 					.getDbPediaLabel(topicEntity.getEntityUri());
 			if (labels.size() > 0) {
