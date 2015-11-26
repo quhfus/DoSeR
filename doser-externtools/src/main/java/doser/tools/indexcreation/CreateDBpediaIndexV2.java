@@ -911,10 +911,10 @@ public class CreateDBpediaIndexV2 {
 				// doc.add(new StringField("Evidence", s, Field.Store.YES));
 				// }
 				// }
-				
+
 				// Add DBpedia RDFS Label Occurrences
 				Set<String> dbpediaoccs = createDBpediaOccs(origLabels);
-				for(String s : dbpediaoccs) {
+				for (String s : dbpediaoccs) {
 					doc.add(new StringField("DBpediaUniqueLabel", s, Store.YES));
 				}
 
@@ -931,38 +931,87 @@ public class CreateDBpediaIndexV2 {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Set<String> createDBpediaOccs(List<String> labels) {
 		Set<String> set = new HashSet<String>();
-		for(String s : labels) {
+		for (String s : labels) {
 			set.add(s.toLowerCase());
+			set.add(s.toLowerCase().replaceAll("[^A-Za-z0-9 ]", ""));
 			String[] splitter = s.split(" ");
+			if (splitter.length == 2) {
+				for (int i = 0; i < splitter.length; i++) {
+					splitter[i] = splitter[i].replaceAll("[^A-Za-z0-9 ]", "");
+				}
+				set.add(splitter[0].toLowerCase());
+				set.add(splitter[1].toLowerCase());
+			} else if (splitter.length > 2) {
+				boolean hasKomma = false;
+				int j = -1;
+				for (int i = 0; i < splitter.length; i++) {
+					if (splitter[i].endsWith(",")) {
+						hasKomma = true;
+						j = i;
+						break;
+					}
+				}
+				if (hasKomma) {
+					StringBuilder builder = new StringBuilder();
+					StringBuilder withbuilder = new StringBuilder();
+					for (int i = 0; i <= j; ++i) {
+						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
+								"").toLowerCase());
+						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
+						if (i < j) {
+							builder.append(" ");
+							withbuilder.append(" ");
+						}
+					}
+					set.add(builder.toString());
+					set.add(withbuilder.toString());
+					builder = new StringBuilder();
+					withbuilder = new StringBuilder();
+					for(int i = j + 1; i < splitter.length; ++i) {
+						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
+								"").toLowerCase());
+						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
+						System.out.println(i+" "+splitter.length);
+						if(i < splitter.length - 1) {
+							System.out.println("JHUUUU"+builder.toString());
+							builder.append(" ");
+							withbuilder.append(" ");
+						}
+					}
+					set.add(builder.toString());
+					set.add(withbuilder.toString());
+				}
+			}
+
 			// Das erste Wort
-			set.add(splitter[0].toLowerCase());
-			if(splitter.length > 1) {
-				// Das letzte Wort
-				set.add(splitter[splitter.length - 1].toLowerCase());
-			}
+//			set.add(splitter[0].toLowerCase());
+//			if (splitter.length > 1) {
+//				// Das letzte Wort
+//				set.add(splitter[splitter.length - 1].toLowerCase());
+//			}
 			// Abkürzungen
-			StringBuilder builderWith = new StringBuilder();
-			StringBuilder builderWithout = new StringBuilder();
-			for(int i = 0; i < splitter.length; ++i) {
-				builderWith.append(splitter[i].substring(0, 1)+".");
-				builderWithout.append(splitter[i].substring(0, 1));
-			}
-			set.add(builderWith.toString().toLowerCase());
-			if(builderWithout.length() > 1) {
-				set.add(builderWithout.toString().toLowerCase());
-			}
+			// StringBuilder builderWith = new StringBuilder();
+			// StringBuilder builderWithout = new StringBuilder();
+			// for(int i = 0; i < splitter.length; ++i) {
+			// builderWith.append(splitter[i].substring(0, 1)+".");
+			// builderWithout.append(splitter[i].substring(0, 1));
+			// }
+			// set.add(builderWith.toString().toLowerCase());
+			// if(builderWithout.length() > 1) {
+			// set.add(builderWithout.toString().toLowerCase());
+			// }
 			// N-Gramme
-			NgramIterator ngram = new NgramIterator(2, s);
-			while(ngram.hasNext()) {
-				set.add(ngram.next().toLowerCase());
-			}
-			NgramIterator ngram3 = new NgramIterator(3, s);
-			while(ngram3.hasNext()) {
-				set.add(ngram3.next().toLowerCase());
-			}
+			// NgramIterator ngram = new NgramIterator(2, s);
+			// while(ngram.hasNext()) {
+			// set.add(ngram.next().toLowerCase());
+			// }
+			// NgramIterator ngram3 = new NgramIterator(3, s);
+			// while(ngram3.hasNext()) {
+			// set.add(ngram3.next().toLowerCase());
+			// }
 		}
 		return set;
 	}
@@ -1363,36 +1412,39 @@ public class CreateDBpediaIndexV2 {
 			}
 		}
 	}
-	
+
 	class NgramIterator implements Iterator<String> {
 
-	    String[] words;
-	    int pos = 0, n;
+		String[] words;
+		int pos = 0, n;
 
-	    public NgramIterator(int n, String str) {
-	        this.n = n;
-	        words = str.split(" ");
-	    }
+		public NgramIterator(int n, String str) {
+			this.n = n;
+			words = str.split(" ");
+		}
 
-	    public boolean hasNext() {
-	        return pos < words.length - n + 1;
-	    }
+		public boolean hasNext() {
+			return pos < words.length - n + 1;
+		}
 
-	    public String next() {
-	        StringBuilder sb = new StringBuilder();
-	        for (int i = pos; i < pos + n; i++)
-	            sb.append((i > pos ? " " : "") + words[i]);
-	        pos++;
-	        return sb.toString();
-	    }
+		public String next() {
+			StringBuilder sb = new StringBuilder();
+			for (int i = pos; i < pos + n; i++)
+				sb.append((i > pos ? " " : "") + words[i]);
+			pos++;
+			return sb.toString();
+		}
 
-	    public void remove() {
-	        throw new UnsupportedOperationException();
-	    }
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	public static void main(String[] args) {
 		CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
+//		List<String> l = new LinkedList<String>();
+//		l.add("France Agence-Press");
+//		System.out.println(index.createDBpediaOccs(l));
 		System.out.println("Step-1: Load Evidences");
 		// index.loadEvidences();
 		System.out.println("Step0: Create DBpediaPriors");

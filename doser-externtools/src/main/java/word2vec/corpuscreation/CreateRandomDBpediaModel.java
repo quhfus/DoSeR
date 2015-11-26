@@ -19,9 +19,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 public class CreateRandomDBpediaModel {
 
-	public static final int JUMPPROBABILITY = 14;
+	public static final int JUMPPROBABILITY = 10;
 
-	public static final int STEPNR = 100000000;
+	public static final int STEPNR = 500000000;
 
 	public static final String INFOBOXPROPERTIES = "/home/zwicklbauer/HDTGeneration/infobox_properties_en.nt";
 	public static final String MAPPINGPROPERTIES = "/home/zwicklbauer/HDTGeneration/mappingbased_properties_cleaned_en.nt";

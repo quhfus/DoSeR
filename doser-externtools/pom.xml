@@ -17,7 +17,7 @@
 		</plugins>
 	</build>
 	<dependencies>
-
+	<!--  
 		<dependency>
 			<groupId>doser.sub</groupId>
 			<artifactId>doser-extensions</artifactId>
@@ -34,7 +34,7 @@
 			<artifactId>hdt-jena</artifactId>
 			<version>1.1</version>
 		</dependency>
-
+-->
  		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
