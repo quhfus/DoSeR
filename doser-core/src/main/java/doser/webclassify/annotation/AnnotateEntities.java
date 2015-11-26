@@ -63,9 +63,9 @@ public class AnnotateEntities {
 			topicEntity = new DisambiguatedEntity();
 			topicEntity.setEntityUri(topicEntityString);
 			topicEntity.setCategories(RDFGraphOperations
-					.getRDFTypesFromEntity(topicEntityString));
-			topicEntity.setType(filterStandardDomain(topicEntity
-					.getCategories()));
+					.getDbpediaCategoriesFromEntity(topicEntityString));
+			topicEntity.setType(filterStandardDomain(RDFGraphOperations
+					.getRDFTypesFromEntity(topicEntityString)));
 			List<String> labels = RDFGraphOperations
 					.getDbPediaLabel(topicEntity.getEntityUri());
 			if (labels.size() > 0) {

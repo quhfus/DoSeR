@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import doser.nlp.NLPTools;
+//import doser.nlp.NLPTools;
 import doser.tools.indexcreation.WikiPediaUriConverter;
 
 public class CreateD2VCorpus_Wikipedia {
@@ -89,9 +89,9 @@ public class CreateD2VCorpus_Wikipedia {
 						xmlReader.parse(inputSource);
 						builder.append(handler.getDocumentText());
 						String wikitext = builder.toString();
-						wikitext = NLPTools.getInstance()
-								.performLemmatizationAndStopWordRemoval(
-										wikitext);
+//						wikitext = NLPTools.getInstance()
+//								.performLemmatizationAndStopWordRemoval(
+//										wikitext);
 						wikitext = wikitext.replaceAll("\\.", " ");
 						wikitext = wikitext.replaceAll("\\,", " ");
 						wikitext = wikitext.replaceAll("\\!", " ");

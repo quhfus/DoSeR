@@ -28,7 +28,7 @@ public class CreateRandomDBpediaModel {
 	public static final String ARTICLECATEGORIES = "/home/zwicklbauer/HDTGeneration/article_categories_en.nt";
 	public static final String SKOSBROADER = "/home/zwicklbauer/HDTGeneration/skos_categories_en.nt";
 
-	public static final String MODELPATH = "/home/zwicklbauer/word2vec/dbpediamodel.dat";
+	public static final String MODELPATH = "/home/zwicklbauer/word2vec/dbpediamodel_noCategories.dat";
 
 	private Random random;
 	private UndirectedGraph<String, DefaultEdge> graph;
@@ -45,10 +45,10 @@ public class CreateRandomDBpediaModel {
 		System.out.println("Create DBpediaGraph");
 		System.out.println("Add Facts");
 		addFactsToGraph();
-		System.out.println("Add Categories");
-		addCategoriesToGraph();
-		System.out.println("Add SkosBroader");
-		addSkosBroaderToGraph();
+		// System.out.println("Add Categories");
+		// addCategoriesToGraph();
+		// System.out.println("Add SkosBroader");
+		// addSkosBroaderToGraph();
 		Set<String> v = graph.vertexSet();
 		this.vertexes = new String[v.size()];
 		this.vertexes = v.toArray(this.vertexes);
@@ -65,7 +65,8 @@ public class CreateRandomDBpediaModel {
 			writer.write(init.replaceAll("http://dbpedia.org/resource/", ""));
 			while (counter < STEPNR) {
 				init = performNextStep(init);
-				String output = init.replaceAll("http://dbpedia.org/resource/", "");
+				String output = init.replaceAll("http://dbpedia.org/resource/",
+						"");
 				writer.write(output + " ");
 				counter++;
 			}
@@ -79,25 +80,34 @@ public class CreateRandomDBpediaModel {
 		String result = null;
 		String randomjump = performRandomJump();
 		if (randomjump == null) {
-			Set<DefaultEdge> edgeSet = graph.edgesOf(current);
-			DefaultEdge[] edges = new DefaultEdge[edgeSet.size()];
-			edges = edgeSet.toArray(edges);
-			DefaultEdge def = edges[random.nextInt(edges.length)];
-			String source = graph.getEdgeSource(def);
-			String target = graph.getEdgeTarget(def);
-			String relevant = null;
-			if (source.equalsIgnoreCase(current)) {
-				relevant = target;
-			} else {
-				relevant = source;
-			}
-			result = relevant;
-			if (relevant.contains("Category:")) {
-				relevant = performNextStep(current);
+			if (graph.containsVertex(current)) {
+				Set<DefaultEdge> edgeSet = graph.edgesOf(current);
+
+				DefaultEdge[] edges = new DefaultEdge[edgeSet.size()];
+				edges = edgeSet.toArray(edges);
+				DefaultEdge def = edges[random.nextInt(edges.length)];
+				String source = graph.getEdgeSource(def);
+				String target = graph.getEdgeTarget(def);
+				String relevant = null;
+				if (source.equalsIgnoreCase(current)) {
+					relevant = target;
+				} else {
+					relevant = source;
+				}
 				result = relevant;
+				if (relevant.contains("Category:")) {
+					relevant = performNextStep(current);
+					result = relevant;
+				}
+			} else {
+				result = performSaveRandomJump();
 			}
 		} else {
 			result = randomjump;
+		}
+		if (result.contains("__")) {
+			String[] splitter = result.split("__");
+			result = splitter[0];
 		}
 		return result;
 	}
@@ -108,10 +118,21 @@ public class CreateRandomDBpediaModel {
 		if (randomint < JUMPPROBABILITY) {
 			int jump = random.nextInt(vertexes.length);
 			result = vertexes[jump];
-			while(result.contains("Category:")) {
+			while (result.contains("Category:")) {
 				jump = random.nextInt(vertexes.length);
 				result = vertexes[jump];
 			}
+		}
+		return result;
+	}
+
+	private String performSaveRandomJump() {
+		String result = null;
+		int jump = random.nextInt(vertexes.length);
+		result = vertexes[jump];
+		while (result.contains("Category:")) {
+			jump = random.nextInt(vertexes.length);
+			result = vertexes[jump];
 		}
 		return result;
 	}
@@ -144,7 +165,7 @@ public class CreateRandomDBpediaModel {
 		}
 		counter++;
 	}
-	
+
 	private void addSkosBroaderToGraph() {
 		Model m = ModelFactory.createDefaultModel();
 		m.read(SKOSBROADER);

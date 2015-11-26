@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -910,6 +911,12 @@ public class CreateDBpediaIndexV2 {
 				// doc.add(new StringField("Evidence", s, Field.Store.YES));
 				// }
 				// }
+				
+				// Add DBpedia RDFS Label Occurrences
+				Set<String> dbpediaoccs = createDBpediaOccs(origLabels);
+				for(String s : dbpediaoccs) {
+					doc.add(new StringField("DBpediaUniqueLabel", s, Store.YES));
+				}
 
 				// Write Document To Index
 				if (doc.get("Label") != null
@@ -923,6 +930,41 @@ public class CreateDBpediaIndexV2 {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public Set<String> createDBpediaOccs(List<String> labels) {
+		Set<String> set = new HashSet<String>();
+		for(String s : labels) {
+			set.add(s.toLowerCase());
+			String[] splitter = s.split(" ");
+			// Das erste Wort
+			set.add(splitter[0].toLowerCase());
+			if(splitter.length > 1) {
+				// Das letzte Wort
+				set.add(splitter[splitter.length - 1].toLowerCase());
+			}
+			// Abkürzungen
+			StringBuilder builderWith = new StringBuilder();
+			StringBuilder builderWithout = new StringBuilder();
+			for(int i = 0; i < splitter.length; ++i) {
+				builderWith.append(splitter[i].substring(0, 1)+".");
+				builderWithout.append(splitter[i].substring(0, 1));
+			}
+			set.add(builderWith.toString().toLowerCase());
+			if(builderWithout.length() > 1) {
+				set.add(builderWithout.toString().toLowerCase());
+			}
+			// N-Gramme
+			NgramIterator ngram = new NgramIterator(2, s);
+			while(ngram.hasNext()) {
+				set.add(ngram.next().toLowerCase());
+			}
+			NgramIterator ngram3 = new NgramIterator(3, s);
+			while(ngram3.hasNext()) {
+				set.add(ngram3.next().toLowerCase());
+			}
+		}
+		return set;
 	}
 
 	public List<String> getDbPediaLabel(final String uri)
@@ -1320,6 +1362,33 @@ public class CreateDBpediaIndexV2 {
 				}
 			}
 		}
+	}
+	
+	class NgramIterator implements Iterator<String> {
+
+	    String[] words;
+	    int pos = 0, n;
+
+	    public NgramIterator(int n, String str) {
+	        this.n = n;
+	        words = str.split(" ");
+	    }
+
+	    public boolean hasNext() {
+	        return pos < words.length - n + 1;
+	    }
+
+	    public String next() {
+	        StringBuilder sb = new StringBuilder();
+	        for (int i = pos; i < pos + n; i++)
+	            sb.append((i > pos ? " " : "") + words[i]);
+	        pos++;
+	        return sb.toString();
+	    }
+
+	    public void remove() {
+	        throw new UnsupportedOperationException();
+	    }
 	}
 
 	public static void main(String[] args) {
