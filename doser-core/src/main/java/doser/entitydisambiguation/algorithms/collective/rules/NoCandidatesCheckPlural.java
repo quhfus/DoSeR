@@ -58,7 +58,7 @@ public class NoCandidatesCheckPlural extends Rule {
 		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
 		DefaultSimilarity defaultSim = new DefaultSimilarity();
 		features.add(query.add(LuceneFeatures.queryLabelTerm(surfaceForm,
-				"UniqueLabel", defaultSim), "Feature1", true));
+				"DBpediaUniqueLabel", defaultSim), "Feature1", true));
 		try {
 			final TopDocs top = searcher.search(query, 150);
 			final ScoreDoc[] score = top.scoreDocs;

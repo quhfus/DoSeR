@@ -207,7 +207,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 		// Feature 1
 		features.add(query.add(LuceneFeatures.queryLabelTerm(
-				dpo.getSelectedText(), "UniqueLabel", defaultSim), "Feature1",
+				dpo.getSelectedText(), "DBpediaUniqueLabel", defaultSim), "Feature1",
 				true));
 		// Feature 2
 		// features.add(query.add(LuceneFeatures.queryStringTerm(dpo.getContext(),

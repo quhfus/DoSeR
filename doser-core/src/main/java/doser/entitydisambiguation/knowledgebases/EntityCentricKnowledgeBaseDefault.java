@@ -149,27 +149,27 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 					// indexsensePriorHashMap.put(i, hash);
 					// }
 
-					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
-					for (final String element : splitter) {
-						final String[] value = element.split(TRIMOCCOCC);
-						int check = 1;
-						try {
-							check = Integer.valueOf(value[1]);
-						} catch (final NumberFormatException e) {
-							Logger.getRootLogger().error(
-									"Warning NumberFormatException while Initialization: "
-											+ val);
-						}
-						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
-								check);
-					}
-					indexsensePriorHashMapBlanc.put(entity, hash);
+//					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
+//					for (final String element : splitter) {
+//						final String[] value = element.split(TRIMOCCOCC);
+//						int check = 1;
+//						try {
+//							check = Integer.valueOf(value[1]);
+//						} catch (final NumberFormatException e) {
+//							Logger.getRootLogger().error(
+//									"Warning NumberFormatException while Initialization: "
+//											+ val);
+//						}
+//						hash.put(value[0].toLowerCase(Locale.US).hashCode(),
+//								check);
+//					}
+//					indexsensePriorHashMapBlanc.put(entity, hash);
 					
 					// Create Temporary Prior HashMap for DBPedia only Disambiguation
-//					String entry = iReader.document(i).get("DbpediaVertexDegree");
-//					if(entry != null) {
-//						indexpriorHashMap.put(entity, Integer.parseInt(entry));
-//					}
+					String entry = iReader.document(i).get("DbpediaVertexDegree");
+					if(entry != null) {
+						indexpriorHashMap.put(entity, Integer.parseInt(entry));
+					}
 				}
 
 				// DBediaFacts
@@ -262,29 +262,29 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 			return new HashSet<String>();
 		}
 
-		@Override
-		public int getOccurrences(String sf, String uri) {
-			String entity = uri.replaceAll("http://dbpedia.org/resource/", "");
-			int res = 0;
-			if (indexsensePriorHashMapBlanc.containsKey(entity)) {
-				final HashMap<Integer, Integer> hash = indexsensePriorHashMapBlanc
-						.get(entity);
-				if (hash.containsKey(sf.toLowerCase(Locale.US).hashCode())) {
-					res = hash.get(sf.toLowerCase(Locale.US).hashCode());
-				}
-			}
-			return (res + 1);
-		}
-
-		
 //		@Override
 //		public int getOccurrences(String sf, String uri) {
 //			String entity = uri.replaceAll("http://dbpedia.org/resource/", "");
 //			int res = 0;
-//			if (indexpriorHashMap.containsKey(entity)) {
-//				res = indexpriorHashMap.get(entity);
+//			if (indexsensePriorHashMapBlanc.containsKey(entity)) {
+//				final HashMap<Integer, Integer> hash = indexsensePriorHashMapBlanc
+//						.get(entity);
+//				if (hash.containsKey(sf.toLowerCase(Locale.US).hashCode())) {
+//					res = hash.get(sf.toLowerCase(Locale.US).hashCode());
+//				}
 //			}
 //			return (res + 1);
 //		}
+
+		
+		@Override
+		public int getOccurrences(String sf, String uri) {
+			String entity = uri.replaceAll("http://dbpedia.org/resource/", "");
+			int res = 0;
+			if (indexpriorHashMap.containsKey(entity)) {
+				res = indexpriorHashMap.get(entity);
+			}
+			return (res + 1);
+		}
 	}
 }
