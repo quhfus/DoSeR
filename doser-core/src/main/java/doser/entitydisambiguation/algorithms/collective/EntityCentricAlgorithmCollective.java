@@ -3,18 +3,20 @@ package doser.entitydisambiguation.algorithms.collective;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
+import org.aksw.agdistis.datatypes.DocumentText;
+import org.aksw.agdistis.datatypes.NamedEntitiesInText;
+import org.aksw.agdistis.datatypes.NamedEntityInText;
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 
+import Agdistis.CandidateUtil;
+import Agdistis.Node;
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.collective.rules.RuleAdapation;
 import doser.entitydisambiguation.backend.DisambiguationTask;
@@ -27,6 +29,9 @@ import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
+
+import org.aksw.agdistis.datatypes.Document;
 
 /**
  * Collective Disambiguation Approach by Stefan Zwicklbauer
@@ -35,6 +40,11 @@ import doser.lucene.query.LearnToRankQuery;
  * 
  */
 public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
+
+	public static final int NUMBEROFQUERYANWERS = 10000;
+	
+	public static final String[] SPECIALWORDS = { "corp", "ltd", "inc", "co", "inc." };
+	public static final String[] SPECIALWORDS2 = { "la" };
 
 	private EntityCentricKnowledgeBaseDefault eckb;
 
@@ -72,47 +82,124 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		System.out
 				.println("---------------------------------------------------------------------------------------------------------------------------");
 		for (int i = 0; i < entityList.size(); i++) {
-			EntityDisambiguationDPO dpo = entityList.get(i);
-			Query query = createQuery(dpo, eckb);
 			final IndexSearcher searcher = eckb.getSearcher();
-			final IndexReader reader = searcher.getIndexReader();
+			searcher.toString();
+			EntityDisambiguationDPO dpo = entityList.get(i);
+			
+			Document doc = new Document();
+			doc.setDocumentId(0);
+			String sf = dpo.getSelectedText();
+			doc.addTest(new DocumentText(sf));
+			NamedEntitiesInText intext = new NamedEntitiesInText();
+			NamedEntityInText in = new NamedEntityInText(0, sf.length(), null);
+			intext.addNamedEntity(in);
+			doc.addNamedEntitiesInText(intext);
+
+			DirectedSparseGraph<Node, String> graph = new DirectedSparseGraph<Node, String>();
+
+			// 0) insert candidates into Text
+			List<String> sfs = new LinkedList<String>();
 			try {
-				final TopDocs top = searcher.search(query, task.getReturnNr());
-				final ScoreDoc[] score = top.scoreDocs;
-				if (score.length == 1) {
-					final Document doc = reader.document(score[0].doc);
-					ArrayList<String> l = new ArrayList<String>();
-					l.add(doc.get("Mainlink"));
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
-					collectiveRep.add(col);
-					System.out.println("Save Disambiguation: "
-							+ doc.get("Mainlink"));
-				} else if (score.length > 1) {
-					ArrayList<String> l = new ArrayList<String>();
-					for (int j = 0; j < score.length; j++) {
-						final Document doc = reader.document(score[j].doc);
-						l.add(doc.get("Mainlink"));
-					}
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
-					collectiveRep.add(col);
-
-				} else {
-					ArrayList<String> l = new ArrayList<String>();
-					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
-							dpo.getSelectedText(), dpo.getContext(), l, i);
-					collectiveRep.add(col);
+				CandidateUtil util = CandidateUtil.getInstance();
+				util.insertCandidatesIntoText(graph, doc, 0.82, false);
+				Collection<Node> nodes = graph.getVertices();
+				for (Node node : nodes) {
+					sfs.add(node.getCandidateURI());
 				}
-
-			} catch (final IOException e) {
-				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
+			if (sfs.size() == 1) {
+				ArrayList<String> l = new ArrayList<String>();
+				l.add(sfs.get(0));
+				CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+						dpo.getSelectedText(), dpo.getContext(), l, i);
+				collectiveRep.add(col);
+			} else if (sfs.size() > 1) {
+				ArrayList<String> l = new ArrayList<String>();
+				for (int j = 0; j < sfs.size(); j++) {
+					l.add(sfs.get(j));
+				}
+				CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+						dpo.getSelectedText(), dpo.getContext(), l, i);
+				collectiveRep.add(col);
+
+			} else { ArrayList<String> l = new ArrayList<String>();
+				CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+						dpo.getSelectedText(), dpo.getContext(), l, i);
+				collectiveRep.add(col);
+		}}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+//			Query query = createQuery(dpo, eckb);
+//			final IndexSearcher searcher = eckb.getSearcher();
+//			final IndexReader reader = searcher.getIndexReader();
+//			try {
+//				final TopDocs top = searcher.search(query, NUMBEROFQUERYANWERS);
+//				final ScoreDoc[] score = top.scoreDocs;
+//				if (score.length == 1) {
+//					final Document doc = reader.document(score[0].doc);
+//					ArrayList<String> l = new ArrayList<String>();
+//					l.add(doc.get("Mainlink"));
+//					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+//							dpo.getSelectedText(), dpo.getContext(), l, i);
+//					collectiveRep.add(col);
+//					System.out.println("Save Disambiguation: "
+//							+ doc.get("Mainlink"));
+//				} else if (score.length > 1) {
+//					ArrayList<String> l = new ArrayList<String>();
+//					for (int j = 0; j < score.length; j++) {
+//						final Document doc = reader.document(score[j].doc);
+//						l.add(doc.get("Mainlink"));
+//					}
+//					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+//							dpo.getSelectedText(), dpo.getContext(), l, i);
+//					collectiveRep.add(col);
+//
+//				} else {
+//					// Try Another Query
+//					// Todo vllt geht noch was
+////					Query query = createQuery(dpo, eckb);
+//
+//					ArrayList<String> l = new ArrayList<String>();
+//					CollectiveSFRepresentation col = new CollectiveSFRepresentation(
+//							dpo.getSelectedText(), dpo.getContext(), l, i);
+//					collectiveRep.add(col);
+//				}
+//
+//			} catch (final IOException e) {
+//				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
+//				e.printStackTrace();
+//			}
+//		}
 
 		RuleAdapation rules = new RuleAdapation(eckb);
 		rules.performRuleChainBeforeCandidateSelection(collectiveRep);
+		
+		CandidatePruning pruner = new CandidatePruning(eckb);
+		pruner.prune(collectiveRep);
+		
 		EntityCentricAlgorithmCollectiveSolver solver = new EntityCentricAlgorithmCollectiveSolver(
 				responseArray, collectiveRep, eckb);
 		solver.solve();
@@ -154,20 +241,6 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		return null;
 	}
 
-//	protected void sensePriorDisambiguation(CollectiveSFRepresentation col) {
-//		if (col.getCandidates().size() > 1) {
-//			List<String> s = col.getCandidates();
-//			List<Candidate> canList = new LinkedList<Candidate>();
-//			for (String str : s) {
-//				canList.add(new Candidate(str, eckb.getFeatureDefinition()
-//						.getOccurrences(col.getSurfaceForm(), str)));
-//			}
-//
-//			Collections.sort(canList, Collections.reverseOrder());
-//			col.setDisambiguatedEntity(canList.get(0).getCandidate());
-//		}
-//	}
-
 	protected class Candidate implements Comparable<Candidate> {
 
 		private String candidate;
@@ -199,231 +272,99 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		}
 	}
 
-	private Query createQuery(EntityDisambiguationDPO dpo,
-			EntityCentricKnowledgeBaseDefault kb) {
-		LearnToRankQuery query = new LearnToRankQuery();
-		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
-		DefaultSimilarity defaultSim = new DefaultSimilarity();
+//	private Query createQuery(EntityDisambiguationDPO dpo,
+//			EntityCentricKnowledgeBaseDefault kb) {
+//		LearnToRankQuery query = new LearnToRankQuery();
+//		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
+//		DefaultSimilarity defaultSim = new DefaultSimilarity();
+//
+//		// String Transformation
+//		String sf = dpo.getSelectedText().toLowerCase();
+//		if (sf.endsWith("'s") || sf.endsWith("s'")) {
+//			sf = sf.substring(0, sf.length() - 2);
+//		}
+//
+////		sf = Inflector.getInstance().singularize(sf);
+//		for (int i = 0; i < SPECIALWORDS.length; i++) {
+//			if (sf.startsWith(SPECIALWORDS[i]) || sf.endsWith(SPECIALWORDS[i])) {
+//				sf.replaceAll(SPECIALWORDS[i], "");
+//				break;
+//			}
+//		}
+//
+//		// Check Number
+//		boolean isNumber = true;
+//		try {
+//			Integer.parseInt(sf);
+//		} catch (NumberFormatException e) {
+//			isNumber = false;
+//		}
+//		if (!isNumber) {
+//			sf = sf.replaceAll("[0-9]", "");
+//		}
+//		sf = sf.trim();
+//
+//		// Feature 1
+//		features.add(query.add(LuceneFeatures.queryLabelTerm(sf,
+//				"DBpediaUniqueLabel", defaultSim), "Feature1", true));
+//
+//		features.get(0).setWeight(1f);
+//		return query;
+//	}
 
-		// Feature 1
-		features.add(query.add(LuceneFeatures.queryLabelTerm(
-				dpo.getSelectedText(), "DBpediaUniqueLabel", defaultSim), "Feature1",
-				true));
-		// Feature 2
-		// features.add(query.add(LuceneFeatures.queryStringTerm(dpo.getContext(),
-		// "Evidence", defaultSim, Occur.SHOULD, 2048), "Feature2", true));
-		//
-		// // Feature 3
-		// features.add(query.add(LuceneFeatures.queryLabelTerm(
-		// dpo.getSelectedText(), "Label", defaultSim), "Feature 3", true));
+//	private Query createSecondQuery(EntityDisambiguationDPO dpo,
+//			EntityCentricKnowledgeBaseDefault kb) {
+//		LearnToRankQuery query = new LearnToRankQuery();
+//		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
+//		DefaultSimilarity defaultSim = new DefaultSimilarity();
+//
+//		// String Transformation
+//		String sf = dpo.getSelectedText().toLowerCase();
+//		if (sf.endsWith("'s") || sf.endsWith("s'")) {
+//			sf = sf.substring(0, sf.length() - 2);
+//		}
+//
+//		sf = Inflector.getInstance().singularize(sf);
+//		for (int i = 0; i < SPECIALWORDS.length; i++) {
+//			if (sf.startsWith(SPECIALWORDS[i]) || sf.endsWith(SPECIALWORDS[i])) {
+//				sf = sf.replaceAll(SPECIALWORDS[i], "");
+//				break;
+//			}
+//		}
+//		sf = sf.trim();
+//
+//		// Feature 1
+//		features.add(query.add(LuceneFeatures.queryLabelTerm(sf,
+//				"DBpediaUniqueLabel", defaultSim), "Feature1", true));
+//
+//		features.get(0).setWeight(1f);
+//		return query;
+//	}
+	
+	public static void main(String[] args) {
+		String sf = "CBS";
+		if (sf.endsWith("'s") || sf.endsWith("s'")) {
+			sf = sf.substring(0, sf.length() - 2);
+		}
+		sf = Inflector.getInstance().singularize(sf);
+		for (int i = 0; i < SPECIALWORDS.length; i++) {
+			if (sf.startsWith(SPECIALWORDS[i]) || sf.endsWith(SPECIALWORDS[i])) {
+				sf = sf.replaceAll(SPECIALWORDS[i], "");
+				break;
+			}
+		}
 
-		// features.add(query.add(
-		// LuceneFeatures.querySensePrior(dpo.getSelectedText(),
-		// kb.getFeatureDefinition()), "Feature2", false));
-
-		features.get(0).setWeight(1f);
-		// features.get(1).setWeight(1f);
-		// features.get(2).setWeight(1f);
-		return query;
+		// Check Number
+		boolean isNumber = true;
+		try {
+			Integer.parseInt(sf);
+		} catch (NumberFormatException e) {
+			isNumber = false;
+		}
+		if (!isNumber) {
+			sf = sf.replaceAll("[0-9]", "");
+		}
+		sf = sf.trim();
+		System.out.println(sf);
 	}
-
-	// private Query createPhraseQuery(EntityDisambiguationDPO dpo,
-	// EntityCentricKnowledgeBaseDefault kb) {
-	// LearnToRankQuery query = new LearnToRankQuery();
-	// List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
-	//
-	// DefaultSimilarity defaultSim = new DefaultSimilarity();
-	// LTRBooleanQuery bq = new LTRBooleanQuery();
-	// bq.add(LuceneFeatures.queryLabelTerm(dpo.getSelectedText(),
-	// "UniqueLabelString", defaultSim), Occur.SHOULD);
-	// bq.add(LuceneFeatures.queryLabelTerm(dpo.getSelectedText(), "Label",
-	// defaultSim), Occur.SHOULD);
-	//
-	// // Feature 1
-	// features.add(query.add(bq, "Feature1", true));
-	// // Feature 2
-	// features.add(query.add(
-	// LuceneFeatures.querySensePrior(dpo.getSelectedText(),
-	// kb.getFeatureDefinition()), "Feature2", false));
-	//
-	// features.get(0).setWeight(1f);
-	// features.get(1).setWeight(1f);
-	// return query;
-	// }
-
-	// private Query createFuzzyQuery(EntityDisambiguationDPO dpo,
-	// EntityCentricKnowledgeBaseDefault kb) {
-	// LearnToRankQuery query = new LearnToRankQuery();
-	// List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
-	// DefaultSimilarity defaultSim = new DefaultSimilarity();
-	//
-	// // Feature 1
-	// features.add(query.add(LuceneFeatures.queryStringTerm(
-	// dpo.getSelectedText(), "Label", defaultSim, Occur.SHOULD,
-	// EntityDisambiguation.MAXCLAUSECOUNT), "Feature1", true));
-	// // Feature 2
-	// features.add(query.add(
-	// LuceneFeatures.querySensePrior(dpo.getSelectedText(),
-	// kb.getFeatureDefinition()), "Feature2", false));
-	// features.get(0).setWeight(0.0915161f);
-	// features.get(1).setWeight(0.350994f);
-	// return query;
-	// }
-
-	// public void testGraphExpansionAndHits() {
-	// CurrentEntity obamastr = new CurrentEntity(
-	// "http://dbpedia.org/resource/Barack_Obama,_Sr.");
-	// obamastr.setEntityQuery(0);
-	// obamastr.setCandidate(true);
-	// CurrentEntity obama = new CurrentEntity(
-	// "http://dbpedia.org/resource/Barack_Obama");
-	// obama.setEntityQuery(0);
-	// obama.setCandidate(true);
-	// CurrentEntity washingtondcnovel = new CurrentEntity(
-	// "http://dbpedia.org/resource/Washington,_D.C._%28novel%29");
-	// washingtondcnovel.setEntityQuery(1);
-	// washingtondcnovel.setCandidate(true);
-	// CurrentEntity washingtondc = new CurrentEntity(
-	// "http://dbpedia.org/resource/Washington,_D.C.");
-	// washingtondc.setEntityQuery(1);
-	// washingtondc.setCandidate(true);
-	//
-	// DirectedSparseGraph<CurrentEntity, CurrentEdge> graph = new
-	// DirectedSparseGraph<CurrentEntity, CurrentEdge>();
-	//
-	// graph.addVertex(obamastr);
-	// graph.addVertex(obama);
-	// graph.addVertex(washingtondcnovel);
-	// graph.addVertex(washingtondc);
-	// // Perform graph expansion
-	// int iterations = 0;
-	// long time = System.currentTimeMillis();
-	// while (iterations < POPERATORITERATIONS) {
-	// pOperator(graph);
-	// iterations++;
-	// }
-	// System.out.println(System.currentTimeMillis() - time);
-	//
-	// // Apply HITS Algorithm
-	// HITS<CurrentEntity, CurrentEdge> hitsAlgorithm = new HITS<CurrentEntity,
-	// CurrentEdge>(
-	// graph);
-	// hitsAlgorithm.initialize();
-	// hitsAlgorithm.setTolerance(0.000001);
-	// hitsAlgorithm.setMaxIterations(200);
-	// hitsAlgorithm.evaluate();
-	// for (CurrentEntity ent : graph.getVertices()) {
-	// System.out.println(ent.getUri() + "  \th:"
-	// + hitsAlgorithm.getVertexScore(ent).hub + "\ta:"
-	// + hitsAlgorithm.getVertexScore(ent).authority);
-	// ent.setAuthorityValue(hitsAlgorithm.getVertexScore(ent).authority);
-	// }
-	//
-	// System.out
-	// .println("-----------------------------------------------------------------------------------");
-	//
-	// Collection<CurrentEntity> ents = graph.getVertices();
-	// List<CurrentEntity> list = new LinkedList<CurrentEntity>(ents);
-	// Collections.sort(list);
-	//
-	// BitSet bitset = new BitSet(2);
-	// for (CurrentEntity ent : list) {
-	// int pos = ent.getEntityQuery();
-	// if (ent.isCandidate() && !bitset.get(pos)) {
-	// System.out.println(ent.getEntityQuery() + "   " + ent.getUri()
-	// + "    " + ent.getAuthorityValue());
-	// bitset.set(ent.getEntityQuery());
-	// }
-	// }
-	// }
-
-	// public void test() {
-	// CurrentEntity universityHawaii = new CurrentEntity(
-	// "http://dbpedia.org/resource/University_of_Hawaii");
-	// CurrentEntity hawaii = new CurrentEntity(
-	// "http://dbpedia.org/resource/Hawaii");
-	// CurrentEntity anndunham = new CurrentEntity(
-	// "http://dbpedia.org/resource/Ann_Dunham");
-	// CurrentEntity obamastr = new CurrentEntity(
-	// "http://dbpedia.org/resource/Barack_Obama_Str");
-	// CurrentEntity obama = new CurrentEntity(
-	// "http://dbpedia.org/resource/Barack_Obama");
-	// CurrentEntity elizabeth = new CurrentEntity(
-	// "http://dbpedia.org/resource/ElizabethII");
-	// CurrentEntity london = new CurrentEntity(
-	// "http://dbpedia.org/resource/London");
-	// CurrentEntity whiteHouse = new CurrentEntity(
-	// "http://dbpedia.org/resource/Whitehouse");
-	// CurrentEntity unitedkingdom = new CurrentEntity(
-	// "http://dbpedia.org/resource/UnitedKingdom");
-	// CurrentEntity federaldistrict = new CurrentEntity(
-	// "http://dbpedia.org/resource/FederalDistrict");
-	// CurrentEntity washingtondcnovel = new CurrentEntity(
-	// "http://dbpedia.org/resource/WashingtonDCNovel");
-	// CurrentEntity washingtondc = new CurrentEntity(
-	// "http://dbpedia.org/resource/WashingtonDC");
-	// CurrentEntity gorefidal = new CurrentEntity(
-	// "http://dbpedia.org/resource/GoreFidal");
-	// CurrentEntity newyork = new CurrentEntity(
-	// "http://dbpedia.org/resource/NewYork");
-	//
-	// DirectedSparseGraph<CurrentEntity, CurrentEdge> graph = new
-	// DirectedSparseGraph<CurrentEntity, CurrentEdge>();
-	// graph.addVertex(universityHawaii);
-	// graph.addVertex(hawaii);
-	// graph.addVertex(anndunham);
-	// graph.addVertex(obamastr);
-	// graph.addVertex(obama);
-	// graph.addVertex(elizabeth);
-	// graph.addVertex(london);
-	// graph.addVertex(whiteHouse);
-	// graph.addVertex(unitedkingdom);
-	// graph.addVertex(federaldistrict);
-	// graph.addVertex(washingtondcnovel);
-	// graph.addVertex(washingtondc);
-	// graph.addVertex(gorefidal);
-	// graph.addVertex(newyork);
-	//
-	// graph.addEdge(new CurrentEdge(), universityHawaii, hawaii);
-	// graph.addEdge(new CurrentEdge(), universityHawaii, obamastr);
-	// graph.addEdge(new CurrentEdge(), obamastr, universityHawaii);
-	// graph.addEdge(new CurrentEdge(), obamastr, anndunham);
-	// graph.addEdge(new CurrentEdge(), obamastr, obama);
-	// graph.addEdge(new CurrentEdge(), hawaii, obama);
-	// graph.addEdge(new CurrentEdge(), anndunham, universityHawaii);
-	// graph.addEdge(new CurrentEdge(), anndunham, obamastr);
-	// graph.addEdge(new CurrentEdge(), anndunham, obama);
-	// graph.addEdge(new CurrentEdge(), obama, hawaii);
-	// graph.addEdge(new CurrentEdge(), obama, whiteHouse);
-	// graph.addEdge(new CurrentEdge(), whiteHouse, obama);
-	// graph.addEdge(new CurrentEdge(), whiteHouse, washingtondc);
-	// graph.addEdge(new CurrentEdge(), washingtondc, whiteHouse);
-	// graph.addEdge(new CurrentEdge(), washingtondc, federaldistrict);
-	// graph.addEdge(new CurrentEdge(), federaldistrict, washingtondc);
-	// graph.addEdge(new CurrentEdge(), unitedkingdom, elizabeth);
-	// graph.addEdge(new CurrentEdge(), unitedkingdom, london);
-	// graph.addEdge(new CurrentEdge(), london, unitedkingdom);
-	// graph.addEdge(new CurrentEdge(), washingtondcnovel, unitedkingdom);
-	// graph.addEdge(new CurrentEdge(), washingtondcnovel, gorefidal);
-	// graph.addEdge(new CurrentEdge(), gorefidal, washingtondcnovel);
-	// graph.addEdge(new CurrentEdge(), gorefidal, newyork);
-	//
-	// // Apply HITS Algorithm
-	// HITS<CurrentEntity, CurrentEdge> hitsAlgorithm = new HITS<>(graph);
-	// hitsAlgorithm.initialize();
-	// hitsAlgorithm.setTolerance(0.000001);
-	// hitsAlgorithm.setMaxIterations(20);
-	// hitsAlgorithm.evaluate();
-	// for (CurrentEntity ent : graph.getVertices()) {
-	// System.out.println(ent.getUri() + "  \th:"
-	// + hitsAlgorithm.getVertexScore(ent).hub + "\ta:"
-	// + hitsAlgorithm.getVertexScore(ent).authority);
-	// }
-	// }
-	//
-	// public static void main(String args[]) {
-	// EntityCentricAlgorithmCollective collective = new
-	// EntityCentricAlgorithmCollective();
-	// collective.testGraphExpansionAndHits();
-	// }
 }

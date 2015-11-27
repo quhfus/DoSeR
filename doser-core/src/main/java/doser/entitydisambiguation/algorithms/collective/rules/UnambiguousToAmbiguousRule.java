@@ -37,16 +37,25 @@ public class UnambiguousToAmbiguousRule extends Rule {
 			}
 		}
 		for (CollectiveSFRepresentation c : rep) {
-			if (c.getCandidates().size() > 1) {
-				for (CollectiveSFRepresentation un : unambiguous) {
-					if (isSubString(un.getSurfaceForm(), c.getSurfaceForm())
-							&& c.getCandidates().contains(
-									un.getCandidates().get(0))) {
-						c.setDisambiguatedEntity(un.getCandidates().get(0));
-					}
+			String sf = c.getSurfaceForm();
+			for (CollectiveSFRepresentation un : unambiguous) {
+				if(isSubString(un.getSurfaceForm(), sf)) {
+					c.setDisambiguatedEntity(un.getCandidates().get(0));
 				}
 			}
 		}
+		
+//		for (CollectiveSFRepresentation c : rep) {
+//			if (c.getCandidates().size() > 1) {
+//				for (CollectiveSFRepresentation un : unambiguous) {
+//					if (isSubString(un.getSurfaceForm(), c.getSurfaceForm())
+//							&& c.getCandidates().contains(
+//									un.getCandidates().get(0))) {
+//						c.setDisambiguatedEntity(un.getCandidates().get(0));
+//					}
+//				}
+//			}
+//		}
 		return false;
 	}
 

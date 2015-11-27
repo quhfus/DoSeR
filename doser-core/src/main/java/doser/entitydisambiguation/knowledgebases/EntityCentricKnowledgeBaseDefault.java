@@ -114,6 +114,7 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 						.replaceAll("http://dbpedia.org/resource/", "");
 				if ((val != null) && !val.equalsIgnoreCase("")) {
 					final String[] splitter = val.split(TRIMLABELAMOUNT);
+					
 					// int priorVal = 0;
 					// for (final String element : splitter) {
 					// // System.out.println(element);

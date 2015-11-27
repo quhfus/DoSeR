@@ -83,6 +83,41 @@
 			<artifactId>lucene-spellchecker</artifactId>
 			<version>3.6.2</version>
 		</dependency>
+		
+				<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<!-- ~~~~~~~~~~~~~~~~~~~ End Validating URIs ~~~~~~~~~~~~~~~~~~~~~~ -->
+		<!-- ~~~~~~~~~~~~~~~~~~~ Cache for TripleIndex ~~~~~~~~~~~~~~~~~~~~~~ -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+				<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-spellchecker</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		<!-- ~~~~~~~~~~~~~~~~~~~ End Lucene for Indexing ~~~~~~~~~~~~~~~~~~~~~~ -->
+		<!-- ~~~~~~~~~~~~~~~~~~~ JSON ~~~~~~~~~~~~~~~~~~~~~~ -->
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+				<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-runtime</artifactId>
+			<version>2.7.0-beta1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-rio-turtle</artifactId>
+			<version>2.7.0-beta1</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
