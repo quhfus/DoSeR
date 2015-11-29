@@ -1,6 +1,6 @@
 package doser.word2vec.dbpediaGraphThinning;
 
-import doser.word2vec.Word2VecModel;
+import word2vec.tools.Word2VecModel;
 
 public class TestNegativeCosine {
 	public static void main(String[] args) {

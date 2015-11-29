@@ -22,7 +22,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import doser.word2vec.Word2VecModel;
+import word2vec.tools.Word2VecModel;
+
 
 public class DbpediaGraphModification {
 

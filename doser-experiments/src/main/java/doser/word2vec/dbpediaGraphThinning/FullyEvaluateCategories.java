@@ -23,7 +23,8 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import doser.word2vec.Word2VecModel;
+import word2vec.tools.Word2VecModel;
+
 
 public class FullyEvaluateCategories {
 

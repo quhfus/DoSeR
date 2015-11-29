@@ -28,7 +28,7 @@ public class CreateRandomDBpediaModel {
 	public static final String ARTICLECATEGORIES = "/home/zwicklbauer/HDTGeneration/article_categories_en.nt";
 	public static final String SKOSBROADER = "/home/zwicklbauer/HDTGeneration/skos_categories_en.nt";
 
-	public static final String MODELPATH = "/home/zwicklbauer/word2vec/dbpediamodel_noCategories.dat";
+	public static final String MODELPATH = "/home/zwicklbauer/word2vec/dbpediamodel_Categories.dat";
 
 	private Random random;
 	private UndirectedGraph<String, DefaultEdge> graph;
@@ -45,10 +45,10 @@ public class CreateRandomDBpediaModel {
 		System.out.println("Create DBpediaGraph");
 		System.out.println("Add Facts");
 		addFactsToGraph();
-		// System.out.println("Add Categories");
-		// addCategoriesToGraph();
-		// System.out.println("Add SkosBroader");
-		// addSkosBroaderToGraph();
+		System.out.println("Add Categories");
+		addCategoriesToGraph();
+		System.out.println("Add SkosBroader");
+		addSkosBroaderToGraph();
 		Set<String> v = graph.vertexSet();
 		this.vertexes = new String[v.size()];
 		this.vertexes = v.toArray(this.vertexes);

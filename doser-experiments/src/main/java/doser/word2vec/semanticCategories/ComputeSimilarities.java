@@ -13,7 +13,8 @@ import java.util.Map;
 
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 
-import doser.word2vec.Word2VecModel;
+import word2vec.tools.Word2VecModel;
+
 
 public class ComputeSimilarities {
 
