@@ -1,4 +1,4 @@
-package Agdistis;
+package org.aksw.agdistis;
 
 import java.io.IOException;
 import java.io.InputStream;

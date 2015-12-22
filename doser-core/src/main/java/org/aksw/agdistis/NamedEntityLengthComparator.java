@@ -1,4 +1,4 @@
-package Agdistis;
+package org.aksw.agdistis;
 
 import java.util.Comparator;
 

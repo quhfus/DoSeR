@@ -20,6 +20,7 @@ public class PageRankDisambiguator extends Word2VecPageRank {
 		this.sustain = new LinkedList<CollectiveSFRepresentation>();
 	}
 
+	// 13 besser
 	@Override
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(

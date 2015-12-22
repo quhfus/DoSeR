@@ -3,13 +3,13 @@ package doser.entitydisambiguation.algorithms.collective;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.aksw.agdistis.CandidateUtil;
+import org.aksw.agdistis.Node;
 import org.aksw.agdistis.datatypes.Document;
 import org.aksw.agdistis.datatypes.DocumentText;
 import org.aksw.agdistis.datatypes.NamedEntitiesInText;
 import org.aksw.agdistis.datatypes.NamedEntityInText;
 
-import Agdistis.CandidateUtil;
-import Agdistis.Node;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 
 public class Test3 {

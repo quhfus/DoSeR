@@ -15,8 +15,6 @@ import org.aksw.agdistis.datatypes.NamedEntityInText;
 import org.apache.log4j.Logger;
 import org.apache.lucene.search.IndexSearcher;
 
-import Agdistis.CandidateUtil;
-import Agdistis.Node;
 import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.collective.rules.RuleAdapation;
 import doser.entitydisambiguation.backend.DisambiguationTask;
@@ -31,6 +29,8 @@ import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 
+import org.aksw.agdistis.CandidateUtil;
+import org.aksw.agdistis.Node;
 import org.aksw.agdistis.datatypes.Document;
 
 /**
