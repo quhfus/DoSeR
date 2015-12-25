@@ -35,10 +35,6 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 				eckb.getFeatureDefinition(), rep, w2v);
 		simple.setup();
 		simple.solve();
-//		simple = new Word2VecDisambiguator(
-//				eckb.getFeatureDefinition(), rep, w2v);
-//		simple.setup();
-//		simple.solve();
 		rep = simple.getRepresentation();
 		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(
 				eckb.getFeatureDefinition(), rep, w2v);

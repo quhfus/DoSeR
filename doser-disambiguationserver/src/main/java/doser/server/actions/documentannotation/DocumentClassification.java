@@ -15,7 +15,7 @@ import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Time;
 import doser.webclassify.annotation.AnnotateCategories;
 import doser.webclassify.annotation.AnnotateEntities;
-import doser.webclassify.annotation.AnnotateTime;
+//import doser.webclassify.annotation.AnnotateTime;
 import doser.webclassify.dpo.Document;
 import doser.webclassify.dpo.DocumentStatistic;
 import doser.webclassify.dpo.Paragraph;
@@ -46,8 +46,9 @@ public class DocumentClassification {
 					.createEntityDistributionParagraph(map);
 			DisambiguatedEntity disentity = entityAnnotation
 					.extractTopicEntity(map, para);
-			List<Time> time = AnnotateTime.getInstance().annotateTime(map,
-					para.getContent());
+			List<Time> time = null;
+//			AnnotateTime.getInstance().annotateTime(map,
+//					para.getContent());
 			statistic.addStatistic(para.getId(), para.getHeadline(),
 					para.getContent(), disentity, time,
 					sortedList);
@@ -73,8 +74,9 @@ public class DocumentClassification {
 			for (Map.Entry<DisambiguatedEntity, Integer> entry : sortedList) {
 				categoryAnnotation.annotateCategories(entry.getKey());
 			}
-			List<Time> time = AnnotateTime.getInstance().annotateTime(map,
-					para.getContent());
+			List<Time> time = null;
+					//AnnotateTime.getInstance().annotateTime(map,
+//					para.getContent());
 			statistic.addStatistic(para.getId(), para.getHeadline(),
 					para.getContent(), disentity, time,
 					sortedList);

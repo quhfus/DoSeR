@@ -70,6 +70,8 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 				.println("---------------------------------------------------------------------------------------------------------------------------");
 		for (int i = 0; i < entityList.size(); i++) {
 			EntityDisambiguationDPO dpo = entityList.get(i);
+			// Dieser Fix sollte irgendwo anders passieren. TODO Auslagern
+			dpo.setSelectedText(dpo.getSelectedText().replaceAll("’", "'"));
 			Query query = createQuery(dpo, eckb);
 			final IndexSearcher searcher = eckb.getSearcher();
 			final IndexReader reader = searcher.getIndexReader();
