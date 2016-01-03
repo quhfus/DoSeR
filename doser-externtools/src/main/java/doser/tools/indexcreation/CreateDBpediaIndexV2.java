@@ -36,6 +36,13 @@ import org.jgrapht.graph.SimpleGraph;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -56,6 +63,8 @@ import doser.lucene.analysis.DoserIDAnalyzer;
 
 public class CreateDBpediaIndexV2 {
 
+	public static final String SURFACEFORMDIRECTORY = "/home/zwicklbauer/surfaceforms";
+	
 	public static final String OLDINDEX = "/mnt/ssd1/disambiguation/MMapLuceneIndexStandard/";
 	public static final String NEWINDEX = "/home/zwicklbauer/NewIndexTryout";
 
@@ -102,6 +111,8 @@ public class CreateDBpediaIndexV2 {
 	private HashMap<String, HashMap<String, Integer>> OCCURRENCES;
 	private HashMap<String, Integer> DBPEDIAGRAPHINLINKS;
 
+	private HashMap<String, String> urlentitymapping;
+	
 	private int counter;
 
 	private Model labelmodel;
@@ -124,6 +135,8 @@ public class CreateDBpediaIndexV2 {
 		this.evidences = new HashMap<String, String>();
 		this.teams = new HashSet<String>();
 
+		this.urlentitymapping = new HashMap<String, String>();
+		
 		this.entities = new HashSet<String>();
 
 		this.counter = 0;
@@ -801,6 +814,9 @@ public class CreateDBpediaIndexV2 {
 
 				// Add Occurrences
 				HashMap<String, Integer> occs = OCCURRENCES.get(uri);
+				if(uri.equals("http://dbpedia.org/resource/Real_Madrid_C.F.")) {
+					occs.put("real", 5000);
+				}
 				StringBuilder builder = new StringBuilder();
 				if (occs != null) {
 					for (Map.Entry<String, Integer> entry : occs.entrySet()) {
@@ -825,7 +841,7 @@ public class CreateDBpediaIndexV2 {
 					keys = new HashSet<String>();
 				}
 				if (teams.contains(uri)) {
-					keys.addAll(extractSportsTeamNames(labelset));
+					keys.addAll(extractSportsTeamNames(labelset, uri));
 				}
 				// Füge noch weitere Personennamen hinzu
 				keys.addAll(addAdditionalPersonNameOccurrences(uri));
@@ -1226,7 +1242,7 @@ public class CreateDBpediaIndexV2 {
 		}
 	}
 
-	private HashSet<String> extractSportsTeamNames(HashSet<String> set) {
+	private HashSet<String> extractSportsTeamNames(HashSet<String> set, String uri) {
 		HashSet<String> newStringSet = new HashSet<String>();
 		for (String s : set) {
 			String splitter[] = s.split(" ");
@@ -1238,6 +1254,28 @@ public class CreateDBpediaIndexV2 {
 					}
 				}
 			}
+		}
+		
+		uri = uri.replaceAll("http://dbpedia.org/resource/", "");
+		String[] splitter = uri.split("_");
+		if(splitter.length == 2) {
+			String newuri = "http://dbpedia.org/resource/"+splitter[0];
+			if(entities.contains(newuri)) {
+				System.out.println("SPORTSTEAM: "+splitter[0].toLowerCase() + "   "+uri);
+				newStringSet.add(splitter[0].toLowerCase());
+			}
+		} else if(splitter.length > 2) {
+			String newuri = "http://dbpedia.org/resource/"+splitter[0];
+			if(entities.contains(newuri)) {
+				System.out.println("SPORTSTEAM: "+splitter[0].toLowerCase() + "   "+uri);
+				newStringSet.add(splitter[0].toLowerCase());
+			} 
+			newuri = "http://dbpedia.org/resource/"+splitter[0]+"_"+splitter[1];
+			if(entities.contains(newuri)) {
+				String s = splitter[0]+" "+splitter[1];
+				newStringSet.add(s.toLowerCase());
+				System.out.println("SPORTSTEAM: "+s.toLowerCase() + "   "+uri);
+			} 
 		}
 		return newStringSet;
 	}
@@ -1287,18 +1325,6 @@ public class CreateDBpediaIndexV2 {
 		return set;
 	}
 
-	private Set<String> extractEvidences(String evidences) {
-		Set<String> set = new HashSet<String>();
-		String splitter[] = evidences.split(";");
-		for (int i = 0; i < splitter.length; i++) {
-			String evidence = splitter[i].replaceAll("(", "").replaceAll(")",
-					"");
-			String split2[] = evidence.split(",");
-			set.add(split2[0]);
-		}
-		return set;
-	}
-
 	public void addSomeAbbreviations() {
 		for (Map.Entry<String, HashSet<String>> entry : this.UNIQUELABELSTRINGS
 				.entrySet()) {
@@ -1319,6 +1345,143 @@ public class CreateDBpediaIndexV2 {
 					occs.add(builder.toString());
 				}
 			}
+		}
+	}
+	
+	public void addAdditionalSurfaceForms() {
+		// Hack
+		for(String s : entities) {
+			if(!urlentitymapping.containsKey(s.toLowerCase())) {
+				urlentitymapping.put(s.toLowerCase(), s);
+			}
+		}		
+		
+		
+		File folder = new File(SURFACEFORMDIRECTORY);
+		File[] files = folder.listFiles();
+		for (int i = 0; i < files.length; i++) {
+			File f = files[i];
+			try {
+				XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+				FileReader reader = new FileReader(f);
+				InputSource inputSource = new InputSource(reader);
+
+				Handler handler = new Handler();
+				xmlReader.setContentHandler(handler);
+				xmlReader.parse(inputSource);
+			} catch (SAXException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	
+	class Handler implements ContentHandler {
+
+		private String currentValue;
+		private String surfaceForm;
+		private String entityUrl;
+		
+		Handler() {
+			super();
+			surfaceForm = new String("");
+			entityUrl = new String("");
+		}
+		
+		@Override
+		public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+			currentValue += new String(arg0, arg1, arg2);
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void endElement(String arg0, String arg1, String arg2) throws SAXException {
+			if (arg1.equals("SurfaceForm")) {
+				this.surfaceForm = currentValue;
+			}
+			
+			if (arg1.equals("ChosenAnnotation")) {
+				this.entityUrl = currentValue;
+				if(!surfaceForm.equals("") && !entityUrl.equals("")) {
+					entityUrl = entityUrl.trim();
+					entityUrl = entityUrl.replaceAll("http://en.wikipedia.org/wiki/", "");
+					surfaceForm = surfaceForm.trim();
+					entityUrl = WikiPediaUriConverter.createConformDBpediaURI(entityUrl);
+					entityUrl = entityUrl.toLowerCase();
+					if(urlentitymapping.containsKey(entityUrl)) {
+						HashSet<String> set = UNIQUELABELSTRINGS.get(urlentitymapping.get(entityUrl));
+						System.out.println("SurfaceForm: "+surfaceForm.toLowerCase().replaceAll("_", " ")+" URL "+urlentitymapping.get(entityUrl));
+						if(set != null) {
+							set.add(surfaceForm.toLowerCase().replaceAll("_", " "));
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		public void endPrefixMapping(String arg0) throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void processingInstruction(String arg0, String arg1) throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setDocumentLocator(Locator arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void skippedEntity(String arg0) throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void startElement(String arg0, String arg1, String arg2, Attributes arg3) throws SAXException {
+			if (arg2.equals("SurfaceForm")) {
+				surfaceForm = "";
+				entityUrl = "";
+			}
+			if (arg2.equals("SurfaceForm")) {
+				this.currentValue = "";
+			}
+
+			if (arg2.equals("ChosenAnnotation")) {
+				this.currentValue = "";
+			}
+		}
+
+		@Override
+		public void startPrefixMapping(String arg0, String arg1) throws SAXException {
+			// TODO Auto-generated method stub
 		}
 	}
 
@@ -1355,8 +1518,16 @@ public class CreateDBpediaIndexV2 {
 		index.insertWebOccurrences();
 		System.out.println("Step13: CreateSomeAbbreviations");
 		index.addSomeAbbreviations();
-		System.out.println("Step14: CreateIndex");
+		System.out.println("Step15: AddSomeSurfaceForms");
+		index.addAdditionalSurfaceForms();
+		System.out.println("Step16: CreateIndex");
 		index.createNewIndex();
+		
+//		CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
+//		index.addAdditionalSurfaceForms();
+//		HashMap<String, String> map = new HashMap<String, String>();
+//		map.put("Test", "1");
+//		System.out.println(map.containsKey("test"));
 	}
 
 }

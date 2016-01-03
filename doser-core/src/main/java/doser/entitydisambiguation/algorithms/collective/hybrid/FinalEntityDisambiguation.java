@@ -131,7 +131,7 @@ public class FinalEntityDisambiguation extends Word2VecPageRank {
 //								System.out.println("Ich lasse hier Kanten weg!"+v1.getUris().get(0)+" and "+v1.getUris().get(0) + " and "+weight);
 //							}
 //						} else {
-//							addEdge(v1, v2, edgeFactory.create(), weight);
+							addEdge(v1, v2, edgeFactory.create(), weight);
 //						}
 					}
 				}

@@ -13,9 +13,10 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	private boolean isACandidate;
 	private double difference;
 	private int position;
+	private boolean matchesInitial;
+	private boolean initial;
 
-	public SurfaceForm(String surfaceForm, String context, List<String> candidates,
-			int qryNr, int position) {
+	public SurfaceForm(String surfaceForm, String context, List<String> candidates, int qryNr, int position) {
 		super();
 		this.ambiguity = candidates.size();
 		this.surfaceForm = surfaceForm;
@@ -25,6 +26,23 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		this.isACandidate = true;
 		this.difference = 0;
 		this.position = position;
+		this.initial = false;
+	}
+
+	public boolean isMatchesInitial() {
+		return matchesInitial;
+	}
+
+	public void setMatchesInitial(boolean matchesInitial) {
+		this.matchesInitial = matchesInitial;
+	}
+
+	public boolean isInitial() {
+		return initial;
+	}
+
+	public void setInitial(boolean initial) {
+		this.initial = initial;
 	}
 
 	public void setCandidates(List<String> candidates) {
@@ -67,7 +85,7 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	public void clearList() {
 		candidates.clear();
 	}
-	
+
 	public void addCandidate(String can) {
 		candidates.add(can);
 	}
@@ -88,7 +106,6 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		this.position = position;
 	}
 
-
 	@Override
 	public int compareTo(SurfaceForm o) {
 		if (this.difference < o.getDifference()) {
@@ -106,8 +123,8 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 			newCandidates.add(s);
 		}
 
-		SurfaceForm n = new SurfaceForm(new String(this.surfaceForm),
-				new String(this.context), newCandidates, this.queryNr, this.position);
+		SurfaceForm n = new SurfaceForm(new String(this.surfaceForm), new String(this.context), newCandidates,
+				this.queryNr, this.position);
 		n.setACandidate(this.isACandidate);
 
 		return n;

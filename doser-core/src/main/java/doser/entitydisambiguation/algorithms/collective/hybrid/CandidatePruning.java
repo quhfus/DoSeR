@@ -15,14 +15,20 @@ public class CandidatePruning {
 
 	private static final int ENTITYTHRESHOLD = 6;
 
-	private Doc2Vec w2v;
+	private static final int MINIMUMSURFACEFORMS = 3;
+
+	private static final float WORD2VECTHRESHOLD = 1.6f;
+
+	private Doc2Vec d2v;
+	private Word2Vec w2v;
 
 	private EntityCentricKnowledgeBaseDefault eckb;
 
-	CandidatePruning(Doc2Vec w2v, EntityCentricKnowledgeBaseDefault eckb) {
+	CandidatePruning(Word2Vec w2v, Doc2Vec d2v, EntityCentricKnowledgeBaseDefault eckb) {
 		super();
-		this.w2v = w2v;
+		this.d2v = d2v;
 		this.eckb = eckb;
+		this.w2v = w2v;
 	}
 
 	void prune(List<SurfaceForm> rep) {
@@ -30,6 +36,13 @@ public class CandidatePruning {
 		for (SurfaceForm c : rep) {
 			if (c.getCandidates().size() == 1) {
 				unambiguous.add(c);
+			}
+		}
+
+		List<String> list = new LinkedList<String>();
+		for (SurfaceForm sf : rep) {
+			if (rep.size() > 1 && sf.getCandidates().size() == 1 && sf.isInitial()) {
+				list.add(sf.getCandidates().get(0));
 			}
 		}
 
@@ -55,7 +68,7 @@ public class CandidatePruning {
 				Map<String, Float> map_doc2vec = new HashMap<String, Float>();
 				for (String candidate : candidates) {
 
-					map_doc2vec.put(candidate, w2v.getDoc2VecSimilarity(c.getSurfaceForm(), c.getContext(), candidate));
+					map_doc2vec.put(candidate, d2v.getDoc2VecSimilarity(c.getSurfaceForm(), c.getContext(), candidate));
 				}
 				@SuppressWarnings("deprecation")
 				List<Map.Entry<String, Float>> l_doc2vec = HelpfulMethods.sortByValue(map_doc2vec);
@@ -63,39 +76,32 @@ public class CandidatePruning {
 					prunedCandidates.add(l_doc2vec.get(i).getKey());
 				}
 
+				// Check for very relevant Candidates via given Word2Vec
+				// similarities
+				if (list.size() >= MINIMUMSURFACEFORMS) {
+					Set<String> w2vFormatStrings = new HashSet<String>();
+					for (String can : candidates) {
+						if (!prunedCandidates.contains(can)) {
+							String query = this.w2v.generateWord2VecFormatString(list, can);
+							w2vFormatStrings.add(query);
+						}
+					}
+
+					Map<String, Float> similarityMap = this.w2v.getWord2VecSimilarities(w2vFormatStrings);
+					for (String can : candidates) {
+						if (!prunedCandidates.contains(can)) {
+							String query = this.w2v.generateWord2VecFormatString(list, can);
+							float val = similarityMap.get(query);
+							if (val > WORD2VECTHRESHOLD) {
+								System.out.println("Ich add noch die SurfaceForm: " + can + "  " + val);
+								prunedCandidates.add(can);
+							}
+						}
+					}
+				}
+
 				c.setCandidates(new ArrayList<String>(prunedCandidates));
 			}
-
-			/*
-			 * Add an additional candidate to those surface forms that lack the
-			 * correct candidate. This happens if another surface forms
-			 * describes the surface form more explicit. For Instance: Surface
-			 * Form Bob Navegli. Second Surface Form: Bob
-			 */
-//			for (SurfaceForm un : unambiguous) {
-//				boolean contains = false;
-//				String[] splitter = c.getSurfaceForm().toLowerCase().split(" ");
-//				for (int i = 0; i < splitter.length; i++) {
-//					if (un.getSurfaceForm().toLowerCase().contains(splitter[i])) {
-//						contains = true;
-//						break;
-//					}
-//				}
-//				if (contains) {
-//					// Search whether candidate is already available. If not,
-//					// add it!
-//					contains = false;
-//					for (String can : candidates) {
-//						if (can.equals(un.getCandidates().get(0))) {
-//							contains = true;
-//							break;
-//						}
-//					}
-//					if (!contains) {
-//						c.addCandidate(un.getCandidates().get(0));
-//					}
-//				}
-//			}
 		}
 	}
 }

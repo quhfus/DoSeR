@@ -2,6 +2,7 @@ package doser.entitydisambiguation.algorithms.collective.hybrid;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,31 @@ public class Word2Vec {
 	}
 
 	/**
+	 * Takes a set of dbpedia entities as well as a target entity and generates
+	 * one string that fits into the word2vec query format used in this class.
+	 * The source entities are concatenated and should be compared wit the
+	 * target entity.
+	 *
+	 * @param source
+	 *            a set of source entities
+	 * @param target
+	 *            the target entity.
+	 * @return String in appropriate word2vec query format
+	 */
+	public String generateWord2VecFormatString(List<String> source, String target) {
+		StringBuilder builder = new StringBuilder();
+		for (String s : source) {
+			s = s.replaceAll("http://dbpedia.org/resource/", "");
+			builder.append(s);
+			builder.append("|");
+		}
+		String src = builder.toString();
+		src = src.substring(0, src.length() - 1);
+		String t = target.replaceAll("http://dbpedia.org/resource/", "");
+		return src + "|" + t;
+	}
+
+	/**
 	 * Given a set of word2vec queries, this methods retrieves the corresponding
 	 * word2vec similarities. If the similarities of a query is not cashed, we
 	 * query the word2vec server and compute the similarities from scratch.
@@ -88,8 +114,7 @@ public class Word2Vec {
 	 * @return a map that contains the query strings as keys and the
 	 *         similarities as values
 	 */
-	private Map<String, Float> queryWord2VecSimilarities(
-			Set<String> neededSimilarities) {
+	private Map<String, Float> queryWord2VecSimilarities(Set<String> neededSimilarities) {
 		Word2VecJsonFormat format = new Word2VecJsonFormat();
 		format.setData(neededSimilarities);
 		JSONArray res = Word2VecJsonFormat.performquery(format, "w2vsim");

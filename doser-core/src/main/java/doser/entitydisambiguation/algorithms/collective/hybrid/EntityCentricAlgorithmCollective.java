@@ -33,6 +33,8 @@ import doser.lucene.query.TermQuery;
  */
 public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
+	private static final int PREPROCESSINGCONTEXTSIZE = 500;
+
 	private EntityCentricKnowledgeBaseDefault eckb;
 
 	private DisambiguationTaskCollective task;
@@ -61,13 +63,36 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 	@Override
 	public void processAlgorithm() {
-		List<EntityDisambiguationDPO> entityList = task
-				.getEntityToDisambiguate();
+		List<EntityDisambiguationDPO> entityList = task.getEntityToDisambiguate();
 		Response[] responseArray = new Response[entityList.size()];
 
+		// if (entityList.size() == 1) {
+		// EntityDisambiguationDPO dpo = entityList.get(0);
+		// Query query = createQuery(dpo, eckb);
+		// final IndexSearcher searcher = eckb.getSearcher();
+		// final IndexReader reader = searcher.getIndexReader();
+		// try {
+		// final TopDocs top = searcher.search(query, task.getReturnNr());
+		// final ScoreDoc[] score = top.scoreDocs;
+		// ArrayList<String> l = new ArrayList<String>();
+		// for (int j = 0; j < score.length; j++) {
+		// final Document doc = reader.document(score[j].doc);
+		// l.add(doc.get("Mainlink"));
+		// }
+		// SurfaceForm sf = new SurfaceForm(dpo.getSelectedText(),
+		// dpo.getContext(), l, 0, dpo.getStartPosition());
+		// responseArray[0] = singleDisambiguation(sf);
+		// } catch (final IOException e) {
+		// Logger.getRootLogger().error("Lucene Searcher Error: ", e);
+		// e.printStackTrace();
+		// }
+		// List<Response> res = Arrays.asList(responseArray);
+		// task.setResponse(res);
+		// eckb.release();
+		// } else {
 		List<SurfaceForm> collectiveRep = new LinkedList<SurfaceForm>();
-		System.out
-				.println("---------------------------------------------------------------------------------------------------------------------------");
+		System.out.println(
+				"---------------------------------------------------------------------------------------------------------------------------");
 		for (int i = 0; i < entityList.size(); i++) {
 			EntityDisambiguationDPO dpo = entityList.get(i);
 			// Dieser Fix sollte irgendwo anders passieren. TODO Auslagern
@@ -82,25 +107,25 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					final Document doc = reader.document(score[0].doc);
 					ArrayList<String> l = new ArrayList<String>();
 					l.add(doc.get("Mainlink"));
-					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
-							dpo.getContext(), l, i, dpo.getStartPosition());
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
+							dpo.getStartPosition());
+					col.setInitial(true);
 					collectiveRep.add(col);
-					System.out.println("Save Disambiguation: "
-							+ doc.get("Mainlink") + "    "+dpo.getSelectedText());
+					System.out.println("Save Disambiguation: " + doc.get("Mainlink") + "    " + dpo.getSelectedText());
 				} else if (score.length > 1) {
 					ArrayList<String> l = new ArrayList<String>();
 					for (int j = 0; j < score.length; j++) {
 						final Document doc = reader.document(score[j].doc);
 						l.add(doc.get("Mainlink"));
 					}
-					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
-							dpo.getContext(), l, i, dpo.getStartPosition());
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
+							dpo.getStartPosition());
 					collectiveRep.add(col);
 
 				} else {
 					ArrayList<String> l = new ArrayList<String>();
-					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(),
-							dpo.getContext(), l, i, dpo.getStartPosition());
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
+							dpo.getStartPosition());
 					collectiveRep.add(col);
 				}
 
@@ -112,8 +137,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 		// AlgorithmDriver solver = new CollectiveOnlyDriver(
 		// responseArray, collectiveRep, eckb);
-		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray,
-				collectiveRep, eckb);
+		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb);
 		solver.solve();
 
 		solver.generateResult();
@@ -122,12 +146,12 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 		eckb.release();
 	}
+	// }
 
 	public void generateResult(Response[] responseArray, List<SurfaceForm> cols) {
 		for (int i = 0; i < responseArray.length; i++) {
 			SurfaceForm r = search(i, cols);
-			if (responseArray[i] == null && r != null
-					&& r.getCandidates().size() == 1) {
+			if (responseArray[i] == null && r != null && r.getCandidates().size() == 1) {
 				Response res = new Response();
 				List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
 				DisambiguatedEntity ent = new DisambiguatedEntity();
@@ -149,6 +173,44 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 			}
 		}
 		return null;
+	}
+
+	private Response singleDisambiguation(SurfaceForm sf) {
+		List<SurfaceForm> sfList = new LinkedList<SurfaceForm>();
+		sfList.add(sf);
+
+		if (sf.getCandidates().isEmpty()) {
+			return null;
+		} else {
+			if (sf.getCandidates().size() > 1) {
+				Doc2Vec d2v = new Doc2Vec(sfList, 200);
+				LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
+				locationDis.solve(sfList);
+
+				d2v = new Doc2Vec(sfList, PREPROCESSINGCONTEXTSIZE);
+				List<String> s = sf.getCandidates();
+				List<Candidate> canList = new LinkedList<Candidate>();
+				for (String str : s) {
+					double d2vsim = d2v.getDoc2VecSimilarity(sf.getSurfaceForm(), sf.getContext(), str);
+					double sense_prior = eckb.getFeatureDefinition().getOccurrences(sf.getSurfaceForm(), str);
+					double hm = 2 * (d2vsim * sense_prior) / (d2vsim + sense_prior);
+					canList.add(new Candidate(str, sense_prior));
+					sf.setDisambiguatedEntity(canList.get(0).getCandidate());
+				}
+			}
+			Response res = new Response();
+			List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
+			DisambiguatedEntity ent = new DisambiguatedEntity();
+			ent.setEntityUri(sf.getCandidates().get(0));
+			ent.setText("ToDoText");
+			entList.add(ent);
+			res.setDisEntities(entList);
+			res.setStartPosition(-1);
+			res.setSelectedText(sf.getSurfaceForm());
+			return res;
+
+		}
+
 	}
 
 	// protected void sensePriorDisambiguation(CollectiveSFRepresentation col) {
@@ -194,10 +256,10 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		protected double getScore() {
 			return score;
 		}
+
 	}
 
-	private Query createQuery(EntityDisambiguationDPO dpo,
-			EntityCentricKnowledgeBaseDefault kb) {
+	private Query createQuery(EntityDisambiguationDPO dpo, EntityCentricKnowledgeBaseDefault kb) {
 		String sf = dpo.getSelectedText().toLowerCase();
 		TermQuery query = new TermQuery(new Term("UniqueLabel", sf));
 
@@ -290,7 +352,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 	// hitsAlgorithm.setMaxIterations(200);
 	// hitsAlgorithm.evaluate();
 	// for (CurrentEntity ent : graph.getVertices()) {
-	// System.out.println(ent.getUri() + "  \th:"
+	// System.out.println(ent.getUri() + " \th:"
 	// + hitsAlgorithm.getVertexScore(ent).hub + "\ta:"
 	// + hitsAlgorithm.getVertexScore(ent).authority);
 	// ent.setAuthorityValue(hitsAlgorithm.getVertexScore(ent).authority);
@@ -307,8 +369,8 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 	// for (CurrentEntity ent : list) {
 	// int pos = ent.getEntityQuery();
 	// if (ent.isCandidate() && !bitset.get(pos)) {
-	// System.out.println(ent.getEntityQuery() + "   " + ent.getUri()
-	// + "    " + ent.getAuthorityValue());
+	// System.out.println(ent.getEntityQuery() + " " + ent.getUri()
+	// + " " + ent.getAuthorityValue());
 	// bitset.set(ent.getEntityQuery());
 	// }
 	// }
@@ -392,7 +454,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 	// hitsAlgorithm.setMaxIterations(20);
 	// hitsAlgorithm.evaluate();
 	// for (CurrentEntity ent : graph.getVertices()) {
-	// System.out.println(ent.getUri() + "  \th:"
+	// System.out.println(ent.getUri() + " \th:"
 	// + hitsAlgorithm.getVertexScore(ent).hub + "\ta:"
 	// + hitsAlgorithm.getVertexScore(ent).authority);
 	// }

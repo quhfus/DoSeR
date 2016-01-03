@@ -20,16 +20,16 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 
 	@Override
 	public void solve() {
+		Word2Vec w2v = new Word2Vec();
 		// First candidate pruning
-		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
+		CandidatePruning pruning = new CandidatePruning(w2v, d2v, eckb);
 		pruning.prune(rep);
+		
 		LocationDisambiguation locationDis = new LocationDisambiguation(d2v,
 				eckb);
 		locationDis.solve(rep);
-		RuleAdapation rules = new RuleAdapation(eckb);
+		RuleAdapation rules = new RuleAdapation(eckb, w2v);
 		rules.performRuleChainBeforeCandidateSelection(rep);
-
-		Word2Vec w2v = new Word2Vec();
 
 		Word2VecDisambiguator simple = new Word2VecDisambiguator(
 				eckb.getFeatureDefinition(), rep, w2v);
