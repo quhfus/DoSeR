@@ -13,11 +13,13 @@ import doser.general.HelpfulMethods;
 
 public class CandidatePruning {
 
+	private static final int NUMBEROFADDITIONALW2VENTITIES = 6;
+
 	private static final int ENTITYTHRESHOLD = 6;
 
 	private static final int MINIMUMSURFACEFORMS = 3;
 
-	private static final float WORD2VECTHRESHOLD = 1.6f;
+	private static final float WORD2VECTHRESHOLD = 1.60f;
 
 	private Doc2Vec d2v;
 	private Word2Vec w2v;
@@ -72,9 +74,19 @@ public class CandidatePruning {
 				}
 				@SuppressWarnings("deprecation")
 				List<Map.Entry<String, Float>> l_doc2vec = HelpfulMethods.sortByValue(map_doc2vec);
-				for (int i = 0; i < ENTITYTHRESHOLD; ++i) {
-					prunedCandidates.add(l_doc2vec.get(i).getKey());
+				int added = 0;
+				int counter = 0;
+				while (counter < l_doc2vec.size() && added < 4) {
+					String key = l_doc2vec.get(counter).getKey();
+					if (!prunedCandidates.contains(key)) {
+						prunedCandidates.add(key);
+						added++;
+					}
+					counter++;
 				}
+//				for (int i = 0; i < ENTITYTHRESHOLD; ++i) {
+//					prunedCandidates.add(l_doc2vec.get(i).getKey());
+//				}
 
 				// Check for very relevant Candidates via given Word2Vec
 				// similarities
@@ -88,14 +100,22 @@ public class CandidatePruning {
 					}
 
 					Map<String, Float> similarityMap = this.w2v.getWord2VecSimilarities(w2vFormatStrings);
+					Map<String, Integer> occmap = new HashMap<String, Integer>();
 					for (String can : candidates) {
 						if (!prunedCandidates.contains(can)) {
 							String query = this.w2v.generateWord2VecFormatString(list, can);
 							float val = similarityMap.get(query);
 							if (val > WORD2VECTHRESHOLD) {
-								System.out.println("Ich add noch die SurfaceForm: " + can + "  " + val);
-								prunedCandidates.add(can);
+								occmap.put(can, eckb.getFeatureDefinition().getOccurrences(c.getSurfaceForm(), can));
+//								prunedCandidates.add(can);
 							}
+						}
+					}
+					@SuppressWarnings("deprecation")
+					List<Map.Entry<String, Integer>> sortedl = HelpfulMethods.sortByValue(occmap);
+					for (int i = 0; i < NUMBEROFADDITIONALW2VENTITIES; ++i) {
+						if (i < sortedl.size()) {
+							prunedCandidates.add(sortedl.get(i).getKey());
 						}
 					}
 				}

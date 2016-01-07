@@ -15,6 +15,7 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 	private int position;
 	private boolean matchesInitial;
 	private boolean initial;
+	private boolean isRelevant;
 
 	public SurfaceForm(String surfaceForm, String context, List<String> candidates, int qryNr, int position) {
 		super();
@@ -27,7 +28,22 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		this.difference = 0;
 		this.position = position;
 		this.initial = false;
+		this.isRelevant = true;
 	}
+
+	
+	
+	public boolean isRelevant() {
+		return isRelevant;
+	}
+
+
+
+	public void setRelevant(boolean isRelevant) {
+		this.isRelevant = isRelevant;
+	}
+
+
 
 	public boolean isMatchesInitial() {
 		return matchesInitial;
@@ -126,7 +142,9 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		SurfaceForm n = new SurfaceForm(new String(this.surfaceForm), new String(this.context), newCandidates,
 				this.queryNr, this.position);
 		n.setACandidate(this.isACandidate);
-
+		n.setInitial(this.initial);
+		n.setMatchesInitial(this.matchesInitial);
+		n.setRelevant(this.isRelevant);
 		return n;
 	}
 }

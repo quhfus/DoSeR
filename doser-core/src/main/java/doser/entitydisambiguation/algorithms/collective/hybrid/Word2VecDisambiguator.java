@@ -17,14 +17,24 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
 public class Word2VecDisambiguator extends Word2VecPageRank {
 
-	private static final int MAXIMUMCANDIDATESPERSF = 8;
+//	private static final int MAXIMUMCANDIDATESPERSF = 8;
 
-	public List<SurfaceForm> origList;
+	private List<SurfaceForm> origList;
+	
+	private boolean disambiguate;
+	
+	private int maximumcandidatespersf;
+	
+	private int iterations;
+	
 
 	public Word2VecDisambiguator(EnCenExtFeatures featureDefinition,
-			List<SurfaceForm> rep, Word2Vec w2v) {
+			List<SurfaceForm> rep, Word2Vec w2v, boolean disambiguate, int maximumcandidatespersf, int iterations) {
 		super(featureDefinition, rep, w2v);
 		this.origList = new ArrayList<SurfaceForm>();
+		this.disambiguate = disambiguate;
+		this.maximumcandidatespersf = maximumcandidatespersf;
+		this.iterations = iterations;
 	}
 
 	@Override
@@ -58,7 +68,7 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
 				getRootPrior(graph.getVertices()), 0.09);
-		pr.setMaxIterations(250);
+		pr.setMaxIterations(iterations);
 		pr.evaluate();
 		return pr;
 	}
@@ -68,7 +78,7 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 		boolean disambiguationStop = true;
 		Collection<Vertex> vertexCol = graph.getVertices();
 		for (int i = 0; i < repList.size(); i++) {
-			if (!disambiguatedSurfaceForms.get(i)) {
+			if (!disambiguatedSurfaceForms.get(i) && repList.get(i).isRelevant()) {
 				int qryNr = repList.get(i).getQueryNr();
 				double maxScore = 0;
 				SummaryStatistics stats = new SummaryStatistics();
@@ -92,7 +102,7 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 				double secondMax = scores.get(1).score;
 				
 				List<String> newCandidates = new ArrayList<String>();
-				for(int j = 0; j < MAXIMUMCANDIDATESPERSF; j++) {
+				for(int j = 0; j < maximumcandidatespersf; j++) {
 					if(scores.size() > j) {
 						newCandidates.add(scores.get(j).can);
 					} else {
@@ -103,7 +113,7 @@ public class Word2VecDisambiguator extends Word2VecPageRank {
 				if (!Double.isInfinite(maxScore)) {
 					double avg = stats.getMean();
 					double threshold = computeThreshold(avg, maxScore);
-					if (secondMax < threshold) {
+					if (secondMax < threshold && disambiguate) {
 						updateGraph(rep.getCandidates(), tempSolution,
 								rep.getQueryNr());
 						rep.setDisambiguatedEntity(tempSolution);

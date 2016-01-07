@@ -127,6 +127,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
 							dpo.getStartPosition());
 					collectiveRep.add(col);
+					System.out.println("ICH FINE ABSOLUT KEINE SURFACE FORM: "+dpo.getSelectedText());
 				}
 
 			} catch (final IOException e) {

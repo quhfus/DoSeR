@@ -24,15 +24,20 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 		// First candidate pruning
 		CandidatePruning pruning = new CandidatePruning(w2v, d2v, eckb);
 		pruning.prune(rep);
-		
+		TimeNumberDisambiguation timenumberdis = new TimeNumberDisambiguation(eckb);
+		timenumberdis.solve(rep);
 		LocationDisambiguation locationDis = new LocationDisambiguation(d2v,
 				eckb);
 		locationDis.solve(rep);
 		RuleAdapation rules = new RuleAdapation(eckb, w2v);
 		rules.performRuleChainBeforeCandidateSelection(rep);
 
+		CandidateReductionW2V w2vreduction = new CandidateReductionW2V(eckb, rep, w2v);
+		w2vreduction.solve();
+		rep = w2vreduction.getRep();
+		
 		Word2VecDisambiguator simple = new Word2VecDisambiguator(
-				eckb.getFeatureDefinition(), rep, w2v);
+				eckb.getFeatureDefinition(), rep, w2v, true, 8, 250);
 		simple.setup();
 		simple.solve();
 		rep = simple.getRepresentation();

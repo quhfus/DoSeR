@@ -92,6 +92,10 @@ public final class Properties {
 		return this.config.getString("dbpedia.mappingbasedtypes");
 	}
 	
+	public String getDBpediaRedirects() {
+		return this.config.getString("dbpedia.redirects");
+	}
+	
 	public int getDisambiguationResultSize() {
 		final String size = this.config.getString("disambiguation.returnSize");
 		return Integer.valueOf(size);
