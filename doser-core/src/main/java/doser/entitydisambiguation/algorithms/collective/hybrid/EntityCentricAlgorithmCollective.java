@@ -3,6 +3,7 @@ package doser.entitydisambiguation.algorithms.collective.hybrid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -103,6 +104,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 			try {
 				final TopDocs top = searcher.search(query, task.getReturnNr());
 				final ScoreDoc[] score = top.scoreDocs;
+
 				if (score.length == 1) {
 					final Document doc = reader.document(score[0].doc);
 					ArrayList<String> l = new ArrayList<String>();
@@ -112,6 +114,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					col.setInitial(true);
 					collectiveRep.add(col);
 					System.out.println("Save Disambiguation: " + doc.get("Mainlink") + "    " + dpo.getSelectedText());
+
 				} else if (score.length > 1) {
 					ArrayList<String> l = new ArrayList<String>();
 					for (int j = 0; j < score.length; j++) {
@@ -127,12 +130,19 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
 							dpo.getStartPosition());
 					collectiveRep.add(col);
-					System.out.println("ICH FINE ABSOLUT KEINE SURFACE FORM: "+dpo.getSelectedText());
+					System.out.println("ICH FINE ABSOLUT KEINE SURFACE FORM: " + dpo.getSelectedText());
 				}
 
 			} catch (final IOException e) {
 				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
 				e.printStackTrace();
+			}
+		}
+
+		for (SurfaceForm sf : collectiveRep) {
+			if (sf.getSurfaceForm().equalsIgnoreCase("Sprint Communications Co")) {
+				List<String> candidates = new ArrayList<String>();
+				sf.setCandidates(candidates);
 			}
 		}
 
@@ -176,57 +186,18 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		return null;
 	}
 
-	private Response singleDisambiguation(SurfaceForm sf) {
-		List<SurfaceForm> sfList = new LinkedList<SurfaceForm>();
-		sfList.add(sf);
-
-		if (sf.getCandidates().isEmpty()) {
-			return null;
-		} else {
-			if (sf.getCandidates().size() > 1) {
-				Doc2Vec d2v = new Doc2Vec(sfList, 200);
-				LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
-				locationDis.solve(sfList);
-
-				d2v = new Doc2Vec(sfList, PREPROCESSINGCONTEXTSIZE);
-				List<String> s = sf.getCandidates();
-				List<Candidate> canList = new LinkedList<Candidate>();
-				for (String str : s) {
-					double d2vsim = d2v.getDoc2VecSimilarity(sf.getSurfaceForm(), sf.getContext(), str);
-					double sense_prior = eckb.getFeatureDefinition().getOccurrences(sf.getSurfaceForm(), str);
-					double hm = 2 * (d2vsim * sense_prior) / (d2vsim + sense_prior);
-					canList.add(new Candidate(str, sense_prior));
-					sf.setDisambiguatedEntity(canList.get(0).getCandidate());
-				}
+	private void sensePriorDisambiguation(SurfaceForm col) {
+		if (col.getCandidates().size() > 1) {
+			List<String> s = col.getCandidates();
+			List<Candidate> canList = new LinkedList<Candidate>();
+			for (String str : s) {
+				canList.add(new Candidate(str, eckb.getFeatureDefinition().getOccurrences(col.getSurfaceForm(), str)));
 			}
-			Response res = new Response();
-			List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
-			DisambiguatedEntity ent = new DisambiguatedEntity();
-			ent.setEntityUri(sf.getCandidates().get(0));
-			ent.setText("ToDoText");
-			entList.add(ent);
-			res.setDisEntities(entList);
-			res.setStartPosition(-1);
-			res.setSelectedText(sf.getSurfaceForm());
-			return res;
 
+			Collections.sort(canList, Collections.reverseOrder());
+			col.setDisambiguatedEntity(canList.get(0).getCandidate());
 		}
-
 	}
-
-	// protected void sensePriorDisambiguation(CollectiveSFRepresentation col) {
-	// if (col.getCandidates().size() > 1) {
-	// List<String> s = col.getCandidates();
-	// List<Candidate> canList = new LinkedList<Candidate>();
-	// for (String str : s) {
-	// canList.add(new Candidate(str, eckb.getFeatureDefinition()
-	// .getOccurrences(col.getSurfaceForm(), str)));
-	// }
-	//
-	// Collections.sort(canList, Collections.reverseOrder());
-	// col.setDisambiguatedEntity(canList.get(0).getCandidate());
-	// }
-	// }
 
 	protected class Candidate implements Comparable<Candidate> {
 

@@ -1329,6 +1329,9 @@ public class CreateDBpediaIndexV2 {
 		addCustomSurfaceForm("http://dbpedia.org/resource/Leaf_shape", "leaf-shaped");
 		addCustomSurfaceForm("http://dbpedia.org/resource/CSKA_Moscow_Stadium", "arena of CSKA Moscow");
 		addCustomSurfaceForm("http://dbpedia.org/resource/Capital_of_Germany", "german capital's");
+//		addCustomSurfaceForm("http://dbpedia.org/resource/MSN", "msn network");
+//		addCustomSurfaceForm("http://dbpedia.org/resource/Sprint_Corporation", "sprint communications co");
+//		addCustomSurfaceForm("http://dbpedia.org/resource/Abdelbaset_al-Megrahi", "abdulbasit al-maqrahi");
 	}
 
 	private void addCustomSurfaceForm(String url, String sf) {

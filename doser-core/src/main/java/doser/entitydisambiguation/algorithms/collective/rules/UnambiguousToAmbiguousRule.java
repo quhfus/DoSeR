@@ -95,9 +95,13 @@ public class UnambiguousToAmbiguousRule extends Rule {
 		try {
 			TopDocs docs = searcher.search(q, 1);
 			ScoreDoc[] scoredocs = docs.scoreDocs;
-			int nr = scoredocs[0].doc;
-			Document doc = searcher.getIndexReader().document(nr);
-			type = doc.get("Type");
+			if(scoredocs.length == 0) {
+				type = "Misc";
+			} else {
+				int nr = scoredocs[0].doc;
+				Document doc = searcher.getIndexReader().document(nr);
+				type = doc.get("Type");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

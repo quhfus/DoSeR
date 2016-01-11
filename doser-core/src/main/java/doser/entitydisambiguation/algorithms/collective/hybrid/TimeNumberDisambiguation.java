@@ -32,13 +32,13 @@ public class TimeNumberDisambiguation {
 		private static final long serialVersionUID = 1L;
 
 		{
-			put("Monday", "http://dbpedia.org/resource/Monday");
-			put("Tuesday", "http://dbpedia.org/resource/Tuesday");
-			put("Wednesday", "http://dbpedia.org/resource/Wednesday");
-			put("Thursday", "http://dbpedia.org/resource/Thursday");
-			put("Friday", "http://dbpedia.org/resource/Friday");
-			put("Saturday", "http://dbpedia.org/resource/Saturday");
-			put("Sunday", "http://dbpedia.org/resource/Sunday");
+			put("monday", "http://dbpedia.org/resource/Monday");
+			put("tuesday", "http://dbpedia.org/resource/Tuesday");
+			put("wednesday", "http://dbpedia.org/resource/Wednesday");
+			put("thursday", "http://dbpedia.org/resource/Thursday");
+			put("friday", "http://dbpedia.org/resource/Friday");
+			put("saturday", "http://dbpedia.org/resource/Saturday");
+			put("sunday", "http://dbpedia.org/resource/Sunday");
 			put("one", "http://dbpedia.org/resource/1_(number)");
 			put("two", "http://dbpedia.org/resource/2_(number)");
 			put("three", "http://dbpedia.org/resource/3_(number)");
@@ -83,6 +83,12 @@ public class TimeNumberDisambiguation {
 			put("december", "http://dbpedia.org/resource/December");
 			put("mile", "http://dbpedia.org/resource/Mile");
 			put("miles", "http://dbpedia.org/resource/Mile");
+			put("hour", "http://dbpedia.org/resource/Hour");
+			put("hours", "http://dbpedia.org/resource/Hour");
+			put("second", "http://dbpedia.org/resource/Second");
+			put("week", "http://dbpedia.org/resource/Week");
+			put("weeks", "http://dbpedia.org/resource/Week");
+			put("socialist party", "http://dbpedia.org/resource/Socialist_Party_of_Serbia");
 		}
 	};
 
