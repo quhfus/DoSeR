@@ -29,6 +29,9 @@ public class PatternRule extends Rule {
 			@SuppressWarnings("deprecation")
 			List<Map.Entry<String, Integer>> list = HelpfulMethods
 					.sortByValue(map);
+			if(list.size() == 0) {
+				return false;
+			}
 			Map.Entry<String, Integer> entry = list.get(0);
 			String termToWatch = entry.getKey();
 
