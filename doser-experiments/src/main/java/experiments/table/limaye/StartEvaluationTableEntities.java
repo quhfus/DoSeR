@@ -145,6 +145,7 @@ public class StartEvaluationTableEntities {
 			dpo.setDocumentId("");
 			dpo.setContext(cell.getCellContent());
 			dpo.setSelectedText(cell.getCellContent());
+//			System.out.println(cell.getCellContent());
 			dpo.setStartPosition(0);
 			list.add(dpo);
 		}

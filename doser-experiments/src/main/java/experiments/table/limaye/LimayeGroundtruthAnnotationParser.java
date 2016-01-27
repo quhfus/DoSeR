@@ -162,6 +162,7 @@ public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 				try {
 					if (c != null) {
 						Cell ce = c.getCellList().get(row);
+//						String gt = checkRedirects(WikiPediaUriConverter.createConformDBpediaUrifromEncodedString(currentValue.toString()));
 						String gt = "http://dbpedia.org/resource/"
 								+ URLDecoder
 										.decode(checkRedirects(unescapeHTMLCharacters(currentValue

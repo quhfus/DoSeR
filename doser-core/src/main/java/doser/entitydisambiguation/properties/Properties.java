@@ -165,6 +165,15 @@ public final class Properties {
 		return this.config.getString("nounphrasemodel");
 	}
 	
+	public boolean getCandidateExpansion() {
+		boolean bool = false;
+		String s = this.config.getString("candidateExpansion");
+		if(s.equalsIgnoreCase("true")) {
+			bool = true;
+		}
+		return bool;
+	}
+	
 	public boolean getHBaseStorage() {
 		boolean bool = false;
 		String s = this.config.getString("writeHBase");

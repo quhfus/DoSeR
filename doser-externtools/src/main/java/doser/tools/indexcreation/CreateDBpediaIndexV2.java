@@ -785,6 +785,10 @@ public class CreateDBpediaIndexV2 {
 					keys.addAll(extractSportsTeamNames(labelset, uri));
 				}
 				// Füge noch weitere Personennamen hinzu
+				// Flip Person Names Vorname <=> Nachname
+				if(type.equalsIgnoreCase("Person")) {
+					keys.addAll(addSomeMorePersonNames(uri));
+				}
 				keys.addAll(addAdditionalPersonNameOccurrences(uri));
 				for (String s : origLabels) {
 					keys.add(s.toLowerCase());
@@ -876,6 +880,37 @@ public class CreateDBpediaIndexV2 {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private HashSet<String> addSomeMorePersonNames(final String uri) {
+		HashSet<String> names = new HashSet<String>();
+		try {
+			final String query = "SELECT ?name WHERE{ <" + uri + "> <http://xmlns.com/foaf/0.1/name> ?name. }";
+			ResultSet results = null;
+			QueryExecution qexec = null;
+
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
+			qexec = QueryExecutionFactory.create(cquery, this.persondata);
+			results = qexec.execSelect();
+
+			if (results != null) {
+				while (results.hasNext()) {
+					final QuerySolution sol = results.nextSolution();
+					final String surname = sol.getLiteral("name").getLexicalForm();
+					names.add(surname.toLowerCase());
+				}
+				qexec.close();
+			}
+		} catch (QueryParseException e) {
+			Logger.getRootLogger().info("Query parse Exception");
+		}
+		String reducedUri = uri.replaceAll("http://dbpedia.org/resource/", "");
+		String splitter[] = reducedUri.split("_");
+		if(splitter.length == 2) {
+			names.add((splitter[0]+" "+splitter[1]).toLowerCase());
+			names.add((splitter[1]+" "+splitter[0]).toLowerCase());
+		}
+		return names;
 	}
 
 	public List<String> getDbPediaLabel(final String uri) throws QueryException, QueryParseException {
@@ -1329,9 +1364,9 @@ public class CreateDBpediaIndexV2 {
 		addCustomSurfaceForm("http://dbpedia.org/resource/Leaf_shape", "leaf-shaped");
 		addCustomSurfaceForm("http://dbpedia.org/resource/CSKA_Moscow_Stadium", "arena of CSKA Moscow");
 		addCustomSurfaceForm("http://dbpedia.org/resource/Capital_of_Germany", "german capital's");
-//		addCustomSurfaceForm("http://dbpedia.org/resource/MSN", "msn network");
-//		addCustomSurfaceForm("http://dbpedia.org/resource/Sprint_Corporation", "sprint communications co");
-//		addCustomSurfaceForm("http://dbpedia.org/resource/Abdelbaset_al-Megrahi", "abdulbasit al-maqrahi");
+		addCustomSurfaceForm("http://dbpedia.org/resource/MSN", "msn network");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Sprint_Corporation", "sprint communications co");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Abdelbaset_al-Megrahi", "abdulbasit al-maqrahi");
 	}
 
 	private void addCustomSurfaceForm(String url, String sf) {

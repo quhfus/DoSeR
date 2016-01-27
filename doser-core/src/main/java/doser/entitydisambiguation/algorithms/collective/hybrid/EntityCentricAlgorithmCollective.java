@@ -36,8 +36,6 @@ import doser.lucene.query.TermQuery;
  */
 public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
-	private static final int PREPROCESSINGCONTEXTSIZE = 500;
-
 	private EntityCentricKnowledgeBaseDefault eckb;
 
 	private DisambiguationTaskCollective task;
@@ -66,6 +64,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 	@Override
 	public void processAlgorithm() {
+		AdditionalCandidateQuery aq = new AdditionalCandidateQuery(eckb);
 		List<EntityDisambiguationDPO> entityList = task.getEntityToDisambiguate();
 		Response[] responseArray = new Response[entityList.size()];
 
@@ -110,25 +109,8 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 					collectiveRep.add(col);
 
 				} else {
-					System.out.println("ICH FINE ABSOLUT KEINE SURFACE FORM: " + dpo.getSelectedText());
-					System.out.println("Ich versuchs nochmal und zwar mit ");
-					String s = dpo.getSelectedText();
-					Pattern regex = Pattern.compile(" ([,!?.])");
-					Matcher regexMatcher = regex.matcher(s);
-					StringBuffer buffer = new StringBuffer();
-					while (regexMatcher.find()) {
-						regexMatcher.appendReplacement(buffer, regexMatcher.group(1));
-					}
-					regexMatcher.appendTail(buffer);
-					if (!dpo.getSelectedText().equalsIgnoreCase(buffer.toString())) {
-						System.out.println("Ich führe einen neuen SearchRun durch!");
-						anotherSearchRun(buffer.toString(), searcher, collectiveRep, i, dpo);
-					} else {
-						ArrayList<String> l = new ArrayList<String>();
-						SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
-								dpo.getStartPosition());
-						collectiveRep.add(col);
-					}
+					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
+					collectiveRep.add(sf);
 				}
 
 			} catch (final IOException e) {
@@ -154,44 +136,6 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 		task.setResponse(res);
 
 		eckb.release();
-	}
-
-	private void anotherSearchRun(String newSf, IndexSearcher searcher, List<SurfaceForm> colRep, int iteration,
-			EntityDisambiguationDPO dpo) {
-		IndexReader reader = searcher.getIndexReader();
-		Query query = createQuery(newSf, eckb);
-		try {
-			final TopDocs top = searcher.search(query, task.getReturnNr());
-			final ScoreDoc[] score = top.scoreDocs;
-			if (score.length == 1) {
-				final Document doc = reader.document(score[0].doc);
-				ArrayList<String> l = new ArrayList<String>();
-				l.add(doc.get("Mainlink"));
-				SurfaceForm col = new SurfaceForm(newSf, dpo.getContext(), l, iteration, dpo.getStartPosition());
-				col.setInitial(true);
-				colRep.add(col);
-
-			} else if (score.length > 1) {
-				ArrayList<String> l = new ArrayList<String>();
-				for (int j = 0; j < score.length; j++) {
-					final Document doc = reader.document(score[j].doc);
-					l.add(doc.get("Mainlink"));
-				}
-				SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, iteration,
-						dpo.getStartPosition());
-				colRep.add(col);
-
-			} else {
-				ArrayList<String> l = new ArrayList<String>();
-				SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, iteration,
-						dpo.getStartPosition());
-				colRep.add(col);
-			}
-
-		} catch (final IOException e) {
-			Logger.getRootLogger().error("Lucene Searcher Error: ", e);
-			e.printStackTrace();
-		}
 	}
 
 	public void generateResult(Response[] responseArray, List<SurfaceForm> cols) {
