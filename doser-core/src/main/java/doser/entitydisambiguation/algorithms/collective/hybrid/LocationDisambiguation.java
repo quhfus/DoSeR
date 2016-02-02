@@ -36,7 +36,7 @@ class LocationDisambiguation {
 
 	void solve(List<SurfaceForm> reps) {
 		for (SurfaceForm c : reps) {
-			if (c.getCandidates().size() > 1) {
+			if (c.getCandidates().size() > 1 && !c.isMatchesInitial()) {
 				disambiguate(c);
 			}
 		}

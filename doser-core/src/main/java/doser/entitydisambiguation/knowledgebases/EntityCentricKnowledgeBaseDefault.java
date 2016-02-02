@@ -303,8 +303,8 @@ public class EntityCentricKnowledgeBaseDefault extends KnowledgeBase {
 			if (indexsensePriorHashMapBlanc.containsKey(entity)) {
 				final HashMap<Integer, Integer> hash = indexsensePriorHashMapBlanc
 						.get(entity);
-				if (hash.containsKey(sf.toLowerCase(Locale.US).hashCode())) {
-					res = hash.get(sf.toLowerCase(Locale.US).hashCode());
+				if (hash.containsKey(sf.toLowerCase().hashCode())) {
+					res = hash.get(sf.toLowerCase().hashCode());
 				}
 			}
 			return (res + 1);

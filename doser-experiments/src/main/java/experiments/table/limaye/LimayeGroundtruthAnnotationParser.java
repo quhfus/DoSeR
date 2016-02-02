@@ -2,7 +2,10 @@ package experiments.table.limaye;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
@@ -12,6 +15,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
@@ -26,11 +30,11 @@ import experiments.table.limaye.Table.Column.Cell;
 
 public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 
-	private final static String REDIRECTS = "/home/quh/HDT/dbpedia_redirects.hdt";
+	private final static String REDIRECTS = "/home/quh/HDT/redirects.hdt";
 
-	private final static String LABELS = "/home/quh/HDT/dbpedia_labels.hdt";
+	private final static String LABELS = "/home/quh/HDT/labels.hdt";
 
-	private final static String DISAMBIGUATION = "/home/quh/HDT/dbpedia_disambiguation.hdt";
+	private final static String TYPES = "/home/quh/HDT/instance-types.hdt";
 
 	private Table table;
 
@@ -64,18 +68,18 @@ public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 		this.currentValue = new StringBuilder();
 		HDT hdt = null;
 		HDT hdt_l = null;
-		HDT hdt_d = null;
+//		HDT hdt_d = null;
 		try {
 			hdt = HDTManager.mapIndexedHDT(REDIRECTS, null);
 			hdt_l = HDTManager.mapIndexedHDT(LABELS, null);
-			hdt_d = HDTManager.mapIndexedHDT(DISAMBIGUATION, null);
+//			hdt_d = HDTManager.mapIndexedHDT(TYPES, null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		HDTGraph graph = new HDTGraph(hdt);
 		m = ModelFactory.createModelForGraph(graph);
-		graph = new HDTGraph(hdt_d);
-		m_d = ModelFactory.createModelForGraph(graph);
+//		graph = new HDTGraph(hdt_d);
+//		m_d = ModelFactory.createModelForGraph(graph);
 		graph = new HDTGraph(hdt_l);
 		m_l = ModelFactory.createModelForGraph(graph);
 
@@ -162,14 +166,13 @@ public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 				try {
 					if (c != null) {
 						Cell ce = c.getCellList().get(row);
+//						String gt = checkRedirects(WikiPediaUriConverter.createConformDBpediaUrifromEncodedString(currentValue.toString()));
 						String gt = "http://dbpedia.org/resource/"
 								+ URLDecoder
-										.decode(checkRedirects(unescapeHTMLCharacters(currentValue
-												.toString())), "UTF-8");
+										.decode(unescapeHTMLCharacters(currentValue
+												.toString()), "UTF-8");
+						gt = checkRedirects(gt);
 						gt = checkAvailability(gt);
-						if (!gt.equalsIgnoreCase("")) {
-							gt = checkDisambiguationPage(gt);
-						}
 						ce.setGt(gt);
 					}
 				} catch (Exception e) {
@@ -216,23 +219,6 @@ public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 
 	}
 
-	private String checkDisambiguationPage(String resource) {
-		try {
-			Query query = QueryFactory
-					.create("SELECT ?dis WHERE{ <"
-							+ resource
-							+ "> <http://dbpedia.org/ontology/wikiPageDisambiguates> ?dis. }");
-			QueryExecution qe = QueryExecutionFactory.create(query, this.m_d);
-			ResultSet results = qe.execSelect();
-			if (!results.hasNext()) {
-				return resource;
-			}
-		} catch (Exception e) {
-			return "";
-		}
-		return "";
-	}
-
 	private String checkAvailability(String resource) {
 		try {
 			Query query = QueryFactory
@@ -255,16 +241,14 @@ public class LimayeGroundtruthAnnotationParser implements ContentHandler {
 		try {
 
 			Query query = QueryFactory
-					.create("SELECT ?redirect WHERE{ <http://dbpedia.org/resource/"
+					.create("SELECT ?redirect WHERE{ <"
 							+ resource
 							+ "> <http://dbpedia.org/ontology/wikiPageRedirects> ?redirect. }");
 			QueryExecution qe = QueryExecutionFactory.create(query, this.m);
 			ResultSet results = qe.execSelect();
 			while (results.hasNext()) {
 				QuerySolution sol = results.nextSolution();
-				result = sol.getResource("redirect").toString();
-				String splitter[] = result.split("/");
-				result = splitter[splitter.length - 1];
+				result = sol.getResource("redirect").getURI();
 			}
 		} catch (Exception e) {
 			return resource;

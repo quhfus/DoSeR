@@ -20,6 +20,10 @@ public abstract class DisambiguationAlgorithm {
 
 	public static String extractContext(int position, String text,
 			int contextarea) {
+		if(text == null || text.length() == 0) {
+			return "";
+		}
+		
 		long startArea = position - contextarea;
 		long endArea = position + contextarea;
 		if (startArea < 0) {

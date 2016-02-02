@@ -11,37 +11,40 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 	static final int PREPROCESSINGCONTEXTSIZE = 200;
 
 	private Doc2Vec d2v;
+	
+	private String topic;
 
-	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep,
-			EntityCentricKnowledgeBaseDefault eckb) {
+	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep, EntityCentricKnowledgeBaseDefault eckb, String topic) {
 		super(res, rep, eckb);
 		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
+		this.topic = topic;
 	}
 
 	@Override
 	public void solve() {
+		Word2Vec w2v = new Word2Vec();
 		// First candidate pruning
-		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
+		CandidatePruning pruning = new CandidatePruning(w2v, d2v, eckb);
 		pruning.prune(rep);
-		LocationDisambiguation locationDis = new LocationDisambiguation(d2v,
-				eckb);
+		if(topic != null) {
+			TableColumnFilter cf = new TableColumnFilter(eckb, topic);
+			cf.filter(rep);
+		}
+		TimeNumberDisambiguation timenumberdis = new TimeNumberDisambiguation(eckb);
+		timenumberdis.solve(rep);
+		LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
 		locationDis.solve(rep);
-		RuleAdapation rules = new RuleAdapation(eckb);
+		RuleAdapation rules = new RuleAdapation(eckb, w2v, topic);
 		rules.performRuleChainBeforeCandidateSelection(rep);
 
-		Word2Vec w2v = new Word2Vec();
+		CandidateReductionW2V w2vreduction = new CandidateReductionW2V(eckb, rep, w2v, 20, 5, 125, false, false);
+		w2vreduction.solve();
+		rep = w2vreduction.getRep();
 
-		Word2VecDisambiguator simple = new Word2VecDisambiguator(
-				eckb.getFeatureDefinition(), rep, w2v);
-		simple.setup();
-		simple.solve();
-//		simple = new Word2VecDisambiguator(
-//				eckb.getFeatureDefinition(), rep, w2v);
-//		simple.setup();
-//		simple.solve();
-		rep = simple.getRepresentation();
-		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(
-				eckb.getFeatureDefinition(), rep, w2v);
+		w2vreduction = new CandidateReductionW2V(eckb, rep, w2v, 45, 5, 250, true, true);
+		w2vreduction.solve();
+		rep = w2vreduction.getRep();
+		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(eckb.getFeatureDefinition(), rep, w2v);
 		finalDis.setup();
 		finalDis.solve();
 	}

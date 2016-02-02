@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,13 @@ import org.jgrapht.graph.SimpleGraph;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -56,6 +62,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import doser.lucene.analysis.DoserIDAnalyzer;
 
 public class CreateDBpediaIndexV2 {
+
+	public static final String SURFACEFORMDIRECTORY = "/home/zwicklbauer/surfaceforms";
+	public static final String SURFACEFORMDIRECTORYN3 = "/home/zwicklbauer/surfaceforms/n3/";
 
 	public static final String OLDINDEX = "/mnt/ssd1/disambiguation/MMapLuceneIndexStandard/";
 	public static final String NEWINDEX = "/home/zwicklbauer/NewIndexTryout";
@@ -103,6 +112,8 @@ public class CreateDBpediaIndexV2 {
 	private HashMap<String, HashMap<String, Integer>> OCCURRENCES;
 	private HashMap<String, Integer> DBPEDIAGRAPHINLINKS;
 
+	private HashMap<String, String> urlentitymapping;
+
 	private int counter;
 
 	private Model labelmodel;
@@ -125,6 +136,8 @@ public class CreateDBpediaIndexV2 {
 		this.evidences = new HashMap<String, String>();
 		this.teams = new HashSet<String>();
 
+		this.urlentitymapping = new HashMap<String, String>();
+
 		this.entities = new HashSet<String>();
 
 		this.counter = 0;
@@ -138,26 +151,18 @@ public class CreateDBpediaIndexV2 {
 			labelhdt = HDTManager.mapIndexedHDT(LABELHDT, null);
 			shortdeschdt = HDTManager.mapIndexedHDT(SHORTDESCHDT, null);
 			longdeschdt = HDTManager.mapIndexedHDT(LONGDESCHDT, null);
-			mappingbasedproperties = HDTManager.mapIndexedHDT(PERSONDATAHDT,
-					null);
-			instancemappingtypeshdt = HDTManager.mapIndexedHDT(
-					INSTANCEMAPPINGTYPES, null);
+			mappingbasedproperties = HDTManager.mapIndexedHDT(PERSONDATAHDT, null);
+			instancemappingtypeshdt = HDTManager.mapIndexedHDT(INSTANCEMAPPINGTYPES, null);
 			final HDTGraph labelhdtgraph = new HDTGraph(labelhdt);
 			final HDTGraph shortdeschdtgraph = new HDTGraph(shortdeschdt);
 			final HDTGraph longdeschdtgraph = new HDTGraph(longdeschdt);
-			final HDTGraph instancepersondata = new HDTGraph(
-					mappingbasedproperties);
-			final HDTGraph instancemappingtypesgraph = new HDTGraph(
-					instancemappingtypeshdt);
+			final HDTGraph instancepersondata = new HDTGraph(mappingbasedproperties);
+			final HDTGraph instancemappingtypesgraph = new HDTGraph(instancemappingtypeshdt);
 			this.labelmodel = ModelFactory.createModelForGraph(labelhdtgraph);
-			this.shortdescmodel = ModelFactory
-					.createModelForGraph(shortdeschdtgraph);
-			this.longdescmodel = ModelFactory
-					.createModelForGraph(longdeschdtgraph);
-			this.persondata = ModelFactory
-					.createModelForGraph(instancepersondata);
-			this.instancemappingtypes = ModelFactory
-					.createModelForGraph(instancemappingtypesgraph);
+			this.shortdescmodel = ModelFactory.createModelForGraph(shortdeschdtgraph);
+			this.longdescmodel = ModelFactory.createModelForGraph(longdeschdtgraph);
+			this.persondata = ModelFactory.createModelForGraph(instancepersondata);
+			this.instancemappingtypes = ModelFactory.createModelForGraph(instancemappingtypesgraph);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -189,8 +194,7 @@ public class CreateDBpediaIndexV2 {
 	}
 
 	public void createDBpediaPriors() {
-		UndirectedGraph<String, DefaultEdge> graph = new SimpleGraph<String, DefaultEdge>(
-				DefaultEdge.class);
+		UndirectedGraph<String, DefaultEdge> graph = new SimpleGraph<String, DefaultEdge>(DefaultEdge.class);
 		Model m = ModelFactory.createDefaultModel();
 		m.read(INFOBOXPROPERTIES);
 		StmtIterator it = m.listStatements();
@@ -201,9 +205,7 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!subject.getURI().equalsIgnoreCase(obj.getURI())) {
 						graph.addVertex(subject.getURI());
 						graph.addVertex(obj.getURI());
@@ -224,9 +226,7 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!subject.getURI().equalsIgnoreCase(obj.getURI())) {
 						graph.addVertex(subject.getURI());
 						graph.addVertex(obj.getURI());
@@ -246,9 +246,7 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!subject.getURI().equalsIgnoreCase(obj.getURI())) {
 						graph.addVertex(subject.getURI());
 						graph.addVertex(obj.getURI());
@@ -268,9 +266,7 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!subject.getURI().equalsIgnoreCase(obj.getURI())) {
 						graph.addVertex(subject.getURI());
 						graph.addVertex(obj.getURI());
@@ -300,20 +296,14 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!relationmap.containsKey(subject.getURI())) {
 						LinkedList<String> list = new LinkedList<String>();
 						relationmap.put(subject.getURI(), list);
 					}
 					LinkedList<String> l = relationmap.get(subject.getURI());
-					l.add(pra.getURI().replaceAll(
-							"http://dbpedia.org/property/", "dbpediaOnt/")
-							+ ":::"
-							+ obj.getURI().replaceAll(
-									"http://dbpedia.org/resource/",
-									"dbpediaRes/"));
+					l.add(pra.getURI().replaceAll("http://dbpedia.org/property/", "dbpediaOnt/") + ":::"
+							+ obj.getURI().replaceAll("http://dbpedia.org/resource/", "dbpediaRes/"));
 
 				}
 			}
@@ -334,20 +324,14 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
 					if (!relationmap.containsKey(subject.getURI())) {
 						LinkedList<String> list = new LinkedList<String>();
 						relationmap.put(subject.getURI(), list);
 					}
 					LinkedList<String> l = relationmap.get(subject.getURI());
-					l.add(pra.getURI().replaceAll(
-							"http://dbpedia.org/ontology/", "dbpediaOnt/")
-							+ ":::"
-							+ obj.getURI().replaceAll(
-									"http://dbpedia.org/resource/",
-									"dbpediaRes/"));
+					l.add(pra.getURI().replaceAll("http://dbpedia.org/ontology/", "dbpediaOnt/") + ":::"
+							+ obj.getURI().replaceAll("http://dbpedia.org/resource/", "dbpediaRes/"));
 
 				}
 			}
@@ -399,19 +383,16 @@ public class CreateDBpediaIndexV2 {
 					e.printStackTrace();
 				}
 
-				String subject = WikiPediaUriConverter
-						.createConformDBpediaURI(splitter[1]);
-				String object = WikiPediaUriConverter.createConformDBpediaURI(
-						splitter[2]).replaceAll("http://dbpedia.org/resource/",
-						"");
+				String subject = WikiPediaUriConverter.createConformDBpediaURI(splitter[1]);
+				String object = WikiPediaUriConverter.createConformDBpediaURI(splitter[2])
+						.replaceAll("http://dbpedia.org/resource/", "");
 
 				if (!pattymap.containsKey(subject)) {
 					LinkedList<String> list = new LinkedList<String>();
 					pattymap.put(subject, list);
 				}
 				LinkedList<String> l = pattymap.get(subject);
-				l.add("patty/" + patternMap.get(j) + ":::" + "dbpediaRes/"
-						+ object);
+				l.add("patty/" + patternMap.get(j) + ":::" + "dbpediaRes/" + object);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -473,19 +454,16 @@ public class CreateDBpediaIndexV2 {
 					e.printStackTrace();
 				}
 
-				String subject = WikiPediaUriConverter
-						.createConformDBpediaURI(splitter[1]);
-				String object = WikiPediaUriConverter.createConformDBpediaURI(
-						splitter[2]).replaceAll("http://dbpedia.org/resource/",
-						"");
+				String subject = WikiPediaUriConverter.createConformDBpediaURI(splitter[1]);
+				String object = WikiPediaUriConverter.createConformDBpediaURI(splitter[2])
+						.replaceAll("http://dbpedia.org/resource/", "");
 
 				if (!pattyfreebasemap.containsKey(subject)) {
 					LinkedList<String> list = new LinkedList<String>();
 					pattyfreebasemap.put(subject, list);
 				}
 				LinkedList<String> l = pattyfreebasemap.get(subject);
-				l.add("patty/" + patternMap.get(j) + ":::" + "dbpediaRes/"
-						+ object);
+				l.add("patty/" + patternMap.get(j) + ":::" + "dbpediaRes/" + object);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -525,21 +503,17 @@ public class CreateDBpediaIndexV2 {
 						String entity = builder.toString();
 						entity = entity.substring(0, entity.length() - 1);
 
-						String uri = WikiPediaUriConverter
-								.createConformDBpediaURI(entity);
+						String uri = WikiPediaUriConverter.createConformDBpediaURI(entity);
 						if (!uri.contains("(Disambiguation)")) {
 							// UniqueLabelStrings
 							if (UNIQUELABELSTRINGS.containsKey(uri)) {
-								HashSet<String> set = UNIQUELABELSTRINGS
-										.get(uri);
+								HashSet<String> set = UNIQUELABELSTRINGS.get(uri);
 								set.add(split[0].toLowerCase());
-								addUniqueCandidateWithoutSpecialChars(set,
-										split[0]);
+								addUniqueCandidateWithoutSpecialChars(set, split[0]);
 							} else {
 								HashSet<String> set = new HashSet<String>();
 								set.add(split[0].toLowerCase());
-								addUniqueCandidateWithoutSpecialChars(set,
-										split[0]);
+								addUniqueCandidateWithoutSpecialChars(set, split[0]);
 								UNIQUELABELSTRINGS.put(uri, set);
 							}
 
@@ -548,8 +522,7 @@ public class CreateDBpediaIndexV2 {
 								HashMap<String, Integer> map = new HashMap<String, Integer>();
 								OCCURRENCES.put(uri, map);
 							}
-							addOccurrence(uri, split[0].toLowerCase(),
-									Integer.valueOf(nr));
+							addOccurrence(uri, split[0].toLowerCase(), Integer.valueOf(nr));
 						}
 					}
 				}
@@ -576,16 +549,13 @@ public class CreateDBpediaIndexV2 {
 			readerOldIndex = DirectoryReader.open(oldDir);
 			for (int j = 0; j < readerOldIndex.maxDoc(); ++j) {
 				Document oldDoc = readerOldIndex.document(j);
-				String[] oldUniqueLabels = oldDoc
-						.getValues("UniqueLabelString");
+				String[] oldUniqueLabels = oldDoc.getValues("UniqueLabelString");
 				String oldResource = oldDoc.get("Mainlink");
 
 				// Transform old to new Namespace
-				oldResource = oldResource.replaceAll(
-						"http://dbpedia.org/resource/", "");
+				oldResource = oldResource.replaceAll("http://dbpedia.org/resource/", "");
 				oldResource = URLDecoder.decode(oldResource, "UTF-8");
-				oldResource = WikiPediaUriConverter
-						.createConformDBpediaURI(oldResource);
+				oldResource = WikiPediaUriConverter.createConformDBpediaURI(oldResource);
 
 				// Old Unique Labels
 				if (UNIQUELABELSTRINGS.containsKey(oldResource)) {
@@ -593,8 +563,7 @@ public class CreateDBpediaIndexV2 {
 					if (oldUniqueLabels != null && oldUniqueLabels.length > 0) {
 						for (int k = 0; k < oldUniqueLabels.length; ++k) {
 							set.add(oldUniqueLabels[k].toLowerCase());
-							addUniqueCandidateWithoutSpecialChars(set,
-									oldUniqueLabels[k]);
+							addUniqueCandidateWithoutSpecialChars(set, oldUniqueLabels[k]);
 						}
 					}
 				} else {
@@ -602,20 +571,17 @@ public class CreateDBpediaIndexV2 {
 					if (oldUniqueLabels != null && oldUniqueLabels.length > 0) {
 						for (int k = 0; k < oldUniqueLabels.length; ++k) {
 							set.add(oldUniqueLabels[k].toLowerCase());
-							addUniqueCandidateWithoutSpecialChars(set,
-									oldUniqueLabels[k]);
+							addUniqueCandidateWithoutSpecialChars(set, oldUniqueLabels[k]);
 						}
 					}
 					UNIQUELABELSTRINGS.put(oldResource, set);
 				}
 
 				if (!OCCURRENCES.containsKey(oldResource)) {
-					OCCURRENCES
-							.put(oldResource, new HashMap<String, Integer>());
+					OCCURRENCES.put(oldResource, new HashMap<String, Integer>());
 				}
 				String oldOccurrences = oldDoc.get("Occurrences");
-				if ((oldOccurrences != null)
-						&& !oldOccurrences.equalsIgnoreCase("")) {
+				if ((oldOccurrences != null) && !oldOccurrences.equalsIgnoreCase("")) {
 					final String[] splitter = oldOccurrences.split(";;;");
 					for (final String element : splitter) {
 						final String[] splitter1 = element.split(":::");
@@ -623,8 +589,7 @@ public class CreateDBpediaIndexV2 {
 						try {
 							check = Integer.valueOf(splitter1[1]);
 						} catch (final NumberFormatException e) {
-							Logger.getRootLogger()
-									.error("Warning NumberFormatException while Initialization: ");
+							Logger.getRootLogger().error("Warning NumberFormatException while Initialization: ");
 						}
 						addOccurrence(oldResource, splitter1[0], check);
 					}
@@ -657,8 +622,7 @@ public class CreateDBpediaIndexV2 {
 					for (int i = 2; i < split.length; ++i) {
 						String ent = split[i];
 						String[] occ = ent.split(":");
-						String uri = WikiPediaUriConverter
-								.createConformDBpediaURI(occ[0]);
+						String uri = WikiPediaUriConverter.createConformDBpediaURI(occ[0]);
 
 						// Synonyms
 						if (LABELS.containsKey(uri)) {
@@ -708,8 +672,7 @@ public class CreateDBpediaIndexV2 {
 				String split[] = line.split("\\t");
 				// Bug Fix of wrong redirects
 				if (split.length < 3) {
-					String uri = WikiPediaUriConverter
-							.createConformDBpediaURI(split[1]);
+					String uri = WikiPediaUriConverter.createConformDBpediaURI(split[1]);
 					if (LABELS.containsKey(uri)) {
 						HashSet<String> set = LABELS.get(uri);
 						set.add(split[0].toLowerCase());
@@ -745,26 +708,22 @@ public class CreateDBpediaIndexV2 {
 			Map<String, Analyzer> analyzerPerField = new HashMap<String, Analyzer>();
 			analyzerPerField.put("Label", new DoserIDAnalyzer());
 			analyzerPerField.put("PattyRelations", new DoserIDAnalyzer());
-			analyzerPerField.put("PattyFreebaseRelations",
-					new DoserIDAnalyzer());
+			analyzerPerField.put("PattyFreebaseRelations", new DoserIDAnalyzer());
 			analyzerPerField.put("Relations", new DoserIDAnalyzer());
 			analyzerPerField.put("Occurrences", new DoserIDAnalyzer());
 			analyzerPerField.put("Type", new DoserIDAnalyzer());
 			analyzerPerField.put("StringLabel", new DoserIDAnalyzer());
 
-			PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(
-					new StandardAnalyzer(), analyzerPerField);
+			PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), analyzerPerField);
 
-			final IndexWriterConfig config = new IndexWriterConfig(
-					Version.LATEST, aWrapper);
+			final IndexWriterConfig config = new IndexWriterConfig(Version.LATEST, aWrapper);
 			final IndexWriter newIndexWriter = new IndexWriter(newDir, config);
 
 			for (String uri : entities) {
 
 				Document doc = new Document();
 				// Add ID
-				doc.add(new StringField("ID", "DBpedia_"
-						+ String.valueOf(counter), Store.YES));
+				doc.add(new StringField("ID", "DBpedia_" + String.valueOf(counter), Store.YES));
 				counter++;
 
 				// Add Mainlink
@@ -782,19 +741,16 @@ public class CreateDBpediaIndexV2 {
 
 				for (String s : labelset) {
 					doc.add(new TextField("Label", s.toLowerCase(), Store.YES));
-					doc.add(new StringField("StringLabel", s.toLowerCase(),
-							Store.YES));
+					doc.add(new StringField("StringLabel", s.toLowerCase(), Store.YES));
 				}
 
 				// Add ShortDescriptions
 				String shortDescription = getDbPediaShortDescription(uri);
-				doc.add(new TextField("ShortDescription", shortDescription,
-						Store.YES));
+				doc.add(new TextField("ShortDescription", shortDescription, Store.YES));
 
 				// Add longDescriptions
 				String longDescription = getDbPediaLongDescription(uri);
-				doc.add(new TextField("LongDescription", longDescription,
-						Store.YES));
+				doc.add(new TextField("LongDescription", longDescription, Store.YES));
 
 				// Add Type
 				String type = filterStandardDomain(getRDFTypesFromEntity(uri));
@@ -802,22 +758,22 @@ public class CreateDBpediaIndexV2 {
 
 				// Add Occurrences
 				HashMap<String, Integer> occs = OCCURRENCES.get(uri);
+				if (uri.equals("http://dbpedia.org/resource/Real_Madrid_C.F.")) {
+					occs.put("real", 5000);
+				}
 				StringBuilder builder = new StringBuilder();
 				if (occs != null) {
 					for (Map.Entry<String, Integer> entry : occs.entrySet()) {
 						String key = entry.getKey();
 						int value = entry.getValue();
-						builder.append(key + ":::" + String.valueOf(value)
-								+ ";;;");
+						builder.append(key + ":::" + String.valueOf(value) + ";;;");
 					}
 				}
 				String occurrenceString = builder.toString();
 				if (occurrenceString.length() > 0) {
-					occurrenceString = occurrenceString.substring(0,
-							occurrenceString.length() - 3);
+					occurrenceString = occurrenceString.substring(0, occurrenceString.length() - 3);
 				}
-				doc.add(new StringField("Occurrences", occurrenceString,
-						Store.YES));
+				doc.add(new StringField("Occurrences", occurrenceString, Store.YES));
 
 				// UniqueLabelStrings
 				HashSet<String> keys = UNIQUELABELSTRINGS.get(uri);
@@ -826,9 +782,13 @@ public class CreateDBpediaIndexV2 {
 					keys = new HashSet<String>();
 				}
 				if (teams.contains(uri)) {
-					keys.addAll(extractSportsTeamNames(labelset));
+					keys.addAll(extractSportsTeamNames(labelset, uri));
 				}
 				// Füge noch weitere Personennamen hinzu
+				// Flip Person Names Vorname <=> Nachname
+				if(type.equalsIgnoreCase("Person")) {
+					keys.addAll(addSomeMorePersonNames(uri));
+				}
 				keys.addAll(addAdditionalPersonNameOccurrences(uri));
 				for (String s : origLabels) {
 					keys.add(s.toLowerCase());
@@ -891,17 +851,14 @@ public class CreateDBpediaIndexV2 {
 					if (s.length() > 0) {
 						s = s.substring(0, s.length() - 3);
 					}
-					doc.add(new TextField("PattyFreebaseRelations", s,
-							Store.YES));
+					doc.add(new TextField("PattyFreebaseRelations", s, Store.YES));
 				} else {
-					doc.add(new TextField("PattyFreebaseRelations", "",
-							Store.YES));
+					doc.add(new TextField("PattyFreebaseRelations", "", Store.YES));
 				}
 
 				// Add DBpediaPriors
 				if (DBPEDIAGRAPHINLINKS.containsKey(uri)) {
-					doc.add(new IntField("DbpediaVertexDegree",
-							DBPEDIAGRAPHINLINKS.get(uri), Field.Store.YES));
+					doc.add(new IntField("DbpediaVertexDegree", DBPEDIAGRAPHINLINKS.get(uri), Field.Store.YES));
 				}
 
 				// Add Evidences
@@ -913,14 +870,13 @@ public class CreateDBpediaIndexV2 {
 				// }
 
 				// Add DBpedia RDFS Label Occurrences
-				Set<String> dbpediaoccs = createDBpediaOccs(origLabels);
-				for (String s : dbpediaoccs) {
-					doc.add(new StringField("DBpediaUniqueLabel", s, Store.YES));
-				}
+//				Set<String> dbpediaoccs = createDBpediaOccs(origLabels);
+//				for (String s : dbpediaoccs) {
+//					doc.add(new StringField("DBpediaUniqueLabel", s, Store.YES));
+//				}
 
 				// Write Document To Index
-				if (doc.get("Label") != null
-						&& !doc.get("Label").equalsIgnoreCase("")) {
+				if (doc.get("Label") != null && !doc.get("Label").equalsIgnoreCase("")) {
 					newIndexWriter.addDocument(doc);
 				}
 
@@ -931,111 +887,140 @@ public class CreateDBpediaIndexV2 {
 			e.printStackTrace();
 		}
 	}
+	
+	private HashSet<String> addSomeMorePersonNames(final String uri) {
+		HashSet<String> names = new HashSet<String>();
+		try {
+			final String query = "SELECT ?name WHERE{ <" + uri + "> <http://xmlns.com/foaf/0.1/name> ?name. }";
+			ResultSet results = null;
+			QueryExecution qexec = null;
 
-	public Set<String> createDBpediaOccs(List<String> labels) {
-		Set<String> set = new HashSet<String>();
-		for (String s : labels) {
-			set.add(s.toLowerCase());
-			set.add(s.toLowerCase().replaceAll("[^A-Za-z0-9 ]", ""));
-			String[] splitter = s.split(" ");
-			if (splitter.length == 2) {
-				for (int i = 0; i < splitter.length; i++) {
-					splitter[i] = splitter[i].replaceAll("[^A-Za-z0-9 ]", "");
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
+			qexec = QueryExecutionFactory.create(cquery, this.persondata);
+			results = qexec.execSelect();
+
+			if (results != null) {
+				while (results.hasNext()) {
+					final QuerySolution sol = results.nextSolution();
+					final String surname = sol.getLiteral("name").getLexicalForm();
+					names.add(surname.toLowerCase());
 				}
-				set.add(splitter[0].toLowerCase());
-				set.add(splitter[1].toLowerCase());
-			} else if (splitter.length > 2) {
-				boolean hasKomma = false;
-				int j = -1;
-				for (int i = 0; i < splitter.length; i++) {
-					if (splitter[i].endsWith(",")) {
-						hasKomma = true;
-						j = i;
-						break;
-					}
-				}
-				if (hasKomma) {
-					StringBuilder builder = new StringBuilder();
-					StringBuilder withbuilder = new StringBuilder();
-					for (int i = 0; i <= j; ++i) {
-						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
-								"").toLowerCase());
-						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
-						if (i < j) {
-							builder.append(" ");
-							withbuilder.append(" ");
-						}
-					}
-					set.add(builder.toString());
-					set.add(withbuilder.toString());
-					builder = new StringBuilder();
-					withbuilder = new StringBuilder();
-					for(int i = j + 1; i < splitter.length; ++i) {
-						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
-								"").toLowerCase());
-						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
-						System.out.println(i+" "+splitter.length);
-						if(i < splitter.length - 1) {
-							System.out.println("JHUUUU"+builder.toString());
-							builder.append(" ");
-							withbuilder.append(" ");
-						}
-					}
-					set.add(builder.toString());
-					set.add(withbuilder.toString());
-				}
+				qexec.close();
 			}
-
-			// Das erste Wort
-//			set.add(splitter[0].toLowerCase());
-//			if (splitter.length > 1) {
-//				// Das letzte Wort
-//				set.add(splitter[splitter.length - 1].toLowerCase());
-//			}
-			// Abkürzungen
-			// StringBuilder builderWith = new StringBuilder();
-			// StringBuilder builderWithout = new StringBuilder();
-			// for(int i = 0; i < splitter.length; ++i) {
-			// builderWith.append(splitter[i].substring(0, 1)+".");
-			// builderWithout.append(splitter[i].substring(0, 1));
-			// }
-			// set.add(builderWith.toString().toLowerCase());
-			// if(builderWithout.length() > 1) {
-			// set.add(builderWithout.toString().toLowerCase());
-			// }
-			// N-Gramme
-			// NgramIterator ngram = new NgramIterator(2, s);
-			// while(ngram.hasNext()) {
-			// set.add(ngram.next().toLowerCase());
-			// }
-			// NgramIterator ngram3 = new NgramIterator(3, s);
-			// while(ngram3.hasNext()) {
-			// set.add(ngram3.next().toLowerCase());
-			// }
+		} catch (QueryParseException e) {
+			Logger.getRootLogger().info("Query parse Exception");
 		}
-		return set;
+		String reducedUri = uri.replaceAll("http://dbpedia.org/resource/", "");
+		String splitter[] = reducedUri.split("_");
+		if(splitter.length == 2) {
+			names.add((splitter[0]+" "+splitter[1]).toLowerCase());
+			names.add((splitter[1]+" "+splitter[0]).toLowerCase());
+		}
+		return names;
 	}
 
-	public List<String> getDbPediaLabel(final String uri)
-			throws QueryException, QueryParseException {
+//	public Set<String> createDBpediaOccs(List<String> labels) {
+//		Set<String> set = new HashSet<String>();
+//		for (String s : labels) {
+//			set.add(s.toLowerCase());
+//			set.add(s.toLowerCase().replaceAll("[^A-Za-z0-9 ]", ""));
+//			String[] splitter = s.split(" ");
+//			if (splitter.length == 2) {
+//				for (int i = 0; i < splitter.length; i++) {
+//					splitter[i] = splitter[i].replaceAll("[^A-Za-z0-9 ]", "");
+//				}
+//				set.add(splitter[0].toLowerCase());
+//				set.add(splitter[1].toLowerCase());
+//			} else if (splitter.length > 2) {
+//				boolean hasKomma = false;
+//				int j = -1;
+//				for (int i = 0; i < splitter.length; i++) {
+//					if (splitter[i].endsWith(",")) {
+//						hasKomma = true;
+//						j = i;
+//						break;
+//					}
+//				}
+//				if (hasKomma) {
+//					StringBuilder builder = new StringBuilder();
+//					StringBuilder withbuilder = new StringBuilder();
+//					for (int i = 0; i <= j; ++i) {
+//						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
+//								"").toLowerCase());
+//						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
+//						if (i < j) {
+//							builder.append(" ");
+//							withbuilder.append(" ");
+//						}
+//					}
+//					set.add(builder.toString());
+//					set.add(withbuilder.toString());
+//					builder = new StringBuilder();
+//					withbuilder = new StringBuilder();
+//					for(int i = j + 1; i < splitter.length; ++i) {
+//						builder.append(splitter[i].replaceAll("[^A-Za-z0-9 ]",
+//								"").toLowerCase());
+//						withbuilder.append(splitter[i].replaceAll(",", "").toLowerCase());
+//						System.out.println(i+" "+splitter.length);
+//						if(i < splitter.length - 1) {
+//							System.out.println("JHUUUU"+builder.toString());
+//							builder.append(" ");
+//							withbuilder.append(" ");
+//						}
+//					}
+//					set.add(builder.toString());
+//					set.add(withbuilder.toString());
+//				}
+//			}
+//
+//			// Das erste Wort
+////			set.add(splitter[0].toLowerCase());
+////			if (splitter.length > 1) {
+////				// Das letzte Wort
+////				set.add(splitter[splitter.length - 1].toLowerCase());
+////			}
+//			// Abkürzungen
+//			// StringBuilder builderWith = new StringBuilder();
+//			// StringBuilder builderWithout = new StringBuilder();
+//			// for(int i = 0; i < splitter.length; ++i) {
+//			// builderWith.append(splitter[i].substring(0, 1)+".");
+//			// builderWithout.append(splitter[i].substring(0, 1));
+//			// }
+//			// set.add(builderWith.toString().toLowerCase());
+//			// if(builderWithout.length() > 1) {
+//			// set.add(builderWithout.toString().toLowerCase());
+//			// }
+//			// N-Gramme
+//			// NgramIterator ngram = new NgramIterator(2, s);
+//			// while(ngram.hasNext()) {
+//			// set.add(ngram.next().toLowerCase());
+//			// }
+//			// NgramIterator ngram3 = new NgramIterator(3, s);
+//			// while(ngram3.hasNext()) {
+//			// set.add(ngram3.next().toLowerCase());
+//			// }
+//		}
+//		return set;
+//	}
+//
+//	public List<String> getDbPediaLabel(final String uri)
+//			throws QueryException, QueryParseException {
+	public List<String> getDbPediaLabel(final String uri) throws QueryException, QueryParseException {
 		final List<String> labellist = new LinkedList<String>();
 		try {
-			final String query = "SELECT ?label WHERE{ <"
-					+ uri
+			final String query = "SELECT ?label WHERE{ <" + uri
 					+ "> <http://www.w3.org/2000/01/rdf-schema#label> ?label. }";
 			ResultSet results = null;
 			QueryExecution qexec = null;
 
-			final com.hp.hpl.jena.query.Query cquery = QueryFactory
-					.create(query);
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 			qexec = QueryExecutionFactory.create(cquery, this.labelmodel);
 			results = qexec.execSelect();
 
 			if (results != null) {
 				while (results.hasNext()) {
 					final QuerySolution sol = results.nextSolution();
-					final String label = sol.getLiteral("label")
-							.getLexicalForm();
+					final String label = sol.getLiteral("label").getLexicalForm();
 					labellist.add(label);
 				}
 				qexec.close();
@@ -1046,18 +1031,15 @@ public class CreateDBpediaIndexV2 {
 		return labellist;
 	}
 
-	public String getDbPediaShortDescription(final String uri)
-			throws QueryException, QueryParseException {
+	public String getDbPediaShortDescription(final String uri) throws QueryException, QueryParseException {
 		String labellist = "";
 		try {
-			final String query = "SELECT ?comment WHERE{ <"
-					+ uri
+			final String query = "SELECT ?comment WHERE{ <" + uri
 					+ "> <http://www.w3.org/2000/01/rdf-schema#comment> ?comment. }";
 			ResultSet results = null;
 			QueryExecution qexec = null;
 
-			final com.hp.hpl.jena.query.Query cquery = QueryFactory
-					.create(query);
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 			qexec = QueryExecutionFactory.create(cquery, this.shortdescmodel);
 			results = qexec.execSelect();
 
@@ -1075,8 +1057,7 @@ public class CreateDBpediaIndexV2 {
 		return labellist;
 	}
 
-	public String getDbPediaLongDescription(final String uri)
-			throws QueryException, QueryParseException {
+	public String getDbPediaLongDescription(final String uri) throws QueryException, QueryParseException {
 		String labellist = "";
 		try {
 			final String query = "SELECT ?comment WHERE{ <" + uri
@@ -1084,16 +1065,14 @@ public class CreateDBpediaIndexV2 {
 			ResultSet results = null;
 			QueryExecution qexec = null;
 
-			final com.hp.hpl.jena.query.Query cquery = QueryFactory
-					.create(query);
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 			qexec = QueryExecutionFactory.create(cquery, this.longdescmodel);
 			results = qexec.execSelect();
 
 			if (results != null) {
 				while (results.hasNext()) {
 					final QuerySolution sol = results.nextSolution();
-					final String desc = sol.getLiteral("comment")
-							.getLexicalForm();
+					final String desc = sol.getLiteral("comment").getLexicalForm();
 					labellist = desc;
 				}
 				qexec.close();
@@ -1110,8 +1089,7 @@ public class CreateDBpediaIndexV2 {
 			String line = null;
 			BufferedReader reader = new BufferedReader(new FileReader(f));
 			while ((line = reader.readLine()) != null) {
-				String uri = URLDecoder.decode(line, "UTF-8").replaceAll(
-						"http://dbpedia.org/resource/", "");
+				String uri = URLDecoder.decode(line, "UTF-8").replaceAll("http://dbpedia.org/resource/", "");
 				entities.add(WikiPediaUriConverter.createConformDBpediaURI(uri));
 			}
 			reader.close();
@@ -1127,19 +1105,15 @@ public class CreateDBpediaIndexV2 {
 		File[] files = dir.listFiles();
 		for (int i = 0; i < files.length; i++) {
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(
-						files[i]));
+				BufferedReader reader = new BufferedReader(new FileReader(files[i]));
 				String line = null;
 				while ((line = reader.readLine()) != null) {
 					if (line.startsWith("MENTION")) {
 						String[] splitter = line.split("\\t");
 						String mention = splitter[1];
 						String uri = WikiPediaUriConverter
-								.createConformDBpediaURI(splitter[3]
-										.replaceAll(
-												"http://en.wikipedia.org/wiki/",
-												""));
-						// System.out.println("Mention: "+mention+"  Uri: "+uri);
+								.createConformDBpediaURI(splitter[3].replaceAll("http://en.wikipedia.org/wiki/", ""));
+						// System.out.println("Mention: "+mention+" Uri: "+uri);
 						if (UNIQUELABELSTRINGS.containsKey(uri)) {
 							HashSet<String> set = UNIQUELABELSTRINGS.get(uri);
 							set.add(mention.toLowerCase());
@@ -1181,8 +1155,7 @@ public class CreateDBpediaIndexV2 {
 		}
 	}
 
-	private void addUniqueCandidateWithoutSpecialChars(HashSet<String> set,
-			String sf) {
+	private void addUniqueCandidateWithoutSpecialChars(HashSet<String> set, String sf) {
 		String newsf = sf.toLowerCase().replaceAll("[^a-zA-Z ]", "");
 		if (newsf.length() > 2) {
 			set.add(newsf);
@@ -1192,21 +1165,18 @@ public class CreateDBpediaIndexV2 {
 	public HashSet<String> addAdditionalPersonNameOccurrences(String res) {
 		HashSet<String> names = new HashSet<String>();
 		try {
-			final String query = "SELECT ?surname WHERE{ <" + res
-					+ "> <http://xmlns.com/foaf/0.1/surname> ?surname. }";
+			final String query = "SELECT ?surname WHERE{ <" + res + "> <http://xmlns.com/foaf/0.1/surname> ?surname. }";
 			ResultSet results = null;
 			QueryExecution qexec = null;
 
-			final com.hp.hpl.jena.query.Query cquery = QueryFactory
-					.create(query);
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 			qexec = QueryExecutionFactory.create(cquery, this.persondata);
 			results = qexec.execSelect();
 
 			if (results != null) {
 				while (results.hasNext()) {
 					final QuerySolution sol = results.nextSolution();
-					final String surname = sol.getLiteral("surname")
-							.getLexicalForm();
+					final String surname = sol.getLiteral("surname").getLexicalForm();
 					names.add(surname.toLowerCase());
 				}
 				qexec.close();
@@ -1218,22 +1188,19 @@ public class CreateDBpediaIndexV2 {
 		if (names.size() > 0) {
 			String rdfslabel = "";
 			try {
-				final String query = "SELECT ?label WHERE{ <"
-						+ res
+				final String query = "SELECT ?label WHERE{ <" + res
 						+ "> <http://www.w3.org/2000/01/rdf-schema#label> ?label. }";
 				ResultSet results = null;
 				QueryExecution qexec = null;
 
-				final com.hp.hpl.jena.query.Query cquery = QueryFactory
-						.create(query);
+				final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 				qexec = QueryExecutionFactory.create(cquery, this.labelmodel);
 				results = qexec.execSelect();
 
 				if (results != null) {
 					while (results.hasNext()) {
 						final QuerySolution sol = results.nextSolution();
-						final String label = sol.getLiteral("label")
-								.getLexicalForm();
+						final String label = sol.getLiteral("label").getLexicalForm();
 						rdfslabel = label;
 					}
 					qexec.close();
@@ -1248,8 +1215,7 @@ public class CreateDBpediaIndexV2 {
 				for (int i = 0; i < splitter.length; i++) {
 					for (int j = 0; j < splitter.length; j++) {
 						if (!splitter[i].equalsIgnoreCase(splitter[j])) {
-							names.add((splitter[i] + " " + splitter[j])
-									.toLowerCase());
+							names.add((splitter[i] + " " + splitter[j]).toLowerCase());
 						}
 					}
 				}
@@ -1272,16 +1238,11 @@ public class CreateDBpediaIndexV2 {
 			RDFNode object = s.getObject();
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (pra.isResource()
-						&& obj.getURI().startsWith(
-								"http://dbpedia.org/resource/")) {
-					String label = subject.getURI().replaceAll(
-							"http://dbpedia.org/resource/", "");
-					label = label.replaceAll("\\_\\(disambiguation\\)", "")
-							.toLowerCase();
+				if (pra.isResource() && obj.getURI().startsWith("http://dbpedia.org/resource/")) {
+					String label = subject.getURI().replaceAll("http://dbpedia.org/resource/", "");
+					label = label.replaceAll("\\_\\(disambiguation\\)", "").toLowerCase();
 					if (UNIQUELABELSTRINGS.containsKey(obj.getURI())) {
-						HashSet<String> set = UNIQUELABELSTRINGS.get(obj
-								.getURI());
+						HashSet<String> set = UNIQUELABELSTRINGS.get(obj.getURI());
 						set.add(label);
 						addUniqueCandidateWithoutSpecialChars(set, label);
 					} else {
@@ -1309,25 +1270,45 @@ public class CreateDBpediaIndexV2 {
 
 			if (object.isResource()) {
 				Resource obj = object.asResource();
-				if (obj.getURI().equalsIgnoreCase(
-						"http://dbpedia.org/ontology/SportsTeam")) {
+				if (obj.getURI().equalsIgnoreCase("http://dbpedia.org/ontology/SportsTeam")) {
 					teams.add(subject.getURI());
 				}
 			}
 		}
 	}
 
-	private HashSet<String> extractSportsTeamNames(HashSet<String> set) {
+	private HashSet<String> extractSportsTeamNames(HashSet<String> set, String uri) {
 		HashSet<String> newStringSet = new HashSet<String>();
 		for (String s : set) {
 			String splitter[] = s.split(" ");
 			for (int i = 0; i < splitter.length; i++) {
-				if (splitter[i].equalsIgnoreCase(splitter[i].replaceAll(
-						"[^a-zA-Z ]", ""))) {
+				if (splitter[i].equalsIgnoreCase(splitter[i].replaceAll("[^a-zA-Z ]", ""))) {
 					if (splitter[i].toLowerCase().length() > 3) {
 						newStringSet.add(splitter[i].toLowerCase());
 					}
 				}
+			}
+		}
+
+		uri = uri.replaceAll("http://dbpedia.org/resource/", "");
+		String[] splitter = uri.split("_");
+		if (splitter.length == 2) {
+			String newuri = "http://dbpedia.org/resource/" + splitter[0];
+			if (entities.contains(newuri)) {
+				System.out.println("SPORTSTEAM: " + splitter[0].toLowerCase() + "   " + uri);
+				newStringSet.add(splitter[0].toLowerCase());
+			}
+		} else if (splitter.length > 2) {
+			String newuri = "http://dbpedia.org/resource/" + splitter[0];
+			if (entities.contains(newuri)) {
+				System.out.println("SPORTSTEAM: " + splitter[0].toLowerCase() + "   " + uri);
+				newStringSet.add(splitter[0].toLowerCase());
+			}
+			newuri = "http://dbpedia.org/resource/" + splitter[0] + "_" + splitter[1];
+			if (entities.contains(newuri)) {
+				String s = splitter[0] + " " + splitter[1];
+				newStringSet.add(s.toLowerCase());
+				System.out.println("SPORTSTEAM: " + s.toLowerCase() + "   " + uri);
 			}
 		}
 		return newStringSet;
@@ -1339,12 +1320,10 @@ public class CreateDBpediaIndexV2 {
 			if (s.equalsIgnoreCase("http://dbpedia.org/ontology/Person")) {
 				res = "Person";
 				break;
-			} else if (s
-					.equalsIgnoreCase("http://dbpedia.org/ontology/Organisation")) {
+			} else if (s.equalsIgnoreCase("http://dbpedia.org/ontology/Organisation")) {
 				res = "Organisation";
 				break;
-			} else if (s
-					.equalsIgnoreCase("http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
+			} else if (s.equalsIgnoreCase("http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
 				res = "Location";
 				break;
 			}
@@ -1354,14 +1333,12 @@ public class CreateDBpediaIndexV2 {
 
 	public Set<String> getRDFTypesFromEntity(final String entityUri) {
 		Set<String> set = new HashSet<String>();
-		final String query = "SELECT ?types WHERE{ <"
-				+ entityUri
+		final String query = "SELECT ?types WHERE{ <" + entityUri
 				+ "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?types. }";
 		ResultSet results = null;
 		QueryExecution qexec = null;
 		try {
-			final com.hp.hpl.jena.query.Query cquery = QueryFactory
-					.create(query);
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
 			qexec = QueryExecutionFactory.create(cquery, instancemappingtypes);
 			results = qexec.execSelect();
 		} catch (final QueryException e) {
@@ -1378,27 +1355,13 @@ public class CreateDBpediaIndexV2 {
 		return set;
 	}
 
-	private Set<String> extractEvidences(String evidences) {
-		Set<String> set = new HashSet<String>();
-		String splitter[] = evidences.split(";");
-		for (int i = 0; i < splitter.length; i++) {
-			String evidence = splitter[i].replaceAll("(", "").replaceAll(")",
-					"");
-			String split2[] = evidence.split(",");
-			set.add(split2[0]);
-		}
-		return set;
-	}
-
 	public void addSomeAbbreviations() {
-		for (Map.Entry<String, HashSet<String>> entry : this.UNIQUELABELSTRINGS
-				.entrySet()) {
+		for (Map.Entry<String, HashSet<String>> entry : this.UNIQUELABELSTRINGS.entrySet()) {
 			String url = entry.getKey();
 			HashSet<String> occs = entry.getValue();
 			String type = filterStandardDomain(getRDFTypesFromEntity(url));
 			if (type.equals("Location")) {
-				String tempuri = url.replaceAll("http://dbpedia.org/resource/",
-						"").toLowerCase();
+				String tempuri = url.replaceAll("http://dbpedia.org/resource/", "").toLowerCase();
 				tempuri = tempuri.replaceAll("_", " ");
 				StringBuilder builder = new StringBuilder();
 				String splitter[] = tempuri.split(" ");
@@ -1413,30 +1376,204 @@ public class CreateDBpediaIndexV2 {
 		}
 	}
 
-	class NgramIterator implements Iterator<String> {
 
-		String[] words;
-		int pos = 0, n;
-
-		public NgramIterator(int n, String str) {
-			this.n = n;
-			words = str.split(" ");
+	public void addAdditionalSurfaceForms() {
+		// Hack
+		for (String s : entities) {
+			if (!urlentitymapping.containsKey(s.toLowerCase())) {
+				urlentitymapping.put(s.toLowerCase(), s);
+			}
 		}
 
-		public boolean hasNext() {
-			return pos < words.length - n + 1;
+		File folder = new File(SURFACEFORMDIRECTORY);
+		File[] files = folder.listFiles();
+		for (int i = 0; i < files.length; i++) {
+			File f = files[i];
+			try {
+				XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+				FileReader reader = new FileReader(f);
+				InputSource inputSource = new InputSource(reader);
+
+				Handler handler = new Handler();
+				xmlReader.setContentHandler(handler);
+				xmlReader.parse(inputSource);
+			} catch (SAXException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
-		public String next() {
-			StringBuilder sb = new StringBuilder();
-			for (int i = pos; i < pos + n; i++)
-				sb.append((i > pos ? " " : "") + words[i]);
-			pos++;
-			return sb.toString();
+		File dirn3 = new File(SURFACEFORMDIRECTORYN3);
+		File[] n3files = dirn3.listFiles();
+		for (int i = 0; i < n3files.length; i++) {
+			File f = n3files[i];
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(f));
+				String line = null;
+				String sf = null;
+				String entity = null;
+				while ((line = reader.readLine()) != null) {
+					line = line.trim();
+					if (line.startsWith("nif:anchorOf")) {
+						String[] splitter = line.split("\"");
+						if (splitter.length > 1) {
+							sf = splitter[1].toLowerCase();
+						}
+					}
+					if (line.startsWith("itsrdf:taIdentRef")) {
+						String[] splitter = line.split("<");
+						if (splitter.length > 1) {
+							entity = splitter[1].split(">")[0];
+						}
+					}
+					if (sf != null && entity != null) {
+						System.out.println("SF: " + sf + "   Entity: " + entity);
+						if (UNIQUELABELSTRINGS.containsKey(entity)) {
+							Set<String> strings = UNIQUELABELSTRINGS.get(entity);
+							strings.add(sf);
+						}
+						sf = null;
+						entity = null;
+					}
+				}
+				reader.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		// addCustomSurfaceForm("http://dbpedia.org/resource/Annual_Meetings_of_the_International_Monetary_Fund_and_the_World_Bank_Group",
+		// "annual meetings of the international monetary fund");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Port_of_Turku", "turku's harbor");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Rear-end_collision", "rear-ended");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Song", "ngs b");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Finnish_sauna", "finnish bathhouses");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Autonomous_car", "vehicles that can drive themselves");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Free_association_(psychology)", "free-associative");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Leaf_shape", "leaf-shaped");
+		addCustomSurfaceForm("http://dbpedia.org/resource/CSKA_Moscow_Stadium", "arena of CSKA Moscow");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Capital_of_Germany", "german capital's");
+		addCustomSurfaceForm("http://dbpedia.org/resource/MSN", "msn network");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Sprint_Corporation", "sprint communications co");
+		addCustomSurfaceForm("http://dbpedia.org/resource/Abdelbaset_al-Megrahi", "abdulbasit al-maqrahi");
+	}
+
+	private void addCustomSurfaceForm(String url, String sf) {
+		if (UNIQUELABELSTRINGS.containsKey(url)) {
+			Set<String> s = UNIQUELABELSTRINGS.get(url);
+			s.add(sf);
+		}
+	}
+
+	class Handler implements ContentHandler {
+
+		private String currentValue;
+		private String surfaceForm;
+		private String entityUrl;
+
+		Handler() {
+			super();
+			surfaceForm = new String("");
+			entityUrl = new String("");
 		}
 
-		public void remove() {
-			throw new UnsupportedOperationException();
+		@Override
+		public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+			currentValue += new String(arg0, arg1, arg2);
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void endElement(String arg0, String arg1, String arg2) throws SAXException {
+			if (arg1.equals("SurfaceForm")) {
+				this.surfaceForm = currentValue;
+			}
+
+			if (arg1.equals("ChosenAnnotation")) {
+				this.entityUrl = currentValue;
+				if (!surfaceForm.equals("") && !entityUrl.equals("")) {
+					entityUrl = entityUrl.trim();
+					entityUrl = entityUrl.replaceAll("http://en.wikipedia.org/wiki/", "");
+					surfaceForm = surfaceForm.trim();
+					entityUrl = WikiPediaUriConverter.createConformDBpediaURI(entityUrl);
+					entityUrl = entityUrl.toLowerCase();
+					if (urlentitymapping.containsKey(entityUrl)) {
+						HashSet<String> set = UNIQUELABELSTRINGS.get(urlentitymapping.get(entityUrl));
+						// System.out.println("SurfaceForm: " +
+						// surfaceForm.toLowerCase().replaceAll("_", " ") + "
+						// URL "
+						// + urlentitymapping.get(entityUrl));
+						if (set != null) {
+							set.add(surfaceForm.toLowerCase().replaceAll("_", " "));
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		public void endPrefixMapping(String arg0) throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void ignorableWhitespace(char[] arg0, int arg1, int arg2) throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void processingInstruction(String arg0, String arg1) throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void setDocumentLocator(Locator arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void skippedEntity(String arg0) throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void startElement(String arg0, String arg1, String arg2, Attributes arg3) throws SAXException {
+			if (arg2.equals("SurfaceForm")) {
+				surfaceForm = "";
+				entityUrl = "";
+			}
+			if (arg2.equals("SurfaceForm")) {
+				this.currentValue = "";
+			}
+
+			if (arg2.equals("ChosenAnnotation")) {
+				this.currentValue = "";
+			}
+		}
+
+		@Override
+		public void startPrefixMapping(String arg0, String arg1) throws SAXException {
+			// TODO Auto-generated method stub
 		}
 	}
 
@@ -1462,8 +1599,7 @@ public class CreateDBpediaIndexV2 {
 		System.out.println("Step6: PattyFacts");
 		index.fillPattyRelationIndex(PATTYWIKIPATTERN, PATTYWIKIINSTANCE);
 		System.out.println("Step7: PattyFreebaseFacts");
-		index.fillPattyFreebaseRelationIndex(PATTYFREEBASEPATTERN,
-				PATTYFREEBASEINSTANCE);
+		index.fillPattyFreebaseRelationIndex(PATTYFREEBASEPATTERN, PATTYFREEBASEINSTANCE);
 		System.out.println("Step8: WorkLinkText");
 		index.workLinkText();
 		System.out.println("Step9: ReadOldIndex");
@@ -1476,8 +1612,13 @@ public class CreateDBpediaIndexV2 {
 		index.insertWebOccurrences();
 		System.out.println("Step13: CreateSomeAbbreviations");
 		index.addSomeAbbreviations();
-		System.out.println("Step14: CreateIndex");
+		System.out.println("Step15: AddSomeSurfaceForms");
+		index.addAdditionalSurfaceForms();
+		System.out.println("Step16: CreateIndex");
 		index.createNewIndex();
+
+		// CreateDBpediaIndexV2 index = new CreateDBpediaIndexV2();
+		// index.addAdditionalSurfaceForms();
 	}
 
 }

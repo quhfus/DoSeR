@@ -44,6 +44,7 @@ public final class DisambiguationMainService {
 	private Model hdtYagoCatsLab;
 	private Model hdtyagoTaxonomy;
 	private Model hdtyagoTransTypes;
+	private Model hdtdbpediaRedirects;
 
 	private Map<KnowledgeBaseIdentifiers, KnowledgeBase> knowledgebases;
 
@@ -128,6 +129,8 @@ public final class DisambiguationMainService {
 					.getDBpediaSkosCategories(), null);
 			final HDT hdt8 = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBpediaInstanceTypes(), null);
+			final HDT hdt9 = HDTManager.mapIndexedHDT(Properties.getInstance()
+					.getDBpediaRedirects(), null);
 			final HDTGraph graph = new HDTGraph(hdt);
 			final HDTGraph graph1 = new HDTGraph(hdt1);
 			final HDTGraph graph2 = new HDTGraph(hdt2);
@@ -137,6 +140,7 @@ public final class DisambiguationMainService {
 			final HDTGraph graph6 = new HDTGraph(hdt6);
 			final HDTGraph graph7 = new HDTGraph(hdt7);
 			final HDTGraph graph8 = new HDTGraph(hdt8);
+			final HDTGraph graph9 = new HDTGraph(hdt9);
 			this.hdtdbpediaCats = ModelFactory.createModelForGraph(graph);
 			this.hdtyagoTransTypes = ModelFactory.createModelForGraph(graph1);
 			this.hdtyagoTaxonomy = ModelFactory.createModelForGraph(graph2);
@@ -148,6 +152,8 @@ public final class DisambiguationMainService {
 					.createModelForGraph(graph7);
 			this.hdtdbpediaInstanceTypes = ModelFactory
 					.createModelForGraph(graph8);
+			this.hdtdbpediaRedirects = ModelFactory
+					.createModelForGraph(graph9);
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -210,6 +216,10 @@ public final class DisambiguationMainService {
 
 	public Model getYagoTransitiveTypes() {
 		return this.hdtyagoTransTypes;
+	}
+	
+	public Model getDBpediaRedirects() {
+		return this.hdtdbpediaRedirects;
 	}
 
 

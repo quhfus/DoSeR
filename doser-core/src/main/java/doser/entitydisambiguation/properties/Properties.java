@@ -92,6 +92,10 @@ public final class Properties {
 		return this.config.getString("dbpedia.mappingbasedtypes");
 	}
 	
+	public String getDBpediaRedirects() {
+		return this.config.getString("dbpedia.redirects");
+	}
+	
 	public int getDisambiguationResultSize() {
 		final String size = this.config.getString("disambiguation.returnSize");
 		return Integer.valueOf(size);
@@ -159,6 +163,15 @@ public final class Properties {
 	
 	public String getNounPhraseModel() {
 		return this.config.getString("nounphrasemodel");
+	}
+	
+	public boolean getCandidateExpansion() {
+		boolean bool = false;
+		String s = this.config.getString("candidateExpansion");
+		if(s.equalsIgnoreCase("true")) {
+			bool = true;
+		}
+		return bool;
 	}
 	
 	public boolean getHBaseStorage() {

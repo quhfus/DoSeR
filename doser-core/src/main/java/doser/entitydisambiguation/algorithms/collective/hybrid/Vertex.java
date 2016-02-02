@@ -138,7 +138,7 @@ public class Vertex implements Comparable<Vertex> {
 	}
 
 	public void setOccurrences(int occurrences) {
-		this.occurrences = Math.log(occurrences + 1);
+		this.occurrences = Math.log10(occurrences + 1);
 	}
 
 	@Override

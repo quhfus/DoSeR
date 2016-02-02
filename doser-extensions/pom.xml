@@ -32,7 +32,6 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>4.10.4</version>
 		</dependency>
-
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

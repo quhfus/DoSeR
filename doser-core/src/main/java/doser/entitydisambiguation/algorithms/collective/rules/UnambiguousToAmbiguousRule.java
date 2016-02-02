@@ -46,8 +46,7 @@ public class UnambiguousToAmbiguousRule extends Rule {
 			if (c.getCandidates().size() == 1) {
 				String candidate = c.getCandidates().get(0);
 				String type = queryType(candidate);
-				if (type.equalsIgnoreCase("Person")
-						|| type.equalsIgnoreCase("Organisation")) {
+				if (type.equalsIgnoreCase("Person") || type.equalsIgnoreCase("Organisation")) {
 					unambiguous.add(c);
 				}
 			}
@@ -56,19 +55,21 @@ public class UnambiguousToAmbiguousRule extends Rule {
 			if (c.getCandidates().size() > 1) {
 				HashMap<String, Integer> map = new HashMap<String, Integer>();
 				for (SurfaceForm un : unambiguous) {
-					if (isSubString(un.getSurfaceForm(), c.getSurfaceForm())
-							&& c.getCandidates().contains(
-									un.getCandidates().get(0))
-							&& un.getPosition() < c.getPosition()) {
+					String type = queryType(un.getCandidates().get(0));
+					if ((isSubString(un.getSurfaceForm(), c.getSurfaceForm())
+							&& c.getCandidates().contains(un.getCandidates().get(0))
+							&& un.getPosition() < c.getPosition())
+							|| (type.equalsIgnoreCase("Person") && isSubString(un.getSurfaceForm(), c.getSurfaceForm())
+									&& un.getPosition() < c.getPosition())) {
 						map.put(un.getCandidates().get(0), c.getPosition() - un.getPosition());
-						//						c.setDisambiguatedEntity(un.getCandidates().get(0));
+						// c.setDisambiguatedEntity(un.getCandidates().get(0));
 					}
 				}
-				if(!map.isEmpty()) {
+				if (!map.isEmpty()) {
 					int distance = Integer.MAX_VALUE;
 					String can = "";
-					for(Map.Entry<String, Integer> entry : map.entrySet()) {
-						if(entry.getValue() < distance) {
+					for (Map.Entry<String, Integer> entry : map.entrySet()) {
+						if (entry.getValue() < distance) {
 							distance = entry.getValue();
 							can = entry.getKey();
 						}
@@ -94,12 +95,17 @@ public class UnambiguousToAmbiguousRule extends Rule {
 		try {
 			TopDocs docs = searcher.search(q, 1);
 			ScoreDoc[] scoredocs = docs.scoreDocs;
-			int nr = scoredocs[0].doc;
-			Document doc = searcher.getIndexReader().document(nr);
-			type = doc.get("Type");
+			if(scoredocs.length == 0) {
+				type = "Misc";
+			} else {
+				int nr = scoredocs[0].doc;
+				Document doc = searcher.getIndexReader().document(nr);
+				type = doc.get("Type");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return type;
 	}
+
 }

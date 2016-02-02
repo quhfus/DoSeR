@@ -29,12 +29,13 @@ public class PatternRule extends Rule {
 			@SuppressWarnings("deprecation")
 			List<Map.Entry<String, Integer>> list = HelpfulMethods
 					.sortByValue(map);
+			if(list.size() == 0) {
+				return false;
+			}
 			Map.Entry<String, Integer> entry = list.get(0);
 			String termToWatch = entry.getKey();
-			System.out.println(termToWatch);
 
 			float perc = computePercentage(termToWatch, rep);
-			System.out.println(perc);
 			if (perc > OCCURRENCEPERCENTAGE) {
 				disambiguateTerms(termToWatch, rep);
 			}
@@ -116,8 +117,8 @@ public class PatternRule extends Rule {
 				}
 				if (candidates.size() == 1
 						&& !candidates.get(0).matches(".*\\d+.*")) {
-					System.out.println(candidates.get(0));
 					sf.setDisambiguatedEntity(candidates.get(0));
+					sf.setInitial(true);
 				}
 			}
 		}

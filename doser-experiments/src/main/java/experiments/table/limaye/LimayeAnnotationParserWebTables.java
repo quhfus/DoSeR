@@ -1,5 +1,6 @@
 package experiments.table.limaye;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -77,14 +78,16 @@ public class LimayeAnnotationParserWebTables implements ContentHandler {
 		if(localName.equals("text") && this.firstRow && content) {
 			table.addColumn("");
 			column++;
-			table.getColumn(column).addCell(currentValue.toString());
+			String cellValue = escape(currentValue.toString());
+			table.getColumn(column).addCell(cellValue);
 			currentValue = new StringBuilder();
 			flag = false;
 		}
 		
 		if (localName.equals("text") && content && !this.firstRow) {
 			column++;
-			table.getColumn(column).addCell(currentValue.toString());
+			String cellValue = escape(currentValue.toString());
+			table.getColumn(column).addCell(cellValue);
 			currentValue = new StringBuilder();
 			flag = false;
 		}
@@ -132,28 +135,23 @@ public class LimayeAnnotationParserWebTables implements ContentHandler {
 		return table;
 	}
 
-	private String unescapeHTMLCharacters(String resource) {
-		String res = resource;
-		if (res.contains("&amp;apos;")) {
-			res = res.replace("&amp;apos;", "'");
-		}
-
-		if (res.contains("&apos;")) {
-			res = res.replace("&apos;", "'");
-		}
-		
-		if(res.contains("&quot;")) {
-			res = res.replace("&quot;", "");
-		}
-		return res;
-	}
-
 	public static String removeAccents(String notNullSource) {
 		return notNullSource;
 		// return Normalizer.normalize(notNullSource,
 		// Normalizer.Form.NFD).replaceAll(
 		// "\\p{InCombiningDiacriticalMarks}+", "");
 
+	}
+	
+	private String escape(String s) {
+		String val = StringEscapeUtils.unescapeHtml4(s);
+		val = val.replaceAll("&amp;", "&");
+		return val.replaceAll("&apos;", "'");
+	}
+	
+	public static void main(String args[]) {
+		String test = "&apos;";
+		System.out.println(StringEscapeUtils.unescapeHtml4(test).replaceAll("&apos;", "'"));
 	}
 
 }

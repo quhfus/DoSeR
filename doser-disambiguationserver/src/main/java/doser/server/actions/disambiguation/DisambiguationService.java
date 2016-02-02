@@ -113,7 +113,7 @@ public class DisambiguationService {
 		if (mainService != null) {
 			final List<DisambiguationTask> tasks = new LinkedList<DisambiguationTask>();
 			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
-					listToDis);
+					listToDis, request.getMainTopic());
 			collectiveTask.setKbIdentifier("default", "EntityCentric");
 			collectiveTask.setReturnNr(1000);
 			tasks.add(collectiveTask);

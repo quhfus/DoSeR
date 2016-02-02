@@ -122,7 +122,17 @@ public class FinalEntityDisambiguation extends Word2VecPageRank {
 						// System.out.println(l1.get(0) + " "+l2.get(0)
 						// +"  Connection: "+ weight+ " Localcomp: "+ localComp
 						// + "HarmonicMean: "+ hm);
-						addEdge(v1, v2, edgeFactory.create(), weight);
+						
+						// Testing
+//						if(isAlreadyDisambiguated(v1) || isAlreadyDisambiguated(v2)) {
+//							if(weight > 1.5) {
+//								addEdge(v1, v2, edgeFactory.create(), weight);
+//							} else {
+//								System.out.println("Ich lasse hier Kanten weg!"+v1.getUris().get(0)+" and "+v1.getUris().get(0) + " and "+weight);
+//							}
+//						} else {
+							addEdge(v1, v2, edgeFactory.create(), weight);
+//						}
 					}
 				}
 			}
@@ -137,12 +147,27 @@ public class FinalEntityDisambiguation extends Word2VecPageRank {
 			}
 		}
 	}
+	
+	private boolean isAlreadyDisambiguated(Vertex v) {
+		boolean isDisambiguated = false;
+		int qryNr = v.getEntityQuery();
+		for(SurfaceForm sf : repList) {
+			if(sf.getQueryNr() == qryNr) {
+				int candidateSize = sf.getCandidates().size();
+				if(candidateSize == 1) {
+					isDisambiguated = true;
+				}
+				break;
+			}
+		}
+		return isDisambiguated;
+	}
 
 	@Override
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
-				getRootPrior(graph.getVertices()), 0.20);
+				getRootPrior(graph.getVertices()), 0.13);
 		pr.setMaxIterations(250);
 		pr.evaluate();
 		return pr;
