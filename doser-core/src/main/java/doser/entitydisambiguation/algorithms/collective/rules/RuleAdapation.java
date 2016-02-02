@@ -10,27 +10,29 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefau
 public class RuleAdapation {
 
 	private ArrayList<Rule> beforerules;
-	
+
 	private ArrayList<Rule> afterrules;
-	
-	public RuleAdapation(EntityCentricKnowledgeBaseDefault eckb, Word2Vec w2v) {
+
+	public RuleAdapation(EntityCentricKnowledgeBaseDefault eckb, Word2Vec w2v, String topic) {
 		super();
 		this.beforerules = new ArrayList<Rule>();
 		this.beforerules.add(new NoCandidatesCheckPlural(eckb));
 		this.beforerules.add(new NoCandidatesExpansionRules(eckb));
 		this.beforerules.add(new UnambiguousToAmbiguousRule(eckb));
-		this.beforerules.add(new PatternRule(eckb));
+		if (topic != null) {
+			this.beforerules.add(new PatternRule(eckb));
+		}
 		this.beforerules.add(new ContextRule(eckb, w2v));
 	}
 
 	public void performRuleChainBeforeCandidateSelection(List<SurfaceForm> rep) {
-		for(Rule r : beforerules) {
+		for (Rule r : beforerules) {
 			r.applyRule(rep);
 		}
 	}
-	
+
 	public void performRuleChainAfterCandidateSelection(List<SurfaceForm> rep) {
-		for(Rule r : afterrules) {
+		for (Rule r : afterrules) {
 			r.applyRule(rep);
 		}
 	}

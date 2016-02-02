@@ -11,10 +11,13 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 	static final int PREPROCESSINGCONTEXTSIZE = 200;
 
 	private Doc2Vec d2v;
+	
+	private String topic;
 
-	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep, EntityCentricKnowledgeBaseDefault eckb) {
+	public CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep, EntityCentricKnowledgeBaseDefault eckb, String topic) {
 		super(res, rep, eckb);
 		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
+		this.topic = topic;
 	}
 
 	@Override
@@ -23,11 +26,15 @@ public class CollectiveAndContextDriver extends AlgorithmDriver {
 		// First candidate pruning
 		CandidatePruning pruning = new CandidatePruning(w2v, d2v, eckb);
 		pruning.prune(rep);
+		if(topic != null) {
+			TableColumnFilter cf = new TableColumnFilter(eckb, topic);
+			cf.filter(rep);
+		}
 		TimeNumberDisambiguation timenumberdis = new TimeNumberDisambiguation(eckb);
 		timenumberdis.solve(rep);
 		LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
 		locationDis.solve(rep);
-		RuleAdapation rules = new RuleAdapation(eckb, w2v);
+		RuleAdapation rules = new RuleAdapation(eckb, w2v, topic);
 		rules.performRuleChainBeforeCandidateSelection(rep);
 
 		CandidateReductionW2V w2vreduction = new CandidateReductionW2V(eckb, rep, w2v, 20, 5, 125, false, false);

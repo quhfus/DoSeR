@@ -128,7 +128,7 @@ public class EntityCentricAlgorithmCollective extends DisambiguationAlgorithm {
 
 		// AlgorithmDriver solver = new CollectiveOnlyDriver(
 		// responseArray, collectiveRep, eckb);
-		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb);
+		AlgorithmDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb, task.getMainTopic());
 		solver.solve();
 
 		solver.generateResult();

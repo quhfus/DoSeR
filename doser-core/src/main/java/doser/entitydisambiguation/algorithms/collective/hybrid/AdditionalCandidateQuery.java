@@ -39,15 +39,18 @@ public class AdditionalCandidateQuery {
 		if (Properties.getInstance().getCandidateExpansion()) {
 			this.taskNumber = taskNumber;
 			String mention = dpo.getSelectedText().replaceAll(" +", " ");
+			
 			/* Eliminate e.g. Bill , Gates to Bill, Gates */
 			Matcher regexMatcher = punctuationPattern.matcher(mention);
 			StringBuffer buffer = new StringBuffer();
 			while (regexMatcher.find()) {
-				regexMatcher.appendReplacement(buffer, regexMatcher.group(1));
+				String replacer = regexMatcher.group(1);
+				replacer = Matcher.quoteReplacement(replacer);
+				regexMatcher.appendReplacement(buffer, replacer);
 			}
 			regexMatcher.appendTail(buffer);
 			String newSf = buffer.toString().trim();
-			if (!dpo.getSelectedText().equalsIgnoreCase(newSf)) {
+			if (!dpo.getSelectedText().equalsIgnoreCase(newSf) && !newSf.equalsIgnoreCase("")) {
 				ScoreDoc[] scoredocs = queryIndex(newSf, false);
 				if (scoredocs != null && scoredocs.length > 0) {
 					SurfaceForm sf = prepareSurfaceForm(scoredocs, dpo, newSf);
@@ -56,15 +59,22 @@ public class AdditionalCandidateQuery {
 					}
 				}
 			}
-			
+
 			/* Parenteses replacement */
 			regexMatcher = parenthesesPattern.matcher(mention);
 			buffer = new StringBuffer();
-			if(regexMatcher.find()) {
-				regexMatcher.appendReplacement(buffer, regexMatcher.group(1));
+			try {
+				if (regexMatcher.find()) {
+					String replacer = regexMatcher.group(1);
+					replacer = Matcher.quoteReplacement(replacer);
+					regexMatcher.appendReplacement(buffer, replacer);
+				}
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
 			}
+			regexMatcher.appendTail(buffer);
 			newSf = buffer.toString().trim();
-			if (!dpo.getSelectedText().equalsIgnoreCase(newSf)) {
+			if (!dpo.getSelectedText().equalsIgnoreCase(newSf) && !newSf.equalsIgnoreCase("")) {
 				ScoreDoc[] scoredocs = queryIndex(newSf, false);
 				if (scoredocs != null && scoredocs.length > 0) {
 					SurfaceForm sf = prepareSurfaceForm(scoredocs, dpo, newSf);
@@ -73,13 +83,13 @@ public class AdditionalCandidateQuery {
 					}
 				}
 			}
-			
+
 			/* Replace numerations */
 			mention = mention.replaceAll("\\d\\.*", "");
 			mention = mention.replaceAll("\"", "");
 			mention = mention.replaceAll(" +", " ");
 			mention = mention.trim();
-			if (!dpo.getSelectedText().equalsIgnoreCase(mention)) {
+			if (!dpo.getSelectedText().equalsIgnoreCase(mention) && !mention.equalsIgnoreCase("")) {
 				ScoreDoc[] scoredocs = queryIndex(mention, false);
 				if (scoredocs != null && scoredocs.length > 0) {
 					SurfaceForm sf = prepareSurfaceForm(scoredocs, dpo, mention);
@@ -88,11 +98,12 @@ public class AdditionalCandidateQuery {
 					}
 				}
 			}
+			
 			/* Replace all special chars and normalize */
 			mention = mention.replaceAll("[^a-zA-Z ]", "");
 			mention = mention.replaceAll(" +", " ");
 			mention = mention.trim();
-			if (!dpo.getSelectedText().equalsIgnoreCase(mention)) {
+			if (!dpo.getSelectedText().equalsIgnoreCase(mention) && !mention.equalsIgnoreCase("")) {
 				ScoreDoc[] scoredocs = queryIndex(mention, false);
 				if (scoredocs != null && scoredocs.length > 0) {
 					SurfaceForm sf = prepareSurfaceForm(scoredocs, dpo, mention);
@@ -101,6 +112,7 @@ public class AdditionalCandidateQuery {
 					}
 				}
 			}
+			
 			/*
 			 * Perform FuzzyQuery if surface forms provides specific
 			 * characteristics
@@ -116,6 +128,7 @@ public class AdditionalCandidateQuery {
 				}
 			}
 		}
+		
 		/* Create Empty Surface Form */
 		ArrayList<String> l = new ArrayList<String>();
 		SurfaceForm sf = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, taskNumber,
@@ -175,15 +188,17 @@ public class AdditionalCandidateQuery {
 		return query;
 	}
 
-//	public static void main(String args[]) throws Exception {
-//		String test = "Nangklao ( Rama III";
-//		Pattern p = Pattern.compile("(.+)[\\(\\[]+.*");
-//		Matcher regexMatcher = p.matcher(test);
-//		StringBuffer builder = new StringBuffer();
-//		if(regexMatcher.find()) {
-//			String replacer = regexMatcher.group(1);
-//			regexMatcher.appendReplacement(builder, regexMatcher.group(1));
-//		}
-//		System.out.println(builder.toString());
-//	}
+	public static void main(String args[]) throws Exception {
+		String test = "\\(";
+		Pattern p = Pattern.compile("(.+)[\\(\\[]+.*");
+		Matcher regexMatcher = p.matcher(test);
+		StringBuffer builder = new StringBuffer();
+		if (regexMatcher.find()) {
+			String replacer = regexMatcher.group(1);
+			replacer = Matcher.quoteReplacement(replacer);
+			regexMatcher.appendReplacement(builder, replacer);
+		}
+		regexMatcher.appendTail(builder);
+		System.out.println(builder.toString());
+	}
 }

@@ -1,4 +1,4 @@
-package experiments.table.limaye;
+package experiments.table.limaye.corrected;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,8 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.swing.table.TableColumn;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -22,79 +20,106 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdtjena.HDTGraph;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.google.gson.Gson;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import experiments.table.limaye.Table.Column;
-import experiments.table.limaye.Table.Column.Cell;
+import experiments.table.limaye.corrected.Table.Column;
+import experiments.table.limaye.corrected.Table.Column.Cell;
 
 public class StartEvaluationTableEntities {
 
 	public static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategories-collective";
 
+	private final static String REDIRECTS = "/home/quh/HDT/redirects.hdt";
+
+	private final static String LABELS = "/home/quh/HDT/labels.hdt";
+
+	// private final static String TYPES = "/home/quh/HDT/instance-types.hdt";
+
 	public static int sum = 0;
 
 	public static int correct = 0;
 
-	public static int haveoneresult = 0;
-
 	public static int annotated = 0;
+
+	public static int haveoneresult = 0;
 	
+	public static int disambiguationpages = 0;
+
 	public static void main(String[] args) {
 		StartEvaluationTableEntities evaluate = new StartEvaluationTableEntities();
 		evaluate.action();
 	}
 
 	public void action() {
-		File file = new File("/home/quh/Arbeitsfläche/Entpackung/Arbeitsfläche/To/wikilink/");
+		HDT hdt = null;
+		HDT hdt_l = null;
+		HDT hdt_d = null;
+		Model m = null;
+		Model m_l = null;
+		Model m_d = null;
+		try {
+			hdt = HDTManager.mapIndexedHDT(REDIRECTS, null);
+			hdt_l = HDTManager.mapIndexedHDT(LABELS, null);
+			// hdt_d = HDTManager.mapIndexedHDT(TYPES, null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		HDTGraph graph = new HDTGraph(hdt);
+		m = ModelFactory.createModelForGraph(graph);
+		graph = new HDTGraph(hdt_l);
+		m_l = ModelFactory.createModelForGraph(graph);
+		File file = new File("/home/quh/Arbeitsfläche/Table Disambiguation Data sets/LimayeAll/all_tables_raw(regen)/");
 		File[] f = file.listFiles();
 		int cellsOverall = 0;
 		int cellsAnnotated = 0;
 
 		for (int u = 0; u < f.length; u++) {
-//			System.out.println(f[u].getAbsolutePath());
+			// System.out.println(f[u].getAbsolutePath());
 			StartEvaluationTableEntities eval = new StartEvaluationTableEntities();
 			String sourcePath = f[u].getAbsolutePath();
-			String[] splitter = sourcePath.split("/");
-			Table t = eval.readTable(f[u].getAbsolutePath());
-			// t.setName(f[u].getAbsolutePath());
-			File gtf = new File(
-					"/home/quh/Arbeitsfläche/Entpackung/Arbeitsfläche/gt/wikilink/" + splitter[splitter.length - 1]);
-			eval.addGT(t, gtf.getAbsolutePath());
 
-			int cols = t.getNumberofColumns();
-			for (int i = 0; i < cols; i++) {
-				Column col = t.getColumn(i);
-				List<Cell> cellL = col.getCellList();
-				List<String> types = col.getMajorTypes();
-				cellsOverall++;
-				// if(types != null && types.size() > 0) {
-				// cellsAnnotated++;
-				// }
-				for (Cell c : cellL) {
+			Table t = eval.readTable(f[u].getAbsolutePath(), m, m_l, m_d);
+			if (t != null) {
+				int cols = t.getNumberofColumns();
+				for (int i = 0; i < cols; i++) {
+					Column col = t.getColumn(i);
+					List<Cell> cellL = col.getCellList();
+					List<String> types = col.getMajorTypes();
 					cellsOverall++;
-					if (c.getGt() != null && !c.getGt().equalsIgnoreCase("")) {
-						cellsAnnotated++;
+					// if(types != null && types.size() > 0) {
+					// cellsAnnotated++;
+					// }
+					for (Cell c : cellL) {
+						cellsOverall++;
+						if (c.getGt() != null && !c.getGt().equalsIgnoreCase("")) {
+							cellsAnnotated++;
+						}
 					}
 				}
+
+				System.out.println("Zellen insgesamt: " + cellsOverall + " Zellen annotiert: " + cellsAnnotated);
+
+				// Query each column separately
+				for (int i = 0; i < t.getNumberofColumns(); i++) {
+					Column column = t.getColumn(i);
+					List<EntityDisambiguationDPO> request_dpo = eval.transformInRequestFormat(column);
+					String topic = column.getHeader();
+					List<Response> l = queryService(request_dpo, topic);
+					setDisambiguatedColumn(t, i, l);
+				}
+
+				StartEvaluationTableEntities.evaluateResults(t);
 			}
-
-			System.out.println("Zellen insgesamt: " + cellsOverall + " Zellen annotiert: " + cellsAnnotated);
-
-			// Query each column separately
-			for (int i = 0; i < t.getNumberofColumns(); i++) {
-				Column column = t.getColumn(i);
-				List<EntityDisambiguationDPO> request_dpo = eval.transformInRequestFormat(column);
-				String topic = column.getHeader();
-				List<Response> l = queryService(request_dpo, topic);
-				setDisambiguatedColumn(t, i, l);
-			}
-
-			StartEvaluationTableEntities.evaluateResults(t);
 		}
 		System.out.println("Insgesamt: " + sum + " davon richtig: " + correct);
 	}
@@ -105,7 +130,7 @@ public class StartEvaluationTableEntities {
 		req.setDocsToReturn(1);
 		req.setDocumentUri("TestUrl");
 		req.setSurfaceFormsToDisambiguate(dpos);
-//		req.setMainTopic(topic);
+		// req.setMainTopic(topic);
 
 		HttpParams my_httpParams = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(my_httpParams, 3000);
@@ -135,7 +160,7 @@ public class StartEvaluationTableEntities {
 		} finally {
 			httpclient.getConnectionManager().shutdown();
 		}
-//		System.out.println(buffer.toString());
+		// System.out.println(buffer.toString());
 		DisambiguationResponse disResponse = gson.fromJson(buffer.toString(), DisambiguationResponse.class);
 		List<Response> responses = disResponse.getTasks();
 		return responses;
@@ -149,7 +174,7 @@ public class StartEvaluationTableEntities {
 			dpo.setDocumentId("");
 			dpo.setContext(cell.getCellContent());
 			dpo.setSelectedText(cell.getCellContent());
-//			System.out.println(cell.getCellContent());
+			// System.out.println(cell.getCellContent());
 			dpo.setStartPosition(0);
 			list.add(dpo);
 		}
@@ -171,43 +196,24 @@ public class StartEvaluationTableEntities {
 				} else {
 					cell.setDisambigutedContentString(disEntities.get(0).getText());
 					cell.setDisambiguatedContent(disEntities.get(0).getEntityUri());
-//					System.out.println(cell.getCellContent());
-//					System.out.println(disEntities.get(0).getEntityUri());
+					// System.out.println(cell.getCellContent());
+					// System.out.println(disEntities.get(0).getEntityUri());
 
 				}
 			}
 		}
 	}
 
-	//
-	// private Table transformFromRequestFormat(Table t,
-	// TableDisambiguationResponse response) {
-	// List<ColumnResponseItem> resi = response.getColumns();
-	// if (resi != null) {
-	// for (int i = 0; i < resi.size(); i++) {
-	// ColumnResponseItem it = resi.get(i);
-	// List<CellResponse> cr = it.getCells();
-	// if (cr != null) {
-	// for (int j = 0; j < cr.size(); j++) {
-	// CellResponse res = cr.get(j);
-	// t.getColumn(i).getCellList().get(j)
-	// .setDisambigutedContentString(res.getText());
-	// t.getColumn(i).getCellList().get(j)
-	// .setDisambiguatedContent(res.getUri());
-	// }
-	// }
-	// }
-	// }
-	// return t;
-	// }
-
-	public Table readTable(String uri) {
+	public Table readTable(String uri, Model m, Model m_l, Model m_d) {
 		Table t = null;
+		boolean readIn = true;
+		FileReader reader = null;
+		LimayeAnnotationParserWebTables p = null;
 		try {
 			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-			FileReader reader = new FileReader(uri);
+			reader = new FileReader(uri);
 			InputSource inputSource = new InputSource(reader);
-			LimayeAnnotationParserWebTables p = new LimayeAnnotationParserWebTables();
+			p = new LimayeAnnotationParserWebTables(m, m_l, m_d);
 			xmlReader.setContentHandler(p);
 			xmlReader.parse(inputSource);
 			t = p.getTable();
@@ -218,26 +224,21 @@ public class StartEvaluationTableEntities {
 			e.printStackTrace();
 		} catch (SAXException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			readIn = false;
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		if (!readIn) {
+			return null;
 		}
 		return t;
-	}
-
-	public void addGT(Table table, String uri) {
-		try {
-			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-			FileReader reader = new FileReader(uri);
-			InputSource inputSource = new InputSource(reader);
-			LimayeGroundtruthAnnotationParser p = new LimayeGroundtruthAnnotationParser(table);
-			xmlReader.setContentHandler(p);
-			xmlReader.parse(inputSource);
-			p = null;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static void evaluateResults(Table t) {
@@ -255,11 +256,13 @@ public class StartEvaluationTableEntities {
 					if (val.equalsIgnoreCase(gt)) {
 						correct++;
 					} else {
-						System.out.println(
-								"Input: " + cell.getCellContent() + " Groundtruth: " + gt + "   Value: " + val);
+						System.out.println("Input: " + cell.getCellContent() + "Groundtruth: " + gt + " Value: " + val);
 					}
 					if (val != null && !val.equalsIgnoreCase("")) {
 						annotated++;
+					}
+					if(gt.contains("(disambiguation)")) {
+						disambiguationpages++;
 					}
 					sum++;
 
@@ -270,7 +273,6 @@ public class StartEvaluationTableEntities {
 		float recall = ((float) correct / (float) sum);
 		float f1 = (2 * prec * recall) / (prec + recall);
 		float acc = ((float) correct / (float) sum);
-		System.out.println("Precision: "+prec +" Recall: "+recall+" F1: "+f1+ " Accuracy: " + acc);
+		System.out.println("Precision: " + prec + " Recall: " + recall + " F1: " + f1 + " Accuracy: " + acc + "DisambiguationPages: "+disambiguationpages);
 	}
-
 }

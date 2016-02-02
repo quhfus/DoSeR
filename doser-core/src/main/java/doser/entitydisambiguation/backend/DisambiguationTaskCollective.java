@@ -8,14 +8,22 @@ import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 public class DisambiguationTaskCollective extends DisambiguationTask {
 
 	private List<EntityDisambiguationDPO> entitiesToDis;
+	
+	/* A maintopic e.g. the column identifier in a table */
+	private String mainTopic;
 
-	public DisambiguationTaskCollective(final List<EntityDisambiguationDPO> entityToDis) {
+	public DisambiguationTaskCollective(final List<EntityDisambiguationDPO> entityToDis, String mainTopic) {
 		super();
 		this.entitiesToDis = entityToDis;
+		this.mainTopic = mainTopic;
 	}
 
 	public List<EntityDisambiguationDPO> getEntityToDisambiguate() {
 		return this.entitiesToDis;
+	}
+	
+	public String getMainTopic() {
+		return this.mainTopic;
 	}
 
 	public void setSurfaceForm(final List<EntityDisambiguationDPO> surfaceForm) {

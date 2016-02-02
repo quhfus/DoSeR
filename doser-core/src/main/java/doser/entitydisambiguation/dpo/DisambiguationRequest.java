@@ -24,6 +24,7 @@ public class DisambiguationRequest {
 	private String documentUri;
 	private List<EntityDisambiguationDPO> surfaceFormsToDisambiguate;
 	private Integer docsToReturn;
+	private String mainTopic;
 
 	public String getDocumentUri() {
 		return this.documentUri;
@@ -48,5 +49,13 @@ public class DisambiguationRequest {
 
 	public void setDocsToReturn(Integer docsToReturn) {
 		this.docsToReturn = docsToReturn;
+	}
+
+	public String getMainTopic() {
+		return mainTopic;
+	}
+
+	public void setMainTopic(String mainTopic) {
+		this.mainTopic = mainTopic;
 	}
 }
