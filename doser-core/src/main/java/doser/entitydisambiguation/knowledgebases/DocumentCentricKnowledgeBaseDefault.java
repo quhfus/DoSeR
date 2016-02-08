@@ -2,7 +2,7 @@ package doser.entitydisambiguation.knowledgebases;
 
 import org.apache.lucene.search.similarities.Similarity;
 
-public class DocumentCentricKnowledgeBaseDefault extends KnowledgeBase  {
+public class DocumentCentricKnowledgeBaseDefault extends AbstractKnowledgeBase  {
 
 	public DocumentCentricKnowledgeBaseDefault(String uri, boolean dynamic,
 			Similarity sim) {

@@ -10,7 +10,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 
-import doser.lucene.features.EnCenExtFeatures;
+import doser.lucene.features.IEntityCentricExtFeatures;
 
 /**
  * Due to major performance problems if we use an IndexReader request for every
@@ -116,11 +116,11 @@ public class SensePriorQuery extends Query {
 
 	}
 
-	private final EnCenExtFeatures kb;
+	private final IEntityCentricExtFeatures kb;
 
 	private final String keyword;
 
-	public SensePriorQuery(final String keyword, final EnCenExtFeatures kb) {
+	public SensePriorQuery(final String keyword, final IEntityCentricExtFeatures kb) {
 		super();
 		this.keyword = keyword;
 		this.kb = kb;

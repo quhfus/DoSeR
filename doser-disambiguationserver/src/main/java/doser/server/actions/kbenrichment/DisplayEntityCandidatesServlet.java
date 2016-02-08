@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import doser.entitydisambiguation.backend.DisambiguationMainService;
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
@@ -74,11 +74,11 @@ public class DisplayEntityCandidatesServlet extends HttpServlet {
 
 	private Set<String> checkLabelInIndex(String label) {
 		Set<String> docSet = new LinkedHashSet<String>();
-		List<DisambiguationTask> lst = new LinkedList<DisambiguationTask>();
+		List<AbstractDisambiguationTask> lst = new LinkedList<AbstractDisambiguationTask>();
 		EntityDisambiguationDPO ent = new EntityDisambiguationDPO();
 		String sfs = label;
 		ent.setSelectedText(sfs);
-		DisambiguationTask task = new DisambiguationTaskSingle(ent);
+		AbstractDisambiguationTask task = new DisambiguationTaskSingle(ent);
 		task.setReturnNr(RETURNEDDOCUMENTS);
 		task.setKbIdentifier("biomedcopy", "EntityCentric");
 		task.setRetrieveDocClasses(true);

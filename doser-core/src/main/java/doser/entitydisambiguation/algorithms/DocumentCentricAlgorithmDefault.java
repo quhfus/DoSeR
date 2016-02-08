@@ -18,13 +18,13 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.backend.DisambiguationMainService;
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.DocumentCentricKnowledgeBaseDefault;
-import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
 import doser.general.HelpfulMethods;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
@@ -38,7 +38,7 @@ import doser.lucene.query.LearnToRankQuery;
  * @author quhfus
  * 
  */
-public class DocumentCentricAlgorithmDefault extends DisambiguationAlgorithm {
+public class DocumentCentricAlgorithmDefault extends AbstractDisambiguationAlgorithm {
 
 	public static int CLASSIFICATIONDOCUMENTS = 101;
 
@@ -53,8 +53,8 @@ public class DocumentCentricAlgorithmDefault extends DisambiguationAlgorithm {
 	}
 
 	@Override
-	public boolean checkAndSetInputParameter(DisambiguationTask task) {
-		KnowledgeBase kb = task.getKb();
+	public boolean checkAndSetInputParameter(AbstractDisambiguationTask task) {
+		AbstractKnowledgeBase kb = task.getKb();
 		if (!(task instanceof DisambiguationTaskSingle)) {
 			return false;
 		} else if (!(kb instanceof DocumentCentricKnowledgeBaseDefault)) {

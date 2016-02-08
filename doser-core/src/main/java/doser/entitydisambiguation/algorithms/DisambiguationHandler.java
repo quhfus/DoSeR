@@ -1,7 +1,7 @@
 package doser.entitydisambiguation.algorithms;
 
-import doser.entitydisambiguation.algorithms.collective.hybrid.EntityCentricAlgorithmCollective;
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.algorithms.collective.dbpedia.CollectiveDisambiguationDBpediaEntities;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 
@@ -25,8 +25,8 @@ public class DisambiguationHandler {
 		return instance;
 	}
 
-	public DisambiguationAlgorithm getAlgorithm(DisambiguationTask task) {
-		DisambiguationAlgorithm algorithm = null;
+	public AbstractDisambiguationAlgorithm getAlgorithm(AbstractDisambiguationTask task) {
+		AbstractDisambiguationAlgorithm algorithm = null;
 		if (task instanceof DisambiguationTaskSingle) {
 			DisambiguationTaskSingle t = (DisambiguationTaskSingle) task;
 			EntityDisambiguationDPO dpo = t.getEntityToDisambiguate();
@@ -45,7 +45,7 @@ public class DisambiguationHandler {
 				algorithm = new EntityCentricAlgorithmDefault();
 			}
 		} else {
-			algorithm = new EntityCentricAlgorithmCollective();
+			algorithm = new CollectiveDisambiguationDBpediaEntities();
 		}
 		return algorithm;
 	}

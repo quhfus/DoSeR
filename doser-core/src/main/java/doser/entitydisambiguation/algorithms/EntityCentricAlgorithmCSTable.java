@@ -12,14 +12,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EnCenKBCStable;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
-import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
@@ -31,14 +31,14 @@ import doser.lucene.query.LearnToRankQuery;
  * @author Quhfus
  * 
  */
-public class EntityCentricAlgorithmCSTable extends DisambiguationAlgorithm {
+public class EntityCentricAlgorithmCSTable extends AbstractDisambiguationAlgorithm {
 
 	private EnCenKBCStable eckb;
 	private DisambiguationTaskSingle task;
 	
 	@Override
-	public boolean checkAndSetInputParameter(DisambiguationTask task) {
-		KnowledgeBase kb = task.getKb();
+	public boolean checkAndSetInputParameter(AbstractDisambiguationTask task) {
+		AbstractKnowledgeBase kb = task.getKb();
 		if (!(task instanceof DisambiguationTaskSingle)) {
 			return false;
 		} else if (!(kb instanceof EnCenKBCStable)) {
@@ -98,7 +98,7 @@ public class EntityCentricAlgorithmCSTable extends DisambiguationAlgorithm {
 	}
 
 	private Query createQuery(EntityDisambiguationDPO dpo,
-			EntityCentricKnowledgeBaseDefault kb) {
+			EntityCentricKnowledgeBase kb) {
 		LearnToRankQuery query = new LearnToRankQuery();
 		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
 

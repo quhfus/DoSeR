@@ -3,7 +3,7 @@ package doser.entitydisambiguation.backend;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 
-public class DisambiguationTaskSingle extends DisambiguationTask {
+public class DisambiguationTaskSingle extends AbstractDisambiguationTask {
 
 	private EntityDisambiguationDPO entityToDis;
 

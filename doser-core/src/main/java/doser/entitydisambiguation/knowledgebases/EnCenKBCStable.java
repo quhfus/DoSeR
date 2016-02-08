@@ -16,9 +16,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import doser.entitydisambiguation.properties.Properties;
-import doser.lucene.features.EnCenExtFeatures;
+import doser.lucene.features.IEntityCentricExtFeatures;
 
-public class EnCenKBCStable extends EntityCentricKnowledgeBaseDefault {
+public class EnCenKBCStable extends EntityCentricKnowledgeBase {
 
 	/**
 	 * This hashmap stores the Sense Prior values of the table computer science
@@ -91,7 +91,7 @@ public class EnCenKBCStable extends EntityCentricKnowledgeBaseDefault {
 		}
 	}
 
-	private class ECCSTableExternFeatures implements EnCenExtFeatures {
+	private class ECCSTableExternFeatures implements IEntityCentricExtFeatures {
 
 		@Override
 		public float getPriorOfDocument(int docId) {
@@ -115,14 +115,14 @@ public class EnCenKBCStable extends EntityCentricKnowledgeBaseDefault {
 		}
 
 		@Override
-		public Set<String> getRelations(String url) {
-			return new HashSet<String>();
-		}
-
-		@Override
 		public int getOccurrences(String sf, String uri) {
 			// TODO Auto-generated method stub
 			return 0;
+		}
+		
+		@Override
+		public Set<String> getRelations(String url) {
+			return new HashSet<String>();
 		}
 	}
 }

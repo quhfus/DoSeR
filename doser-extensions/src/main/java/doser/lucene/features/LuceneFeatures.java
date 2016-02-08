@@ -58,11 +58,11 @@ public class LuceneFeatures {
 	}
 
 
-	public static Query queryPrior(EnCenExtFeatures kb) {
+	public static Query queryPrior(IEntityCentricExtFeatures kb) {
 		return new PriorQuery(kb);
 	}
 
-	public static Query querySensePrior(String str, EnCenExtFeatures kb) {
+	public static Query querySensePrior(String str, IEntityCentricExtFeatures kb) {
 		return new SensePriorQuery(str, kb);
 	}
 }

@@ -17,32 +17,32 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 
 import doser.entitydisambiguation.backend.DisambiguationMainService;
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
-import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
 import doser.lucene.features.LuceneFeatures;
 import doser.lucene.query.LTRBooleanQuery;
 import doser.lucene.query.LearnToRankClause;
 import doser.lucene.query.LearnToRankQuery;
 
-public class EntityCentricAlgorithmTableDefault extends DisambiguationAlgorithm {
+public class EntityCentricAlgorithmTableDefault extends AbstractDisambiguationAlgorithm {
 
-	private EntityCentricKnowledgeBaseDefault eckb;
+	private EntityCentricKnowledgeBase eckb;
 	private DisambiguationTaskSingle task;
 
 	@Override
-	public boolean checkAndSetInputParameter(DisambiguationTask task) {
-		KnowledgeBase kb = task.getKb();
+	public boolean checkAndSetInputParameter(AbstractDisambiguationTask task) {
+		AbstractKnowledgeBase kb = task.getKb();
 		if (!(task instanceof DisambiguationTaskSingle)) {
 			return false;
-		} else if (!(kb instanceof EntityCentricKnowledgeBaseDefault)) {
+		} else if (!(kb instanceof EntityCentricKnowledgeBase)) {
 			return false;
 		}
-		this.eckb = (EntityCentricKnowledgeBaseDefault) kb;
+		this.eckb = (EntityCentricKnowledgeBase) kb;
 		this.task = (DisambiguationTaskSingle) task;
 		return true;
 	}
@@ -139,7 +139,7 @@ public class EntityCentricAlgorithmTableDefault extends DisambiguationAlgorithm 
 	}
 
 	private Query createPhraseQuery(EntityDisambiguationDPO dpo,
-			EntityCentricKnowledgeBaseDefault kb) {
+			EntityCentricKnowledgeBase kb) {
 		LearnToRankQuery query = new LearnToRankQuery();
 		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
 
@@ -163,7 +163,7 @@ public class EntityCentricAlgorithmTableDefault extends DisambiguationAlgorithm 
 	}
 
 	private Query createFuzzyQuery(EntityDisambiguationDPO dpo,
-			EntityCentricKnowledgeBaseDefault kb) {
+			EntityCentricKnowledgeBase kb) {
 		LearnToRankQuery query = new LearnToRankQuery();
 		List<LearnToRankClause> features = new LinkedList<LearnToRankClause>();
 		DefaultSimilarity defaultSim = new DefaultSimilarity();

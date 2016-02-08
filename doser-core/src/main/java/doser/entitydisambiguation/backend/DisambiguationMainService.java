@@ -20,10 +20,10 @@ import org.rdfhdt.hdtjena.HDTGraph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import doser.entitydisambiguation.algorithms.DisambiguationAlgorithm;
+import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.DisambiguationHandler;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBaseDefault;
-import doser.entitydisambiguation.knowledgebases.KnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 import doser.entitydisambiguation.properties.Properties;
 
@@ -46,7 +46,7 @@ public final class DisambiguationMainService {
 	private Model hdtyagoTransTypes;
 	private Model hdtdbpediaRedirects;
 
-	private Map<KnowledgeBaseIdentifiers, KnowledgeBase> knowledgebases;
+	private Map<KnowledgeBaseIdentifiers, AbstractKnowledgeBase> knowledgebases;
 
 	private List<Timer> timerList;
 
@@ -60,10 +60,10 @@ public final class DisambiguationMainService {
 	 */
 	private DisambiguationMainService() {
 		super();
-		this.knowledgebases = new EnumMap<KnowledgeBaseIdentifiers, KnowledgeBase>(
+		this.knowledgebases = new EnumMap<KnowledgeBaseIdentifiers, AbstractKnowledgeBase>(
 				KnowledgeBaseIdentifiers.class);
 		this.knowledgebases.put(KnowledgeBaseIdentifiers.Standard,
-				new EntityCentricKnowledgeBaseDefault(Properties.getInstance()
+				new EntityCentricKBDBpedia(Properties.getInstance()
 						.getEntityCentricKBWikipedia(), false,
 						new DefaultSimilarity()));
 		// this.knowledgebases.put(KnowledgeBaseIdentifiers.CSTable,
@@ -82,7 +82,7 @@ public final class DisambiguationMainService {
 		// Create Timer thread, which periodically calls the IndexReader updates
 		// for dynamic knowledge bases
 		this.timerList = new ArrayList<Timer>();
-		for (KnowledgeBase kb : this.knowledgebases.values()) {
+		for (AbstractKnowledgeBase kb : this.knowledgebases.values()) {
 			Timer timer = new Timer();
 			this.timerList.add(timer);
 			timer.scheduleAtFixedRate(kb, 0, TIMERPERIOD);
@@ -94,7 +94,7 @@ public final class DisambiguationMainService {
 					threadSize);
 			ThreadPoolExecutor ex = new ThreadPoolExecutor(threadSize,
 					threadSize, 100, TimeUnit.SECONDS, queue);
-			for (KnowledgeBase kb : knowledgebases.values()) {
+			for (AbstractKnowledgeBase kb : knowledgebases.values()) {
 				ex.execute(new KnowledgeBaseInitializationThread(kb));
 			}
 			ex.shutdown();
@@ -170,10 +170,10 @@ public final class DisambiguationMainService {
 		instance = new DisambiguationMainService();
 	}
 
-	public void disambiguate(List<DisambiguationTask> taskList) {
+	public void disambiguate(List<AbstractDisambiguationTask> taskList) {
 		for (int i = 0; i < taskList.size(); i++) {
-			DisambiguationTask task = taskList.get(i);
-			DisambiguationAlgorithm algorithm = DisambiguationHandler
+			AbstractDisambiguationTask task = taskList.get(i);
+			AbstractDisambiguationAlgorithm algorithm = DisambiguationHandler
 					.getInstance().getAlgorithm(task);
 			if (algorithm != null) {
 				task.setKb(this.knowledgebases.get(task.getKbIdentifier()));
@@ -230,9 +230,9 @@ public final class DisambiguationMainService {
 	 */
 	class KnowledgeBaseInitializationThread implements Runnable {
 
-		private KnowledgeBase kb;
+		private AbstractKnowledgeBase kb;
 
-		public KnowledgeBaseInitializationThread(KnowledgeBase kb) {
+		public KnowledgeBaseInitializationThread(AbstractKnowledgeBase kb) {
 			super();
 			this.kb = kb;
 		}

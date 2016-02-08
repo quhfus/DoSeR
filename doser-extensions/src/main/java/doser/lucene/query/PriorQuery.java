@@ -10,7 +10,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 
-import doser.lucene.features.EnCenExtFeatures;
+import doser.lucene.features.IEntityCentricExtFeatures;
 
 /**
  * Due to major performance problems if we use an IndexReader request for every
@@ -109,9 +109,9 @@ public class PriorQuery extends Query {
 		}
 	}
 
-	private EnCenExtFeatures kb;
+	private IEntityCentricExtFeatures kb;
 
-	public PriorQuery(EnCenExtFeatures kb) {
+	public PriorQuery(IEntityCentricExtFeatures kb) {
 		super();
 		this.kb = kb;
 	}

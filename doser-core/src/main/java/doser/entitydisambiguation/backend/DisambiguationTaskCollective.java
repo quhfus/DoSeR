@@ -5,7 +5,7 @@ import java.util.List;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 
-public class DisambiguationTaskCollective extends DisambiguationTask {
+public class DisambiguationTaskCollective extends AbstractDisambiguationTask {
 
 	private List<EntityDisambiguationDPO> entitiesToDis;
 	

@@ -14,8 +14,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import doser.entitydisambiguation.algorithms.collective.hybrid.Edge;
-import doser.entitydisambiguation.algorithms.collective.hybrid.Vertex;
+import doser.entitydisambiguation.algorithms.collective.Edge;
+import doser.entitydisambiguation.algorithms.collective.Vertex;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.webclassify.dpo.Paragraph;
 import doser.word2vec.Word2VecJsonFormat;

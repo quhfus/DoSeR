@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import doser.entitydisambiguation.backend.DisambiguationMainService;
-import doser.entitydisambiguation.backend.DisambiguationTask;
+import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskCollective;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
@@ -68,7 +68,7 @@ public class DisambiguationService {
 				.getSurfaceFormsToDisambiguate();
 		List<Response> responseList = new LinkedList<Response>();
 		response.setDocumentUri(request.getDocumentUri());
-		final List<DisambiguationTask> tasks = new LinkedList<DisambiguationTask>();
+		final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
 		final DisambiguationMainService mainService = DisambiguationMainService
 				.getInstance();
 		if (mainService != null) {
@@ -95,7 +95,7 @@ public class DisambiguationService {
 			mainService.disambiguate(tasks);
 		}
 
-		for (DisambiguationTask task : tasks) {
+		for (AbstractDisambiguationTask task : tasks) {
 			responseList.add(task.getResponse().get(0));
 		}
 		response.setTasks(responseList);
@@ -111,7 +111,7 @@ public class DisambiguationService {
 				.getSurfaceFormsToDisambiguate();
 
 		if (mainService != null) {
-			final List<DisambiguationTask> tasks = new LinkedList<DisambiguationTask>();
+			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
 			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
 					listToDis, request.getMainTopic());
 			collectiveTask.setKbIdentifier("default", "EntityCentric");
