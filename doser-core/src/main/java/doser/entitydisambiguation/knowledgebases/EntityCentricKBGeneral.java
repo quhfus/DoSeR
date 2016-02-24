@@ -13,16 +13,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 import doser.word2vec.Word2VecJsonFormat;
 
-public class EntityCentricGeneral extends EntityCentricKnowledgeBase {
+public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 
 	private Map<String, Float> word2vecsimilarities;
 
-	public EntityCentricGeneral(String uri, boolean dynamic) {
+	public EntityCentricKBGeneral(String uri, boolean dynamic) {
 		super(uri, dynamic);
 		this.word2vecsimilarities = new HashMap<String, Float>();
 	}
 
-	public EntityCentricGeneral(String uri, boolean dynamic, Similarity sim) {
+	public EntityCentricKBGeneral(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
 		this.word2vecsimilarities = new HashMap<String, Float>();
 	}
@@ -116,6 +116,7 @@ public class EntityCentricGeneral extends EntityCentricKnowledgeBase {
 	private Map<String, Float> queryWord2VecSimilarities(Set<String> neededSimilarities) {
 		Word2VecJsonFormat format = new Word2VecJsonFormat();
 		format.setData(neededSimilarities);
+		format.setDomain(generateDomainName());
 		JSONArray res = Word2VecJsonFormat.performquery(format, "w2vsim");
 		Map<String, Float> map = new HashMap<String, Float>();
 		for (int i = 0; i < res.length(); i++) {
@@ -129,6 +130,10 @@ public class EntityCentricGeneral extends EntityCentricKnowledgeBase {
 			}
 		}
 		return map;
+	}
+	
+	protected String generateDomainName() {
+		return "General";
 	}
 
 }

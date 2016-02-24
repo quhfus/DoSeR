@@ -19,6 +19,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 
 import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.SurfaceForm;
+import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.lucene.query.TermQuery;
 

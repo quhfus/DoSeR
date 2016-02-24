@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -17,6 +16,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.SurfaceForm;
@@ -37,6 +38,8 @@ import doser.lucene.query.TermQuery;
  */
 public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguationAlgorithm {
 
+	private final static Logger logger = LoggerFactory.getLogger(CollectiveDisambiguationDBpediaEntities.class);
+	
 	private EntityCentricKBDBpedia eckb;
 
 	private DisambiguationTaskCollective task;
@@ -115,8 +118,7 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 				}
 
 			} catch (final IOException e) {
-				Logger.getRootLogger().error("Lucene Searcher Error: ", e);
-				e.printStackTrace();
+				logger.error("JsonException in "+CollectiveDisambiguationDBpediaEntities.class.getName(), e);
 			}
 		}
 
@@ -139,7 +141,7 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 		eckb.release();
 	}
 
-	public void generateResult(Response[] responseArray, List<SurfaceForm> cols) {
+	void generateResult(Response[] responseArray, List<SurfaceForm> cols) {
 		for (int i = 0; i < responseArray.length; i++) {
 			SurfaceForm r = search(i, cols);
 			if (responseArray[i] == null && r != null && r.getCandidates().size() == 1) {

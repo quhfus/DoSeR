@@ -1,34 +1,28 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 
-public class CandidateReductionW2V {
+public abstract class CandidateReduction {
 
 	// public static final int MAXSURFACEFORMSPERQUERY = 20;
 	// public static final int REDUCETO = 5;
 	private List<SurfaceForm> rep;
-	private EntityCentricKBDBpedia eckb;
-	private int maxsurfaceformsperquery;
-	private int reduceTo;
-	private int iterations;
-	private boolean disambiguate;
 	private boolean alwaysAction;
+	private int maxsurfaceformsperquery;
+	protected int reduceTo;
 
-	CandidateReductionW2V(EntityCentricKBDBpedia eckb, List<SurfaceForm> rep,
+	public CandidateReduction(EntityCentricKBGeneral eckb, List<SurfaceForm> rep,
 			int maxsurfaceformsperquery, int reduceTo, int iterations, boolean disambiguate, boolean alwaysAction) {
 		super();
 		this.rep = rep;
-		this.eckb = eckb;
 		this.maxsurfaceformsperquery = maxsurfaceformsperquery;
 		this.reduceTo = reduceTo;
-		this.iterations = iterations;
-		this.disambiguate = disambiguate;
-		this.alwaysAction = alwaysAction;
+
 	}
 
 	public void solve() {
@@ -88,13 +82,5 @@ public class CandidateReductionW2V {
 		return rep;
 	}
 
-	private List<SurfaceForm> miniSolve(List<SurfaceForm> rep) {
-		List<SurfaceForm> sol = new LinkedList<SurfaceForm>();
-		Word2VecDisambiguator disambiguator = new Word2VecDisambiguator(eckb, rep, disambiguate, reduceTo, iterations);
-		disambiguator.setup();
-		disambiguator.solve();
-		sol.addAll(disambiguator.getRepresentation());
-		return sol;
-	}
-
+	public abstract List<SurfaceForm> miniSolve(List<SurfaceForm> rep);
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.lucene.search.similarities.Similarity;
 
-public class EntityCentricKBDBpedia extends EntityCentricGeneral {
+public class EntityCentricKBDBpedia extends EntityCentricKBGeneral {
 
 	public EntityCentricKBDBpedia(String uri, boolean dynamic) {
 		super(uri, dynamic);
@@ -45,7 +45,7 @@ public class EntityCentricKBDBpedia extends EntityCentricGeneral {
 	/**
 	 * Takes a set of dbpedia entities as well as a target entity and generates
 	 * one string that fits into the word2vec query format used in this class.
-	 * The source entities are concatenated and should be compared wit the
+	 * The source entities are concatenated and should be compared with the
 	 * target entity.
 	 *
 	 * @param source
@@ -66,5 +66,10 @@ public class EntityCentricKBDBpedia extends EntityCentricGeneral {
 		src = src.substring(0, src.length() - 1);
 		String t = target.replaceAll("http://dbpedia.org/resource/", "");
 		return src + "|" + t;
+	}
+	
+	@Override
+	protected String generateDomainName() {
+		return "DBPedia";
 	}
 }

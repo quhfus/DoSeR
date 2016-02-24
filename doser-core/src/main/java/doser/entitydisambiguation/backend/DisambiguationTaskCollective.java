@@ -51,8 +51,8 @@ public class DisambiguationTaskCollective extends AbstractDisambiguationTask {
 				this.kbIdentifier = KnowledgeBaseIdentifiers.Standard;
 			} else if(kbversion.equalsIgnoreCase("cstable")) {
 				this.kbIdentifier = KnowledgeBaseIdentifiers.CSTable;
-			} else if(kbversion.equalsIgnoreCase("biomedcopy")) {
-				this.kbIdentifier = KnowledgeBaseIdentifiers.DbPediaBiomedCopy;
+			} else if(kbversion.equalsIgnoreCase("biomed")) {
+				this.kbIdentifier = KnowledgeBaseIdentifiers.Biomed;
 			} else {
 				this.kbIdentifier = KnowledgeBaseIdentifiers.Standard;
 			}

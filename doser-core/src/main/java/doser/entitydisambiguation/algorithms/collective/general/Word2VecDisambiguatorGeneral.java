@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective.general;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -15,11 +15,11 @@ import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.AbstractWord2VecPageRank;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
-class Word2VecDisambiguator extends AbstractWord2VecPageRank {
+class Word2VecDisambiguatorGeneral extends AbstractWord2VecPageRank {
 
 //	private static final int MAXIMUMCANDIDATESPERSF = 8;
 
@@ -32,7 +32,7 @@ class Word2VecDisambiguator extends AbstractWord2VecPageRank {
 	private int iterations;
 	
 
-	Word2VecDisambiguator(EntityCentricKBDBpedia eckb,
+	Word2VecDisambiguatorGeneral(EntityCentricKBGeneral eckb,
 			List<SurfaceForm> rep, boolean disambiguate, int maximumcandidatespersf, int iterations) {
 		super(eckb, rep);
 		this.origList = new ArrayList<SurfaceForm>();

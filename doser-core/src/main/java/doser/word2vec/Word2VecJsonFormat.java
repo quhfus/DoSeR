@@ -11,11 +11,16 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import doser.tools.ServiceQueries;
 
 public class Word2VecJsonFormat {
 
+	private final static Logger logger = LoggerFactory.getLogger(Word2VecJsonFormat.class);
+	
+	private String domain;
 	private Set<String> data;
 
 	public Set<String> getData() {
@@ -26,6 +31,14 @@ public class Word2VecJsonFormat {
 		this.data = data;
 	}
 	
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
 	public static JSONArray performquery(Object json, String serviceEndpoint) {
 		final ObjectMapper mapper = new ObjectMapper();
 		String jsonString = null;
@@ -43,12 +56,10 @@ public class Word2VecJsonFormat {
 				resultJSON = new JSONObject(resStr);
 				result = resultJSON.getJSONArray("data");
 			} catch (JSONException e) {
-				System.out.println(e);
-//				Logger.getRootLogger().error("Error: ", e);
+				logger.error("JsonException in "+Word2VecJsonFormat.class.getName(), e);
 			}
 		} catch (IOException e) {
-			System.out.println(e);
-//			Logger.getRootLogger().error("Error:", e);
+			logger.error("JsonException in "+Word2VecJsonFormat.class.getName(), e);
 		}
 		return result;
 	}

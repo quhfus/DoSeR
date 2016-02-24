@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective.general;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -20,7 +20,7 @@ import doser.entitydisambiguation.algorithms.collective.AbstractWord2VecPageRank
 import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
@@ -30,7 +30,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 
 	private Doc2Vec d2v;
 
-	public FinalEntityDisambiguation(EntityCentricKBDBpedia eckb,
+	public FinalEntityDisambiguation(EntityCentricKBGeneral eckb,
 			List<SurfaceForm> rep) {
 		super(eckb, rep);
 		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
@@ -48,12 +48,6 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 			}
 		};
 
-//		List<SurfaceForm> list = new LinkedList<SurfaceForm>();
-//		for (SurfaceForm r : this.repList) {
-//			list.add((SurfaceForm) r.clone());
-//		}
-//		Collections.sort(list);
-//		this.repList = list;
 		this.disambiguatedSurfaceForms = new BitSet(repList.size());
 		for (int i = 0; i < repList.size(); i++) {
 			if (repList.get(i).getCandidates().size() <= 1) {
@@ -122,22 +116,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 						// First experiment: Harmonic mean
 						double localComp = (0.8*this.d2v.getDoc2VecSimilarity(
 								v2.getText(), v2.getContext(), l2.get(0)));
-						double hm = 2 * (localComp * weight)
-								/ (localComp + weight);
-						// System.out.println(l1.get(0) + " "+l2.get(0)
-						// +"  Connection: "+ weight+ " Localcomp: "+ localComp
-						// + "HarmonicMean: "+ hm);
-						
-						// Testing
-//						if(isAlreadyDisambiguated(v1) || isAlreadyDisambiguated(v2)) {
-//							if(weight > 1.5) {
-//								addEdge(v1, v2, edgeFactory.create(), weight);
-//							} else {
-//								System.out.println("Ich lasse hier Kanten weg!"+v1.getUris().get(0)+" and "+v1.getUris().get(0) + " and "+weight);
-//							}
-//						} else {
 							addEdge(v1, v2, edgeFactory.create(), weight);
-//						}
 					}
 				}
 			}
@@ -153,21 +132,6 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 		}
 	}
 	
-	private boolean isAlreadyDisambiguated(Vertex v) {
-		boolean isDisambiguated = false;
-		int qryNr = v.getEntityQuery();
-		for(SurfaceForm sf : repList) {
-			if(sf.getQueryNr() == qryNr) {
-				int candidateSize = sf.getCandidates().size();
-				if(candidateSize == 1) {
-					isDisambiguated = true;
-				}
-				break;
-			}
-		}
-		return isDisambiguated;
-	}
-
 	@Override
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(

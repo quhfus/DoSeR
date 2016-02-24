@@ -31,19 +31,13 @@ public class SurfaceForm implements Comparable<SurfaceForm>, Cloneable {
 		this.isRelevant = true;
 	}
 
-	
-	
 	public boolean isRelevant() {
 		return isRelevant;
 	}
 
-
-
 	public void setRelevant(boolean isRelevant) {
 		this.isRelevant = isRelevant;
 	}
-
-
 
 	public boolean isMatchesInitial() {
 		return matchesInitial;

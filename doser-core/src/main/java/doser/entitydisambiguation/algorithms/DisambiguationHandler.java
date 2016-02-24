@@ -1,9 +1,11 @@
 package doser.entitydisambiguation.algorithms;
 
 import doser.entitydisambiguation.algorithms.collective.dbpedia.CollectiveDisambiguationDBpediaEntities;
+import doser.entitydisambiguation.algorithms.collective.general.CollectiveDisambiguationGeneralEntities;
 import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
+import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 
 public class DisambiguationHandler {
 
@@ -45,7 +47,11 @@ public class DisambiguationHandler {
 				algorithm = new EntityCentricAlgorithmDefault();
 			}
 		} else {
-			algorithm = new CollectiveDisambiguationDBpediaEntities();
+			if (task.getKbIdentifier().equals(KnowledgeBaseIdentifiers.Biomed)) {
+				algorithm = new CollectiveDisambiguationGeneralEntities();
+			} else {
+				algorithm = new CollectiveDisambiguationDBpediaEntities();
+			}
 		}
 		return algorithm;
 	}

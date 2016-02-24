@@ -24,7 +24,7 @@ import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.backend.DisambiguationMainService;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 
-public class TimeNumberDisambiguation {
+class TimeNumberDisambiguation {
 
 	private static final HashMap<String, String> TIMEANDNUMBERS = new HashMap<String, String>() {
 		/**

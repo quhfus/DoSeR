@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +33,7 @@ public class Doc2Vec {
 		this.computeLocalContextCompatibility(rep);
 	}
 
-	float getDoc2VecSimilarity(String sf, String context, String entity) {
+	public float getDoc2VecSimilarity(String sf, String context, String entity) {
 		String key = sf + context + entity;
 		if (this.doc2vecsimilarities.containsKey(key)) {
 			return this.doc2vecsimilarities.get(key) + 1.0f;

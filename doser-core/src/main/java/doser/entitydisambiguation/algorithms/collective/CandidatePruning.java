@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 import doser.general.HelpfulMethods;
 
 public class CandidatePruning {
@@ -24,15 +24,15 @@ public class CandidatePruning {
 
 	private Doc2Vec d2v;
 
-	private EntityCentricKBDBpedia eckb;
+	private EntityCentricKBGeneral eckb;
 
-	CandidatePruning(Doc2Vec d2v, EntityCentricKBDBpedia eckb) {
+	public CandidatePruning(Doc2Vec d2v, EntityCentricKBGeneral eckb) {
 		super();
 		this.d2v = d2v;
 		this.eckb = eckb;
 	}
 
-	void prune(List<SurfaceForm> rep) {
+	public void prune(List<SurfaceForm> rep) {
 		List<SurfaceForm> unambiguous = new LinkedList<SurfaceForm>();
 		for (SurfaceForm c : rep) {
 			if (c.getCandidates().size() == 1) {

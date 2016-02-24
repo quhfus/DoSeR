@@ -57,8 +57,52 @@ public class DisambiguationService {
 	@RequestMapping(value = "/disambiguationWithoutCategories-collective", method = RequestMethod.POST, headers = "Accept=application/json")
 	public @ResponseBody DisambiguationResponse annotateCollectiveWithoutCategories(
 			@RequestBody final DisambiguationRequest request) {
-		DisambiguationResponse annotationResponse = disambiguateCollective(request);
-		return annotationResponse;
+		final DisambiguationResponse response = new DisambiguationResponse();
+		final DisambiguationMainService mainService = DisambiguationMainService
+				.getInstance();
+		final List<EntityDisambiguationDPO> listToDis = request
+				.getSurfaceFormsToDisambiguate();
+
+		if (mainService != null) {
+			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
+			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
+					listToDis, request.getMainTopic());
+			collectiveTask.setKbIdentifier("default", "EntityCentric");
+			collectiveTask.setReturnNr(1000);
+			tasks.add(collectiveTask);
+			mainService.disambiguate(tasks);
+
+			List<Response> responses = collectiveTask.getResponse();
+			System.out.println("CALLUP"+responses);
+			response.setTasks(responses);
+			response.setDocumentUri(request.getDocumentUri());
+		}
+		return response;
+	}
+	
+	@RequestMapping(value = "/disambiguationWithoutCategoriesBiomed-collective", method = RequestMethod.POST, headers = "Accept=application/json")
+	public @ResponseBody DisambiguationResponse annotateCollectiveWithoutCategoriesBiomed(
+			@RequestBody final DisambiguationRequest request) {
+		final DisambiguationResponse response = new DisambiguationResponse();
+		final DisambiguationMainService mainService = DisambiguationMainService
+				.getInstance();
+		final List<EntityDisambiguationDPO> listToDis = request
+				.getSurfaceFormsToDisambiguate();
+
+		if (mainService != null) {
+			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
+			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
+					listToDis, request.getMainTopic());
+			collectiveTask.setKbIdentifier("biomed", "EntityCentric");
+			collectiveTask.setReturnNr(1000);
+			tasks.add(collectiveTask);
+			mainService.disambiguate(tasks);
+
+			List<Response> responses = collectiveTask.getResponse();
+			response.setTasks(responses);
+			response.setDocumentUri(request.getDocumentUri());
+		}
+		return response;
 	}
 
 	private DisambiguationResponse disambiguateSingle(
@@ -101,30 +145,4 @@ public class DisambiguationService {
 		response.setTasks(responseList);
 		return response;
 	}
-
-	private DisambiguationResponse disambiguateCollective(
-			DisambiguationRequest request) {
-		final DisambiguationResponse response = new DisambiguationResponse();
-		final DisambiguationMainService mainService = DisambiguationMainService
-				.getInstance();
-		final List<EntityDisambiguationDPO> listToDis = request
-				.getSurfaceFormsToDisambiguate();
-
-		if (mainService != null) {
-			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
-			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
-					listToDis, request.getMainTopic());
-			collectiveTask.setKbIdentifier("default", "EntityCentric");
-			collectiveTask.setReturnNr(1000);
-			tasks.add(collectiveTask);
-			mainService.disambiguate(tasks);
-
-			List<Response> responses = collectiveTask.getResponse();
-			System.out.println("CALLUP"+responses);
-			response.setTasks(responses);
-			response.setDocumentUri(request.getDocumentUri());
-		}
-		return response;
-	}
-
 }

@@ -43,7 +43,7 @@ public class DisambiguationTaskSingle extends AbstractDisambiguationTask {
 			} else if(kbversion.equalsIgnoreCase("cstable")) {
 				this.kbIdentifier = KnowledgeBaseIdentifiers.CSTable;
 			} else if(kbversion.equalsIgnoreCase("biomedcopy")) {
-				this.kbIdentifier = KnowledgeBaseIdentifiers.DbPediaBiomedCopy;
+				this.kbIdentifier = KnowledgeBaseIdentifiers.Biomed;
 			} else {
 				this.kbIdentifier = KnowledgeBaseIdentifiers.Standard;
 			}

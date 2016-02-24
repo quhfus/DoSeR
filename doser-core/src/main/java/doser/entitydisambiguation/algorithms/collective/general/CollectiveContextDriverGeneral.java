@@ -1,4 +1,4 @@
-package doser.entitydisambiguation.algorithms.collective.dbpedia;
+package doser.entitydisambiguation.algorithms.collective.general;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -9,63 +9,47 @@ import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.algorithms.rules.RuleAdapation;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 
-class CollectiveAndContextDriver {
+class CollectiveContextDriverGeneral {
 
 	static final int PREPROCESSINGCONTEXTSIZE = 200;
-
-	private Doc2Vec d2v;
-	private String topic;
+	
 	private Response[] currentResponse;
 	private List<SurfaceForm> rep;
-	private EntityCentricKBDBpedia eckb;
-
-	CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep, EntityCentricKBDBpedia eckb, String topic) {
+	private EntityCentricKBGeneral eckb;
+	private Doc2Vec d2v;
+	
+	CollectiveContextDriverGeneral(Response[] res, List<SurfaceForm> rep, EntityCentricKBGeneral eckb) {
 		super();
-		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
-		this.topic = topic;
-		if (res.length != rep.size()) {
-			throw new IllegalArgumentException();
-		}
 		this.currentResponse = res;
 		this.rep = rep;
 		this.eckb = eckb;
+		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 	}
-
+	
 	void solve() {
 		// First candidate pruning
 		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
 		pruning.prune(rep);
-		if (topic != null) {
-			TableColumnFilter cf = new TableColumnFilter(eckb, topic);
-			cf.filter(rep);
-		}
-		TimeNumberDisambiguation timenumberdis = new TimeNumberDisambiguation(eckb);
-		timenumberdis.solve(rep);
-		LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
-		locationDis.solve(rep);
 
 		RuleAdapation rules = new RuleAdapation();
 		rules.addNoCandidatesCheckPluralRule(eckb);
 		rules.addNoCandidatesExpansionRule(eckb);
-		rules.addUnambiguousToAmbiguousRule(eckb);
-		rules.addPatternRule(eckb, topic);
-		rules.addContextRule(eckb);
 		rules.performRuleChainBeforeCandidateSelection(rep);
 
-		CandidateReductionDBpediaW2V w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 20, 5, 125, false, false);
+		CandidateReductionGeneralW2V w2vreduction = new CandidateReductionGeneralW2V(eckb, rep, 20, 5, 125, false, false);
 		w2vreduction.solve();
 		rep = w2vreduction.getRep();
 
-		w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 45, 5, 250, true, true);
+		w2vreduction = new CandidateReductionGeneralW2V(eckb, rep, 45, 5, 250, true, true);
 		w2vreduction.solve();
 		rep = w2vreduction.getRep();
 		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(eckb, rep);
 		finalDis.setup();
 		finalDis.solve();
 	}
-
+	
 	void generateResult() {
 		for (int i = 0; i < currentResponse.length; i++) {
 			SurfaceForm r = search(i);
@@ -83,7 +67,7 @@ class CollectiveAndContextDriver {
 			}
 		}
 	}
-
+	
 	private SurfaceForm search(int qryNr) {
 		for (SurfaceForm r : rep) {
 			if (r.getQueryNr() == qryNr) {
@@ -92,4 +76,5 @@ class CollectiveAndContextDriver {
 		}
 		return null;
 	}
+	
 }

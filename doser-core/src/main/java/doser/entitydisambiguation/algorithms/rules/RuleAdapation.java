@@ -9,10 +9,11 @@ import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
 
 public class RuleAdapation {
 
-	private ArrayList<AbstractRule> ruleChain;
+	private List<AbstractRule> ruleChain;
 	
 	public RuleAdapation() {
 		super();
+		this.ruleChain = new ArrayList<AbstractRule>();
 	}
 	
 	public void addNoCandidatesCheckPluralRule(AbstractKnowledgeBase eckb) {
