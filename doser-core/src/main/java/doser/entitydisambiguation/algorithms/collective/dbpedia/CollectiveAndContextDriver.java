@@ -5,7 +5,6 @@ import java.util.List;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.CandidatePruning;
-import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.algorithms.rules.RuleAdapation;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
@@ -15,7 +14,6 @@ class CollectiveAndContextDriver {
 
 	static final int PREPROCESSINGCONTEXTSIZE = 200;
 
-	private Doc2Vec d2v;
 	private String topic;
 	private Response[] currentResponse;
 	private List<SurfaceForm> rep;
@@ -23,7 +21,6 @@ class CollectiveAndContextDriver {
 
 	CollectiveAndContextDriver(Response[] res, List<SurfaceForm> rep, EntityCentricKBDBpedia eckb, String topic) {
 		super();
-		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 		this.topic = topic;
 		if (res.length != rep.size()) {
 			throw new IllegalArgumentException();
@@ -31,11 +28,13 @@ class CollectiveAndContextDriver {
 		this.currentResponse = res;
 		this.rep = rep;
 		this.eckb = eckb;
+		this.eckb.precomputeDoc2VecSimilarities(rep, PREPROCESSINGCONTEXTSIZE);
 	}
 
 	void solve() {
+		
 		// First candidate pruning
-		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
+		CandidatePruning pruning = new CandidatePruning(eckb);
 		pruning.prune(rep);
 		if (topic != null) {
 			TableColumnFilter cf = new TableColumnFilter(eckb, topic);
@@ -43,7 +42,7 @@ class CollectiveAndContextDriver {
 		}
 		TimeNumberDisambiguation timenumberdis = new TimeNumberDisambiguation(eckb);
 		timenumberdis.solve(rep);
-		LocationDisambiguation locationDis = new LocationDisambiguation(d2v, eckb);
+		LocationDisambiguation locationDis = new LocationDisambiguation(eckb);
 		locationDis.solve(rep);
 
 		RuleAdapation rules = new RuleAdapation();

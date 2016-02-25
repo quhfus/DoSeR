@@ -5,7 +5,6 @@ import java.util.List;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.CandidatePruning;
-import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.algorithms.rules.RuleAdapation;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
@@ -18,19 +17,17 @@ class CollectiveContextDriverGeneral {
 	private Response[] currentResponse;
 	private List<SurfaceForm> rep;
 	private EntityCentricKBGeneral eckb;
-	private Doc2Vec d2v;
 	
 	CollectiveContextDriverGeneral(Response[] res, List<SurfaceForm> rep, EntityCentricKBGeneral eckb) {
 		super();
 		this.currentResponse = res;
 		this.rep = rep;
 		this.eckb = eckb;
-		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 	}
 	
 	void solve() {
 		// First candidate pruning
-		CandidatePruning pruning = new CandidatePruning(d2v, eckb);
+		CandidatePruning pruning = new CandidatePruning(eckb);
 		pruning.prune(rep);
 
 		RuleAdapation rules = new RuleAdapation();

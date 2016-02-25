@@ -19,20 +19,17 @@ import org.apache.lucene.search.BooleanClause.Occur;
 
 import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.lucene.query.TermQuery;
 
 class LocationDisambiguation {
+	
 	private static final float DOC2VECTHRESHOLD = 1.37f;
 	private EntityCentricKBDBpedia eckb;
-	private Doc2Vec w2v;
 
-	public LocationDisambiguation(Doc2Vec w2v,
-			EntityCentricKBDBpedia eckb) {
+	public LocationDisambiguation(EntityCentricKBDBpedia eckb) {
 		super();
 		this.eckb = eckb;
-		this.w2v = w2v;
 	}
 
 	void solve(List<SurfaceForm> reps) {
@@ -213,7 +210,7 @@ class LocationDisambiguation {
 	private boolean isLocation(Set<Document> nonLocationSet, SurfaceForm sf) {
 		for (Document doc : nonLocationSet) {
 			String mainlink = doc.get("Mainlink");
-			float docSim = w2v.getDoc2VecSimilarity(sf.getSurfaceForm(),
+			float docSim = this.eckb.getDoc2VecSimilarity(sf.getSurfaceForm(),
 					sf.getContext(), mainlink);
 			if (docSim > DOC2VECTHRESHOLD) {
 				return false;

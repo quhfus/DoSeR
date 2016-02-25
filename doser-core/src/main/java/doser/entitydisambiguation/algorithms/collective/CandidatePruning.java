@@ -22,13 +22,10 @@ public class CandidatePruning {
 
 	private static final float WORD2VECTHRESHOLD = 1.60f;
 
-	private Doc2Vec d2v;
-
 	private EntityCentricKBGeneral eckb;
 
-	public CandidatePruning(Doc2Vec d2v, EntityCentricKBGeneral eckb) {
+	public CandidatePruning(EntityCentricKBGeneral eckb) {
 		super();
-		this.d2v = d2v;
 		this.eckb = eckb;
 	}
 
@@ -69,7 +66,7 @@ public class CandidatePruning {
 				Map<String, Float> map_doc2vec = new HashMap<String, Float>();
 				for (String candidate : candidates) {
 
-					map_doc2vec.put(candidate, d2v.getDoc2VecSimilarity(c.getSurfaceForm(), c.getContext(), candidate));
+					map_doc2vec.put(candidate, eckb.getDoc2VecSimilarity(c.getSurfaceForm(), c.getContext(), candidate));
 				}
 				@SuppressWarnings("deprecation")
 				List<Map.Entry<String, Float>> l_doc2vec = HelpfulMethods.sortByValue(map_doc2vec);

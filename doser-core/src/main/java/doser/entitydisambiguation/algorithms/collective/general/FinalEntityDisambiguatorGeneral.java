@@ -17,7 +17,6 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.AbstractWord2VecPageRank;
-import doser.entitydisambiguation.algorithms.collective.Doc2Vec;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
@@ -28,12 +27,10 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 
 	private static final int PREPROCESSINGCONTEXTSIZE = 500;
 
-	private Doc2Vec d2v;
 
 	public FinalEntityDisambiguation(EntityCentricKBGeneral eckb,
 			List<SurfaceForm> rep) {
 		super(eckb, rep);
-		this.d2v = new Doc2Vec(rep, PREPROCESSINGCONTEXTSIZE);
 	}
 
 	@Override
@@ -114,8 +111,8 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 										l2.get(0)));
 						// Add Doc2Vec Local Compatibility
 						// First experiment: Harmonic mean
-						double localComp = (0.8*this.d2v.getDoc2VecSimilarity(
-								v2.getText(), v2.getContext(), l2.get(0)));
+//						double localComp = (0.8*this.d2v.getDoc2VecSimilarity(
+//								v2.getText(), v2.getContext(), l2.get(0)));
 							addEdge(v1, v2, edgeFactory.create(), weight);
 					}
 				}

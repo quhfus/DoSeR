@@ -1,5 +1,6 @@
 package doser.entitydisambiguation.knowledgebases;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,15 +16,20 @@ import org.codehaus.jettison.json.JSONObject;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
+import doser.entitydisambiguation.algorithms.SurfaceForm;
+import doser.word2vec.Data;
+import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
 
 public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 
 	private static Cache<String, Float> w2vCache;
+	private static Cache<String, Float> d2vCache;
 
 	static {
-		w2vCache = CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(60, TimeUnit.MINUTES)
-				.build();
+		w2vCache = CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(60, TimeUnit.MINUTES).build();
+		d2vCache = CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(60, TimeUnit.MINUTES).build();
 	}
 
 	public EntityCentricKBGeneral(String uri, boolean dynamic) {
@@ -111,6 +117,16 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 		return map;
 	}
 
+	public float getDoc2VecSimilarity(String sf, String context, String entity) {
+		String key = sf + context + entity;
+		Float val = d2vCache.getIfPresent(key);
+		if (val != null) {
+			return val + 1.0f;
+		} else {
+			return 0;
+		}
+	}
+
 	/**
 	 * Retrieves the word2vec similarities of a set of entity pairs
 	 *
@@ -138,6 +154,57 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 			}
 		}
 		return map;
+	}
+
+	public void precomputeDoc2VecSimilarities(List<SurfaceForm> rep, int contextSize) {
+		Doc2VecJsonFormat format = new Doc2VecJsonFormat();
+		for (SurfaceForm sf : rep) {
+			String context = AbstractDisambiguationAlgorithm.extractContext(
+					sf.getPosition(), sf.getContext(), contextSize);
+
+			context = context.toLowerCase();
+			context = context.replaceAll("[\\.\\,\\!\\? ]+", " ");
+
+			Data doc = new Data();
+			List<String> candidates = sf.getCandidates();
+			List<String> toDoCandidates = new ArrayList<String>();
+			for(String can : candidates) {
+				if(!isInCache(sf.getSurfaceForm(), context, can)) {
+					toDoCandidates.add(can);
+				}
+			}
+//			if(!toDoCandidates.isEmpty()) {
+				String[] cans = new String[toDoCandidates.size()];
+				sf.getCandidates().toArray(cans);
+				doc.setCandidates(cans);
+				doc.setContext(context);
+				doc.setSurfaceForm(sf.getSurfaceForm());
+				doc.getQryNr();
+				format.addData(doc);
+//			}
+		}
+		JSONArray res = Word2VecJsonFormat.performquery(format, "d2vsim");
+
+		// We obtain the same order of surface forms
+		for (int i = 0; i < res.length(); i++) {
+			SurfaceForm c = rep.get(i);
+			try {
+				JSONObject obj = res.getJSONObject(i);
+				JSONArray simArray = obj.getJSONArray("sim");
+				for (int j = 0; j < simArray.length(); j++) {
+					float sim = (float) simArray.getDouble(j);
+					String entity = c.getCandidates().get(j);
+					d2vCache.put(c.getSurfaceForm() + c.getContext() + entity, sim);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private boolean isInCache(String surfaceForm, String context, String entity) {
+		String key = surfaceForm + context + entity;
+		return d2vCache.getIfPresent(key) != null;
 	}
 
 	protected String generateDomainName() {
