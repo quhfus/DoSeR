@@ -5,33 +5,40 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.search.similarities.Similarity;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import doser.word2vec.Word2VecJsonFormat;
 
 public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 
-	private Map<String, Float> word2vecsimilarities;
+	private static Cache<String, Float> w2vCache;
+
+	static {
+		w2vCache = CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(60, TimeUnit.MINUTES)
+				.build();
+	}
 
 	public EntityCentricKBGeneral(String uri, boolean dynamic) {
 		super(uri, dynamic);
-		this.word2vecsimilarities = new HashMap<String, Float>();
 	}
 
 	public EntityCentricKBGeneral(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
-		this.word2vecsimilarities = new HashMap<String, Float>();
 	}
 
 	/**
-	 * Takes a set of entities as well as a
-	 * target entity and generates one string that fits into the word2vec query
-	 * format used in this class. The source entities are concatenated and
-	 * should be compared with the target entity.
+	 * Takes a set of entities as well as a target entity and generates one
+	 * string that fits into the word2vec query format used in this class. The
+	 * source entities are concatenated and should be compared with the target
+	 * entity.
 	 *
 	 * @param source
 	 *            a set of source entities
@@ -53,10 +60,10 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 	}
 
 	/**
-	 * Takes a set of entities as well as a
-	 * target entity and generates one string that fits into the word2vec query
-	 * format used in this class. The source entities are concatenated and
-	 * should be compared wit the target entity.
+	 * Takes a set of entities as well as a target entity and generates one
+	 * string that fits into the word2vec query format used in this class. The
+	 * source entities are concatenated and should be compared wit the target
+	 * entity.
 	 *
 	 * @param source
 	 *            a set of source entities
@@ -74,7 +81,7 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 		src = src.substring(0, src.length() - 1);
 		return src + "|" + target;
 	}
-	
+
 	/**
 	 * Given a set of word2vec queries, this methods retrieves the corresponding
 	 * word2vec similarities. If the similarities of a query is not cashed, we
@@ -89,20 +96,21 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 		Map<String, Float> map = new HashMap<String, Float>();
 		Set<String> neededSimilarities = new HashSet<String>();
 		for (String s : set) {
-			if (this.word2vecsimilarities.containsKey(s)) {
-				map.put(s, this.word2vecsimilarities.get(s));
+			Float val = w2vCache.getIfPresent(s);
+			if (val != null) {
+				map.put(s, val);
 			} else {
 				neededSimilarities.add(s);
 			}
 		}
 		if (neededSimilarities.size() > 0) {
 			Map<String, Float> computedSimilarities = queryWord2VecSimilarities(neededSimilarities);
-			this.word2vecsimilarities.putAll(computedSimilarities);
+			w2vCache.putAll(computedSimilarities);
 			map.putAll(computedSimilarities);
 		}
 		return map;
 	}
-	
+
 	/**
 	 * Retrieves the word2vec similarities of a set of entity pairs
 	 *
@@ -131,9 +139,8 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 		}
 		return map;
 	}
-	
+
 	protected String generateDomainName() {
 		return "General";
 	}
-
 }

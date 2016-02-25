@@ -24,7 +24,6 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.lucene.query.TermQuery;
 
 class LocationDisambiguation {
-//	private static final float DOC2VECTHRESHOLD = 1.35f;
 	private static final float DOC2VECTHRESHOLD = 1.37f;
 	private EntityCentricKBDBpedia eckb;
 	private Doc2Vec w2v;

@@ -49,7 +49,6 @@ public class Doc2Vec {
 			String context = AbstractDisambiguationAlgorithm.extractContext(
 					sf.getPosition(), sf.getContext(), this.contextSize);
 
-//			context = NLPTools.getInstance().performLemmatizationAndStopWordRemoval(context);
 			context = context.toLowerCase();
 			context = context.replaceAll("[\\.\\,\\!\\? ]+", " ");
 

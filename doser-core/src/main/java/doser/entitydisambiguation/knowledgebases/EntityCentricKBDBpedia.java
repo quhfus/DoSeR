@@ -70,6 +70,6 @@ public class EntityCentricKBDBpedia extends EntityCentricKBGeneral {
 	
 	@Override
 	protected String generateDomainName() {
-		return "DBPedia";
+		return "DBpedia";
 	}
 }
