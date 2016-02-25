@@ -12,13 +12,15 @@ public class CandidateReductionDBpediaW2V extends CandidateReduction {
 	private int iterations;
 	private boolean disambiguate;
 	private EntityCentricKBDBpedia eckb;
+	private int reduceTo;
 	
 	CandidateReductionDBpediaW2V(EntityCentricKBDBpedia eckb, List<SurfaceForm> rep, int maxsurfaceformsperquery,
 			int reduceTo, int iterations, boolean disambiguate, boolean alwaysAction) {
-		super(eckb, rep, maxsurfaceformsperquery, reduceTo, iterations, disambiguate, alwaysAction);
+		super(rep, maxsurfaceformsperquery);
 		this.iterations = iterations;
 		this.disambiguate = disambiguate;
 		this.eckb = eckb;
+		this.reduceTo = reduceTo;
 	}
 
 	@Override

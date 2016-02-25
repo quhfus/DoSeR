@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
 
 public abstract class CandidateReduction {
 
@@ -14,15 +13,13 @@ public abstract class CandidateReduction {
 	private List<SurfaceForm> rep;
 	private boolean alwaysAction;
 	private int maxsurfaceformsperquery;
-	protected int reduceTo;
+//	protected int reduceTo;
 
-	public CandidateReduction(EntityCentricKBGeneral eckb, List<SurfaceForm> rep,
-			int maxsurfaceformsperquery, int reduceTo, int iterations, boolean disambiguate, boolean alwaysAction) {
+	public CandidateReduction(List<SurfaceForm> rep,
+			int maxsurfaceformsperquery) {
 		super();
 		this.rep = rep;
 		this.maxsurfaceformsperquery = maxsurfaceformsperquery;
-		this.reduceTo = reduceTo;
-
 	}
 
 	public void solve() {
