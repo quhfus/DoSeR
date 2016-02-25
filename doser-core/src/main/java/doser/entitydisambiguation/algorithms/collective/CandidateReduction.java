@@ -13,13 +13,13 @@ public abstract class CandidateReduction {
 	private List<SurfaceForm> rep;
 	private boolean alwaysAction;
 	private int maxsurfaceformsperquery;
-//	protected int reduceTo;
 
 	public CandidateReduction(List<SurfaceForm> rep,
-			int maxsurfaceformsperquery) {
+			int maxsurfaceformsperquery, boolean alwaysAction) {
 		super();
 		this.rep = rep;
 		this.maxsurfaceformsperquery = maxsurfaceformsperquery;
+		this.alwaysAction = alwaysAction;
 	}
 
 	public void solve() {

@@ -32,7 +32,6 @@ class CollectiveAndContextDriver {
 	}
 
 	void solve() {
-		
 		// First candidate pruning
 		CandidatePruning pruning = new CandidatePruning(eckb);
 		pruning.prune(rep);

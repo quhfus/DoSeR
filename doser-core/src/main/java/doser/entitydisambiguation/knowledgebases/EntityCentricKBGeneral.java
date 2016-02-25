@@ -22,7 +22,7 @@ import doser.word2vec.Data;
 import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
 
-public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
+public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 
 	private static Cache<String, Float> w2vCache;
 	private static Cache<String, Float> d2vCache;
@@ -207,7 +207,5 @@ public class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 		return d2vCache.getIfPresent(key) != null;
 	}
 
-	protected String generateDomainName() {
-		return "General";
-	}
+	protected abstract String generateDomainName();
 }

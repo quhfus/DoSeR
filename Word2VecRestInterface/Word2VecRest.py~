@@ -16,12 +16,6 @@ class Word2VecRest(Flask):
 
     def __init__(self, *args, **kwargs):
         super(Word2VecRest, self).__init__(*args, **kwargs)
-#        W2VPATH = '/mnt/ssd1/disambiguation/word2vec/WikiEntityModel_400_neg10_iter5.seq'
-#        D2VPATH = '/mnt/ssd1/disambiguation/word2vec/doc2vec/doc2vec_wiki_model.d2v'
-#	D2VPATH = '/home/zwicklbauer/word2vec/doc2vec_model.d2v' 
-#        self.w2vmodel = Word2Vec.load_word2vec_format(W2VPATH, binary=True)
-#        self.d2vmodel = Doc2Vec.load(D2VPATH)
-
 
     def compute_w2vsimilarity(self, s1, s2):
         try:

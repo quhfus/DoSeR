@@ -12,13 +12,15 @@ public class CandidateReductionGeneralW2V extends CandidateReduction {
 	private int iterations;
 	private boolean disambiguate;
 	private EntityCentricKBGeneral eckb;
-
+	private int reduceTo;
+	
 	public CandidateReductionGeneralW2V(EntityCentricKBGeneral eckb, List<SurfaceForm> rep, int maxsurfaceformsperquery,
 			int reduceTo, int iterations, boolean disambiguate, boolean alwaysAction) {
-		super(eckb, rep, maxsurfaceformsperquery, reduceTo, iterations, disambiguate, alwaysAction);
+		super(rep, maxsurfaceformsperquery, alwaysAction);
 		this.iterations = iterations;
 		this.disambiguate = disambiguate;
 		this.eckb = eckb;
+		this.reduceTo = reduceTo;
 	}
 
 	@Override
