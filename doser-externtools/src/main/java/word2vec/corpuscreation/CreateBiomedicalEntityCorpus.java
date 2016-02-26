@@ -47,7 +47,7 @@ public class CreateBiomedicalEntityCorpus {
 						List<Concept> conceptList = e.getConceptList();
 						for (Concept c : conceptList) {
 							if (!generateID(c.getUrl()).equals("")) {
-								writer.print(c.getUrl() + " ");
+								writer.print(convertURL(c.getUrl()) + " ");
 							}
 						}
 					}
@@ -69,6 +69,21 @@ public class CreateBiomedicalEntityCorpus {
 				writer.close();
 			}
 		}
+	}
+	
+	private String convertURL(String s) {
+		String splitter[] = s.split(":");
+		s = s.toLowerCase();
+		if(s.contains("disease")) {
+			return "UMLS_"+splitter[2];
+		} else if(s.contains("umls")) {
+			return "UMLS_"+splitter[2];
+		} else if(s.contains("uniprot")) {
+			return "UNIPROT_"+splitter[2];
+		} else if(s.contains("ncbi")) {
+			return "UMLS_"+splitter[2];
+		}
+		return "";
 	}
 
 	private String generateID(String line) {

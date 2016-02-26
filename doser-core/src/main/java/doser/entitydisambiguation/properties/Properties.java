@@ -109,6 +109,10 @@ public final class Properties {
 		return this.config.getString("disambiguation.entityCentricKBWikipedia");
 	}
 	
+	public String getEntityCentricKBBiomed() {
+		return this.config.getString("disambiguation.entityCentricBiomedCalbC");
+	}
+	
 	/**
 	 * Get location of CSTableIndex
 	 */

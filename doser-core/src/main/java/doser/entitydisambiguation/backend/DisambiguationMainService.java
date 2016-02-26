@@ -24,6 +24,7 @@ import doser.entitydisambiguation.algorithms.AbstractDisambiguationAlgorithm;
 import doser.entitydisambiguation.algorithms.DisambiguationHandler;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
+import doser.entitydisambiguation.knowledgebases.EntityCentricKBBiomed;
 import doser.entitydisambiguation.knowledgebases.KnowledgeBaseIdentifiers;
 import doser.entitydisambiguation.properties.Properties;
 
@@ -65,6 +66,10 @@ public final class DisambiguationMainService {
 		this.knowledgebases.put(KnowledgeBaseIdentifiers.Standard,
 				new EntityCentricKBDBpedia(Properties.getInstance()
 						.getEntityCentricKBWikipedia(), false,
+						new DefaultSimilarity()));
+		this.knowledgebases.put(KnowledgeBaseIdentifiers.Biomed,
+				new EntityCentricKBBiomed(Properties.getInstance()
+						.getEntityCentricKBBiomed(), false,
 						new DefaultSimilarity()));
 		// this.knowledgebases.put(KnowledgeBaseIdentifiers.CSTable,
 		// new EnCenKBCStable(Properties.getInstance().getCSTableIndex(),

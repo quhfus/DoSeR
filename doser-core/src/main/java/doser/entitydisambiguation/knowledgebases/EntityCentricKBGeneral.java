@@ -39,55 +39,7 @@ public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase 
 	public EntityCentricKBGeneral(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
 	}
-
-	/**
-	 * Takes a set of entities as well as a target entity and generates one
-	 * string that fits into the word2vec query format used in this class. The
-	 * source entities are concatenated and should be compared with the target
-	 * entity.
-	 *
-	 * @param source
-	 *            a set of source entities
-	 * @param target
-	 *            the target entity.
-	 * @return String in appropriate word2vec query format
-	 */
-	public String generateWord2VecFormatString(String source, String target) {
-		int c = source.compareToIgnoreCase(target);
-		String res = "";
-		if (c < 0) {
-			res = source + "|" + target;
-		} else if (c == 0) {
-			res = source + "|" + target;
-		} else {
-			res = target + "|" + source;
-		}
-		return res;
-	}
-
-	/**
-	 * Takes a set of entities as well as a target entity and generates one
-	 * string that fits into the word2vec query format used in this class. The
-	 * source entities are concatenated and should be compared wit the target
-	 * entity.
-	 *
-	 * @param source
-	 *            a set of source entities
-	 * @param target
-	 *            the target entity.
-	 * @return String in appropriate word2vec query format
-	 */
-	public String generateWord2VecFormatString(List<String> source, String target) {
-		StringBuilder builder = new StringBuilder();
-		for (String s : source) {
-			builder.append(s);
-			builder.append("|");
-		}
-		String src = builder.toString();
-		src = src.substring(0, src.length() - 1);
-		return src + "|" + target;
-	}
-
+	
 	/**
 	 * Given a set of word2vec queries, this methods retrieves the corresponding
 	 * word2vec similarities. If the similarities of a query is not cashed, we
@@ -208,4 +160,9 @@ public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase 
 	}
 
 	protected abstract String generateDomainName();
+	
+	public abstract String generateWord2VecFormatString(String source, String target);
+
+	public abstract String generateWord2VecFormatString(List<String> source, String target);
+	
 }
