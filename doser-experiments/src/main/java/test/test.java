@@ -20,10 +20,10 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 
-import experiments.table.limaye.corrected.DisambiguationRequest;
-import experiments.table.limaye.corrected.DisambiguationResponse;
-import experiments.table.limaye.corrected.EntityDisambiguationDPO;
-import experiments.table.limaye.corrected.Response;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
 
 public class test {
 
