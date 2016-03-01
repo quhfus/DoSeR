@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.lucene.search.similarities.Similarity;
 
-public class EntityCentricKBDBpedia extends EntityCentricKBGeneral {
+public class EntityCentricKBDBpedia extends AbstractEntityCentricKBGeneral {
 
 	public EntityCentricKBDBpedia(String uri, boolean dynamic) {
 		super(uri, dynamic);
@@ -71,5 +71,10 @@ public class EntityCentricKBDBpedia extends EntityCentricKBGeneral {
 	@Override
 	protected String generateDomainName() {
 		return "DBpedia";
+	}
+	
+	@Override
+	protected String kbName() {
+		return "DBpedia KB";
 	}
 }

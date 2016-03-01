@@ -5,16 +5,16 @@ import java.util.List;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.CandidateReduction;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 
 public class CandidateReductionGeneralW2V extends CandidateReduction {
 
 	private int iterations;
 	private boolean disambiguate;
-	private EntityCentricKBGeneral eckb;
+	private AbstractEntityCentricKBGeneral eckb;
 	private int reduceTo;
 	
-	public CandidateReductionGeneralW2V(EntityCentricKBGeneral eckb, List<SurfaceForm> rep, int maxsurfaceformsperquery,
+	public CandidateReductionGeneralW2V(AbstractEntityCentricKBGeneral eckb, List<SurfaceForm> rep, int maxsurfaceformsperquery,
 			int reduceTo, int iterations, boolean disambiguate, boolean alwaysAction) {
 		super(rep, maxsurfaceformsperquery, alwaysAction);
 		this.iterations = iterations;

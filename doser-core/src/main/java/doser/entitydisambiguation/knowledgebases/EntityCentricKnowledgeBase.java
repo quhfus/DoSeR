@@ -1,6 +1,5 @@
 package doser.entitydisambiguation.knowledgebases;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,14 +7,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.similarities.Similarity;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import doser.entitydisambiguation.properties.Properties;
 import doser.lucene.features.IEntityCentricExtFeatures;
 
 /**
@@ -33,6 +29,8 @@ import doser.lucene.features.IEntityCentricExtFeatures;
  */
 public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 
+	private final static Logger logger = LoggerFactory.getLogger(EntityCentricKnowledgeBase.class);
+	
 	protected static final String TRIMLABELAMOUNT = ";;;";
 	protected static final String TRIMOCCOCC = ":::";
 	protected static final String KBOCCURRENCESFIELD = "Occurrences";
@@ -43,7 +41,7 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 	 * eHealth index. Key: Lucene intern document id Value: Amount of
 	 * occurrences of this entity
 	 */
-	protected static Map<String, Integer> indexpriorHashMap;
+	protected Map<String, Integer> indexpriorHashMap;
 
 	/**
 	 * This hashmap stores the Sense Prior values of the standard DbPedia, CalbC
@@ -56,18 +54,18 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 	 * - Key: Hash value of the appearing label <br>
 	 * - Value: Number of occurrences of this label</li>
 	 */
-	protected static Map<Integer, HashMap<Integer, Integer>> indexsensePriorHashMap;
-	protected static Map<String, HashMap<Integer, Integer>> indexsensePriorHashMapBlanc;
+	protected Map<Integer, HashMap<Integer, Integer>> indexsensePriorHashMap;
+	protected Map<String, HashMap<Integer, Integer>> indexsensePriorHashMapBlanc;
 
 	/**
 	 * This map stores the relations the entities can be associated with. Key:
 	 * The source entity uri Value: HashSet of other entities that form a binary
 	 * relation with the source entity.
 	 */
-	protected static Map<Integer, HashSet<String>> indexRelation;
+	protected Map<Integer, HashSet<String>> indexRelation;
 
 	protected IEntityCentricExtFeatures externFeatureDef;
-
+	
 	public EntityCentricKnowledgeBase(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
 		this.externFeatureDef = new ECExternFeatures();
@@ -93,14 +91,12 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 		indexsensePriorHashMap = new HashMap<Integer, HashMap<Integer, Integer>>();
 		indexRelation = new HashMap<Integer, HashSet<String>>();
 		indexsensePriorHashMapBlanc = new HashMap<String, HashMap<Integer, Integer>>();
-		final File file = new File(Properties.getInstance().getEntityCentricKBWikipedia());
 		try {
-			final Directory dir = FSDirectory.open(file);
-			final IndexReader iReader = DirectoryReader.open(dir);
+			final IndexReader iReader = super.getSearcher().getIndexReader();
 			final int maxDoc = iReader.numDocs();
 			for (int i = 0; i < maxDoc; i++) {
 				if ((i % 50000) == 0) {
-					Logger.getRootLogger().info("Loaded Entities: " + i);
+					logger.info(this.kbName()+ " Loaded Entities: " + i);
 				}
 
 				final String val = iReader.document(i).get(KBOCCURRENCESFIELD);
@@ -114,7 +110,7 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 						try {
 							check = Integer.valueOf(value[1]);
 						} catch (final NumberFormatException e) {
-							Logger.getRootLogger().error("Warning NumberFormatException while Initialization: " + val);
+							logger.warn(this.kbName()+ " Warning NumberFormatException while Initialization:" + val);
 						}
 						hash.put(value[0].toLowerCase(Locale.US).hashCode(), check);
 					}
@@ -123,8 +119,12 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 			}
 			iReader.close();
 		} catch (final IOException e) {
-			Logger.getRootLogger().error(e.getStackTrace());
+			logger.error("IOException in "+EntityCentricKnowledgeBase.class.getName(), e);
 		}
+	}
+	
+	protected String kbName() {
+		return "General KB";
 	}
 
 	class ECExternFeatures implements IEntityCentricExtFeatures {

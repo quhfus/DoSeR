@@ -19,7 +19,7 @@ import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.AbstractWord2VecPageRank;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
@@ -28,7 +28,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 	private static final int PREPROCESSINGCONTEXTSIZE = 500;
 
 
-	public FinalEntityDisambiguation(EntityCentricKBGeneral eckb,
+	public FinalEntityDisambiguation(AbstractEntityCentricKBGeneral eckb,
 			List<SurfaceForm> rep) {
 		super(eckb, rep);
 	}

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 import doser.general.HelpfulMethods;
 
 public class CandidatePruning {
@@ -22,9 +22,9 @@ public class CandidatePruning {
 
 	private static final float WORD2VECTHRESHOLD = 1.60f;
 
-	private EntityCentricKBGeneral eckb;
+	private AbstractEntityCentricKBGeneral eckb;
 
-	public CandidatePruning(EntityCentricKBGeneral eckb) {
+	public CandidatePruning(AbstractEntityCentricKBGeneral eckb) {
 		super();
 		this.eckb = eckb;
 	}

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.lucene.search.similarities.Similarity;
 
-public class EntityCentricKBBiomed extends EntityCentricKBGeneral {
+public class EntityCentricKBBiomed extends AbstractEntityCentricKBGeneral {
 
 	public EntityCentricKBBiomed(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
@@ -82,5 +82,9 @@ public class EntityCentricKBBiomed extends EntityCentricKBGeneral {
 	protected String generateDomainName() {
 		return "Biomed";
 	}
-
+	
+	@Override
+	protected String kbName() {
+		return "CalbC Biomedical KB";
+	}
 }
