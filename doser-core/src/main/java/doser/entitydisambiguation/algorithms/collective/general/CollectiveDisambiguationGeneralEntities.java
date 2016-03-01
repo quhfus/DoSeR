@@ -26,13 +26,13 @@ import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.knowledgebases.EntityCentricKnowledgeBase;
 import doser.lucene.query.TermQuery;
 import doser.entitydisambiguation.knowledgebases.AbstractKnowledgeBase;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 
 public class CollectiveDisambiguationGeneralEntities extends AbstractDisambiguationAlgorithm {
 
 	private final static Logger logger = LoggerFactory.getLogger(CollectiveDisambiguationGeneralEntities.class);
 	
-	private EntityCentricKBGeneral eckb;
+	private AbstractEntityCentricKBGeneral eckb;
 	
 	private DisambiguationTaskCollective task;
 	
@@ -43,7 +43,7 @@ public class CollectiveDisambiguationGeneralEntities extends AbstractDisambiguat
 			return false;
 		}
 		
-		this.eckb = (EntityCentricKBGeneral) kb;
+		this.eckb = (AbstractEntityCentricKBGeneral) kb;
 		this.task = (DisambiguationTaskCollective) task;
 		return true;
 	}

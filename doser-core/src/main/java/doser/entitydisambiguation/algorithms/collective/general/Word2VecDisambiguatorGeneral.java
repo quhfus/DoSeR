@@ -15,7 +15,7 @@ import doser.entitydisambiguation.algorithms.SurfaceForm;
 import doser.entitydisambiguation.algorithms.collective.AbstractWord2VecPageRank;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
@@ -32,7 +32,7 @@ class Word2VecDisambiguatorGeneral extends AbstractWord2VecPageRank {
 	private int iterations;
 	
 
-	Word2VecDisambiguatorGeneral(EntityCentricKBGeneral eckb,
+	Word2VecDisambiguatorGeneral(AbstractEntityCentricKBGeneral eckb,
 			List<SurfaceForm> rep, boolean disambiguate, int maximumcandidatespersf, int iterations) {
 		super(eckb, rep);
 		this.origList = new ArrayList<SurfaceForm>();

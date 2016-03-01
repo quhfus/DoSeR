@@ -8,7 +8,7 @@ import doser.entitydisambiguation.algorithms.collective.CandidatePruning;
 import doser.entitydisambiguation.algorithms.rules.RuleAdapation;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.dpo.Response;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 
 class CollectiveContextDriverGeneral {
 
@@ -16,9 +16,9 @@ class CollectiveContextDriverGeneral {
 	
 	private Response[] currentResponse;
 	private List<SurfaceForm> rep;
-	private EntityCentricKBGeneral eckb;
+	private AbstractEntityCentricKBGeneral eckb;
 	
-	CollectiveContextDriverGeneral(Response[] res, List<SurfaceForm> rep, EntityCentricKBGeneral eckb) {
+	CollectiveContextDriverGeneral(Response[] res, List<SurfaceForm> rep, AbstractEntityCentricKBGeneral eckb) {
 		super();
 		this.currentResponse = res;
 		this.rep = rep;

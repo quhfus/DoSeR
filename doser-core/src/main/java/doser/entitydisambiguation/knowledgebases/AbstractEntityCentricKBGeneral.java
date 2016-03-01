@@ -12,6 +12,8 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -22,8 +24,10 @@ import doser.word2vec.Data;
 import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
 
-public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase {
+public abstract class AbstractEntityCentricKBGeneral extends EntityCentricKnowledgeBase {
 
+	private final static Logger logger = LoggerFactory.getLogger(AbstractEntityCentricKBGeneral.class);
+	
 	private static Cache<String, Float> w2vCache;
 	private static Cache<String, Float> d2vCache;
 
@@ -32,11 +36,11 @@ public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase 
 		d2vCache = CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(60, TimeUnit.MINUTES).build();
 	}
 
-	public EntityCentricKBGeneral(String uri, boolean dynamic) {
+	public AbstractEntityCentricKBGeneral(String uri, boolean dynamic) {
 		super(uri, dynamic);
 	}
 
-	public EntityCentricKBGeneral(String uri, boolean dynamic, Similarity sim) {
+	public AbstractEntityCentricKBGeneral(String uri, boolean dynamic, Similarity sim) {
 		super(uri, dynamic, sim);
 	}
 	
@@ -102,7 +106,7 @@ public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase 
 				float sim = (float) obj.getDouble("sim") + 1;
 				map.put(ents, sim);
 			} catch (JSONException e) {
-				e.printStackTrace();
+				logger.error("IOException in "+AbstractEntityCentricKBGeneral.class.getName(), e);
 			}
 		}
 		return map;
@@ -149,7 +153,7 @@ public abstract class EntityCentricKBGeneral extends EntityCentricKnowledgeBase 
 					d2vCache.put(c.getSurfaceForm() + c.getContext() + entity, sim);
 				}
 			} catch (JSONException e) {
-				e.printStackTrace();
+				logger.error("JSONException in "+AbstractEntityCentricKBGeneral.class.getName(), e);
 			}
 		}
 	}

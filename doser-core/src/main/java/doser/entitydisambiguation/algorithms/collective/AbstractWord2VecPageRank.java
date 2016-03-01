@@ -16,14 +16,14 @@ import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.MapTransformer;
 
 import doser.entitydisambiguation.algorithms.SurfaceForm;
-import doser.entitydisambiguation.knowledgebases.EntityCentricKBGeneral;
+import doser.entitydisambiguation.knowledgebases.AbstractEntityCentricKBGeneral;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
 public abstract class AbstractWord2VecPageRank {
 
-	protected EntityCentricKBGeneral eckb;
+	protected AbstractEntityCentricKBGeneral eckb;
 
 	protected Map<Edge, Number> edgeWeights;
 
@@ -37,7 +37,7 @@ public abstract class AbstractWord2VecPageRank {
 
 	protected List<SurfaceForm> repList;
 
-	public AbstractWord2VecPageRank(EntityCentricKBGeneral featureDefinition,
+	public AbstractWord2VecPageRank(AbstractEntityCentricKBGeneral featureDefinition,
 			List<SurfaceForm> rep) {
 		super();
 		this.eckb = featureDefinition;

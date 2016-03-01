@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
@@ -12,6 +11,8 @@ import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Each knowledge base provides its own class with its respective properties.
@@ -22,6 +23,8 @@ import org.apache.lucene.store.FSDirectory;
  */
 public abstract class AbstractKnowledgeBase extends TimerTask {
 
+	private final static Logger logger = LoggerFactory.getLogger(AbstractKnowledgeBase.class);
+	
 	private String indexUri;
 	
 	private boolean dynamic;
@@ -45,7 +48,7 @@ public abstract class AbstractKnowledgeBase extends TimerTask {
 			dir = FSDirectory.open(indexDir);
 			this.manager = new SearcherManager(dir, new SearcherFactory());
 		} catch (IOException e) {
-			Logger.getRootLogger().error("Error: ", e);
+			logger.error("IOException in "+AbstractKnowledgeBase.class.getName(), e);
 		}
 	}
 
@@ -58,7 +61,7 @@ public abstract class AbstractKnowledgeBase extends TimerTask {
 		try {
 			this.searcher = manager.acquire();
 		} catch (IOException e) {
-			Logger.getRootLogger().error(e.getLocalizedMessage());
+			logger.error("IOException in "+AbstractKnowledgeBase.class.getName(), e);
 		}
 		return this.searcher;
 	}
@@ -67,7 +70,7 @@ public abstract class AbstractKnowledgeBase extends TimerTask {
 		try {
 			manager.release(searcher);
 		} catch (IOException e) {
-			Logger.getRootLogger().error(e.getStackTrace());
+			logger.error("IOException in "+AbstractKnowledgeBase.class.getName(), e);
 		}
 	}
 
@@ -81,7 +84,7 @@ public abstract class AbstractKnowledgeBase extends TimerTask {
 			try {
 				manager.maybeRefresh();
 			} catch (IOException e) {
-				Logger.getRootLogger().error(e.getStackTrace());
+				logger.error("IOException in "+AbstractKnowledgeBase.class.getName(), e);
 			}
 		}
 	}
