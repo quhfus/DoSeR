@@ -3,6 +3,8 @@ package experiments.table.limaye.corrected;
 import java.util.LinkedList;
 import java.util.List;
 
+import DisambiguationApproachDPO.DisambiguatedEntity;
+
 
 /**
  * Responsible class for representing table data in algorithm

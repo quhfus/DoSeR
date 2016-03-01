@@ -32,6 +32,11 @@ import com.google.gson.Gson;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import DisambiguationApproachDPO.DisambiguatedEntity;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
 import experiments.table.limaye.corrected.Table.Column;
 import experiments.table.limaye.corrected.Table.Column.Cell;
 

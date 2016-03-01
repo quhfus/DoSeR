@@ -23,6 +23,12 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 
+import DisambiguationApproachDPO.DisambiguatedEntity;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
+
 public class AidaDataSetEvaluation {
 
 	public static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategories-collective";

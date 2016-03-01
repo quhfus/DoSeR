@@ -1,8 +1,9 @@
-package AidaDatasetEvaluation;
-
+package DisambiguationApproachDPO;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import experiments.table.limaye.Type;
 
 /**
  * Class representing a disambiguated entity consisting of the entity mention

@@ -29,6 +29,11 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.google.gson.Gson;
 
+import DisambiguationApproachDPO.DisambiguatedEntity;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
 import experiments.table.limaye.Table.Column;
 import experiments.table.limaye.Table.Column.Cell;
 

@@ -25,11 +25,11 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 
-import experiments.table.limaye.corrected.DisambiguatedEntity;
-import experiments.table.limaye.corrected.DisambiguationRequest;
-import experiments.table.limaye.corrected.DisambiguationResponse;
-import experiments.table.limaye.corrected.EntityDisambiguationDPO;
-import experiments.table.limaye.corrected.Response;
+import DisambiguationApproachDPO.DisambiguatedEntity;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
 import experiments.table.limaye.corrected.Table;
 import experiments.table.limaye.corrected.Table.Column;
 import experiments.table.limaye.corrected.Table.Column.Cell;

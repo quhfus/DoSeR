@@ -43,12 +43,12 @@ import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import DisambiguationApproachDPO.DisambiguatedEntity;
+import DisambiguationApproachDPO.DisambiguationRequest;
+import DisambiguationApproachDPO.DisambiguationResponse;
+import DisambiguationApproachDPO.EntityDisambiguationDPO;
+import DisambiguationApproachDPO.Response;
 import doser.tools.indexcreation.WikiPediaUriConverter;
-import AidaDatasetEvaluation.DisambiguatedEntity;
-import AidaDatasetEvaluation.DisambiguationRequest;
-import AidaDatasetEvaluation.DisambiguationResponse;
-import AidaDatasetEvaluation.EntityDisambiguationDPO;
-import AidaDatasetEvaluation.Response;
 
 public class MainEvaluation {
 
