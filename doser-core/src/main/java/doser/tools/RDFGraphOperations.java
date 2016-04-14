@@ -87,6 +87,39 @@ public final class RDFGraphOperations {
 		return types;
 	}
 	
+	public static Set<Type> getDbpediaCategoriesFromEntity_GER(
+			final String entityUri) {
+		final Model model = DisambiguationMainService.getInstance()
+				.getDBPediaArticleCategories_GER();
+		final Set<Type> types = new HashSet<Type>();
+		final String query = "SELECT ?types WHERE{ <" + entityUri
+				+ "> <http://purl.org/dc/terms/subject> ?types. }";
+		ResultSet results = null;
+		QueryExecution qexec = null;
+		try {
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory
+					.create(query);
+			qexec = QueryExecutionFactory.create(cquery, model);
+			results = qexec.execSelect();
+		} catch (final QueryException e) {
+			Logger.getRootLogger().error(e.getStackTrace());
+		} finally {
+			if (results != null) {
+				while (results.hasNext()) {
+					final QuerySolution sol = results.nextSolution();
+					final String uri = sol.getResource("types").toString();
+					final String name = queryDbPediaCategoryLabel(uri);
+					final Type type = new Type(name, uri, true, 1);
+					types.add(type);
+				}
+			}
+			if (qexec != null) {
+				qexec.close();
+			}
+		}
+		return types;
+	}
+	
 	public static Set<Type> getRDFTypesFromEntity(final String entityUri) {
 		Set<Type> set = new HashSet<Type>();
 		final Model model = DisambiguationMainService.getInstance().getDBPediaInstanceTypes();
@@ -145,6 +178,32 @@ public final class RDFGraphOperations {
 
 		final Model model = DisambiguationMainService.getInstance()
 				.getDBPediaLabels();
+		final String query = "SELECT ?label WHERE{ <" + uri
+				+ "> <http://www.w3.org/2000/01/rdf-schema#label> ?label. }";
+		ResultSet results = null; // NOPMD by quh on 14.02.14 10:04
+		QueryExecution qexec = null;
+
+		final com.hp.hpl.jena.query.Query cquery = QueryFactory.create(query);
+		qexec = QueryExecutionFactory.create(cquery, model);
+		results = qexec.execSelect();
+
+		if (results != null) {
+			while (results.hasNext()) {
+				final QuerySolution sol = results.nextSolution();
+				final String label = sol.getLiteral("label").getLexicalForm();
+				labellist.add(label);
+			}
+			qexec.close();
+		}
+		return labellist;
+	}
+	
+	public static List<String> getDbPediaLabel_GER(final String uri)
+			throws QueryException {
+		final List<String> labellist = new LinkedList<String>();
+
+		final Model model = DisambiguationMainService.getInstance()
+				.getDBPediaLabels_GER();
 		final String query = "SELECT ?label WHERE{ <" + uri
 				+ "> <http://www.w3.org/2000/01/rdf-schema#label> ?label. }";
 		ResultSet results = null; // NOPMD by quh on 14.02.14 10:04

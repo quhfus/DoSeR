@@ -77,7 +77,7 @@ public class DocumentClassification {
 			DisambiguatedEntity disentity = entityAnnotation
 					.extractTopicEntity(map, para);
 			for (Map.Entry<DisambiguatedEntity, Integer> entry : sortedList) {
-				categoryAnnotation.annotateCategories(entry.getKey());
+				categoryAnnotation.annotateCategories(entry.getKey(), request.getInternLanguage());
 			}
 			List<Time> time = null;
 					//AnnotateTime.getInstance().annotateTime(map,
