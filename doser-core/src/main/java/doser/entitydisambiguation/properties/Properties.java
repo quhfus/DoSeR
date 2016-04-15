@@ -71,6 +71,10 @@ public final class Properties {
 	public String getDBPediaCategoryLabels() {
 		return this.config.getString("dbpedia.categorylabels");
 	}
+	
+	public String getDBPediaCategoryLabels_GER() {
+		return this.config.getString("dbpedia.categorylabels.ger");
+	}
 
 	public String getDBPediaDescriptions() {
 		return this.config.getString("dbpedia.descriptions");

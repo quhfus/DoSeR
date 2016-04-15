@@ -107,9 +107,12 @@ public final class RDFGraphOperations {
 			if (results != null) {
 				while (results.hasNext()) {
 					final QuerySolution sol = results.nextSolution();
-					final String uri = sol.getResource("types").toString();
-					final String name = queryDbPediaCategoryLabel(uri);
-					final Type type = new Type(name, uri, true, 1);
+					final String uri = sol.getResource("types").getURI();
+//					final String uri = sol.getResource("types").toString();
+					// RDF Hack - ToDo: Inform how to load the new dbpedia tql files correctly
+					String newuri = uri.split(" ")[0].replaceAll(">", "");
+					final String name = queryDbPediaCategoryLabel_GER(newuri);
+					final Type type = new Type(name, newuri, true, 1);
 					types.add(type);
 				}
 			}
@@ -275,6 +278,33 @@ public final class RDFGraphOperations {
 			while (results.hasNext()) {
 				final QuerySolution sol = results.nextSolution();
 				final String name = sol.getLiteral("label").getLexicalForm();
+				res = name;
+			}
+		} catch (final QueryException e) {
+			Logger.getRootLogger().error(e.getStackTrace());
+		}
+		return res;
+	}
+	
+	private static String queryDbPediaCategoryLabel_GER(final String catUri) {
+		String res = null;
+		final Model model = DisambiguationMainService.getInstance()
+				.getDBPediaCategoryLabels_GER();
+
+		final String query = "SELECT ?label WHERE{ <" + catUri
+				+ "> <http://www.w3.org/2000/01/rdf-schema#label> ?label. }";
+		try {
+			final com.hp.hpl.jena.query.Query cquery = QueryFactory
+					.create(query);
+			final QueryExecution qexec = QueryExecutionFactory.create(cquery,
+					model);
+			final ResultSet results = qexec.execSelect(); // NOPMD by quh on
+															// 18.02.14 15:05
+			while (results.hasNext()) {
+				final QuerySolution sol = results.nextSolution();
+				final String name = sol.getLiteral("label").getLexicalForm();
+				// RDFHack ToDo: Inform how to resolve the dbpedia tql files correctly
+				 
 				res = name;
 			}
 		} catch (final QueryException e) {

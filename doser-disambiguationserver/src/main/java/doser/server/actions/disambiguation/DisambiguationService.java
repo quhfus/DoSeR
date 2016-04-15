@@ -19,6 +19,7 @@ import doser.entitydisambiguation.dpo.DisambiguationResponse;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
 import doser.entitydisambiguation.dpo.Response;
 import doser.entitydisambiguation.properties.Properties;
+import doser.language.Languages;
 import doser.webclassify.annotation.AnnotateCategories;
 
 @Controller
@@ -33,8 +34,7 @@ public class DisambiguationService {
 	}
 
 	@RequestMapping(value = "/disambiguateWithoutCategories-single", method = RequestMethod.POST, headers = "Accept=application/json")
-	public @ResponseBody DisambiguationResponse annotateSingle(
-			@RequestBody final DisambiguationRequest request) {
+	public @ResponseBody DisambiguationResponse annotateSingle(@RequestBody final DisambiguationRequest request) {
 		DisambiguationResponse annotationResponse = disambiguateSingle(request);
 		return annotationResponse;
 	}
@@ -43,12 +43,11 @@ public class DisambiguationService {
 	public @ResponseBody DisambiguationResponse annotateSingleWithCategories(
 			@RequestBody final DisambiguationRequest request) {
 		DisambiguationResponse annotationResponse = disambiguateSingle(request);
-		List<Response> response = annotationResponse
-				.getTasks();
+		List<Response> response = annotationResponse.getTasks();
 		for (Response res : response) {
 			List<DisambiguatedEntity> entities = res.getDisEntities();
 			for (DisambiguatedEntity entity : entities) {
-				this.categoryAnnotation.annotateCategories(entity);
+				this.categoryAnnotation.annotateCategories(entity, Languages.english);
 			}
 		}
 		return annotationResponse;
@@ -58,41 +57,37 @@ public class DisambiguationService {
 	public @ResponseBody DisambiguationResponse annotateCollectiveWithoutCategories(
 			@RequestBody final DisambiguationRequest request) {
 		final DisambiguationResponse response = new DisambiguationResponse();
-		final DisambiguationMainService mainService = DisambiguationMainService
-				.getInstance();
-		final List<EntityDisambiguationDPO> listToDis = request
-				.getSurfaceFormsToDisambiguate();
+		final DisambiguationMainService mainService = DisambiguationMainService.getInstance();
+		final List<EntityDisambiguationDPO> listToDis = request.getSurfaceFormsToDisambiguate();
 
 		if (mainService != null) {
 			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
-			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
-					listToDis, request.getMainTopic());
+			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(listToDis,
+					request.getMainTopic());
 			collectiveTask.setKbIdentifier("default", "EntityCentric");
 			collectiveTask.setReturnNr(1000);
 			tasks.add(collectiveTask);
 			mainService.disambiguate(tasks);
 
 			List<Response> responses = collectiveTask.getResponse();
-			System.out.println("CALLUP"+responses);
+			System.out.println("CALLUP" + responses);
 			response.setTasks(responses);
 			response.setDocumentUri(request.getDocumentUri());
 		}
 		return response;
 	}
-	
+
 	@RequestMapping(value = "/disambiguationWithoutCategoriesBiomed-collective", method = RequestMethod.POST, headers = "Accept=application/json")
 	public @ResponseBody DisambiguationResponse annotateCollectiveWithoutCategoriesBiomed(
 			@RequestBody final DisambiguationRequest request) {
 		final DisambiguationResponse response = new DisambiguationResponse();
-		final DisambiguationMainService mainService = DisambiguationMainService
-				.getInstance();
-		final List<EntityDisambiguationDPO> listToDis = request
-				.getSurfaceFormsToDisambiguate();
+		final DisambiguationMainService mainService = DisambiguationMainService.getInstance();
+		final List<EntityDisambiguationDPO> listToDis = request.getSurfaceFormsToDisambiguate();
 
 		if (mainService != null) {
 			final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
-			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(
-					listToDis, request.getMainTopic());
+			DisambiguationTaskCollective collectiveTask = new DisambiguationTaskCollective(listToDis,
+					request.getMainTopic());
 			collectiveTask.setKbIdentifier("biomed", "EntityCentric");
 			collectiveTask.setReturnNr(1000);
 			tasks.add(collectiveTask);
@@ -105,31 +100,25 @@ public class DisambiguationService {
 		return response;
 	}
 
-	private DisambiguationResponse disambiguateSingle(
-			DisambiguationRequest request) {
+	private DisambiguationResponse disambiguateSingle(DisambiguationRequest request) {
 		final DisambiguationResponse response = new DisambiguationResponse();
-		final List<EntityDisambiguationDPO> listToDis = request
-				.getSurfaceFormsToDisambiguate();
+		final List<EntityDisambiguationDPO> listToDis = request.getSurfaceFormsToDisambiguate();
 		List<Response> responseList = new LinkedList<Response>();
 		response.setDocumentUri(request.getDocumentUri());
 		final List<AbstractDisambiguationTask> tasks = new LinkedList<AbstractDisambiguationTask>();
-		final DisambiguationMainService mainService = DisambiguationMainService
-				.getInstance();
+		final DisambiguationMainService mainService = DisambiguationMainService.getInstance();
 		if (mainService != null) {
 			int docsToReturn = 0;
 			if (request.getDocsToReturn() == null) {
-				docsToReturn = Properties.getInstance()
-						.getDisambiguationResultSize();
+				docsToReturn = Properties.getInstance().getDisambiguationResultSize();
 			} else {
 				docsToReturn = request.getDocsToReturn();
 			}
 			for (int i = 0; i < listToDis.size(); i++) {
 				EntityDisambiguationDPO dpo = listToDis.get(i);
-				DisambiguationTaskSingle task = new DisambiguationTaskSingle(
-						dpo);
+				DisambiguationTaskSingle task = new DisambiguationTaskSingle(dpo);
 				task.setReturnNr(docsToReturn);
-				task.setKbIdentifier(listToDis.get(i).getKbversion(), listToDis
-						.get(i).getSetting());
+				task.setKbIdentifier(listToDis.get(i).getKbversion(), listToDis.get(i).getSetting());
 				// Bugfix! Selected text may not be null. Should be ""
 				// String instead;
 				if (dpo.getSelectedText() != null) {

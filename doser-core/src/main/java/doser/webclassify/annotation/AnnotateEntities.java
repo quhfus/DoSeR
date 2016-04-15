@@ -48,11 +48,11 @@ public class AnnotateEntities {
 		set.add(p);
 		Map<DisambiguatedEntity, Integer> map = createEntityMap(set, lang);
 		List<DisambiguatedEntity> l = new ArrayList<DisambiguatedEntity>();
-		l.add(extractTopicEntity(map, p));
+		l.add(extractTopicEntity(map, p, lang));
 		return l;
 	}
 
-	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map, Paragraph p) {
+	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map, Paragraph p, Languages lang) {
 		EntityRelevanceAlgorithm sig = new EntitySignificanceAlgorithm_Doc2Vec();
 		String topicEntityString = sig.process(map, p);
 		DisambiguatedEntity topicEntity = null;
@@ -61,7 +61,12 @@ public class AnnotateEntities {
 			topicEntity.setEntityUri(topicEntityString);
 			topicEntity.setCategories(RDFGraphOperations.getDbpediaCategoriesFromEntity(topicEntityString));
 			topicEntity.setType(filterStandardDomain(RDFGraphOperations.getRDFTypesFromEntity(topicEntityString)));
-			List<String> labels = RDFGraphOperations.getDbPediaLabel(topicEntity.getEntityUri());
+			List<String> labels = null;
+			if(lang.equals(Languages.german)) {
+				labels = RDFGraphOperations.getDbPediaLabel_GER(topicEntity.getEntityUri());
+			} else {
+				labels = RDFGraphOperations.getDbPediaLabel(topicEntity.getEntityUri());
+			}
 			if (labels.size() > 0) {
 				topicEntity.setText(labels.get(0));
 			}

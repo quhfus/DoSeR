@@ -39,6 +39,7 @@ public final class DisambiguationMainService {
 	private Model hdtdbpediaCats;
 	private Model hdtdbpediaCats_ger;
 	private Model hdtdbpediaCatsL;
+	private Model hdtdbpediaCatsL_ger;
 	private Model hdtdbpediaDesc;
 	private Model hdtdbpediaLabels;
 	private Model hdtdbpediaLabels_ger;
@@ -140,6 +141,7 @@ public final class DisambiguationMainService {
 					.getDBpediaRedirects(), null);
 			final HDT hdt10 = HDTManager.mapIndexedHDT(Properties.getInstance().getDBPediaLabels_GER(), null);
 			final HDT hdt11 = HDTManager.mapIndexedHDT(Properties.getInstance().getDBPediaArticleCategories_GER(), null);
+			final HDT hdt12 = HDTManager.mapIndexedHDT(Properties.getInstance().getDBPediaCategoryLabels_GER(), null);
 			final HDTGraph graph = new HDTGraph(hdt);
 			final HDTGraph graph1 = new HDTGraph(hdt1);
 			final HDTGraph graph2 = new HDTGraph(hdt2);
@@ -152,6 +154,7 @@ public final class DisambiguationMainService {
 			final HDTGraph graph9 = new HDTGraph(hdt9);
 			final HDTGraph graph10 = new HDTGraph(hdt10);
 			final HDTGraph graph11 = new HDTGraph(hdt11);
+			final HDTGraph graph12 = new HDTGraph(hdt12);
 			this.hdtdbpediaCats = ModelFactory.createModelForGraph(graph);
 			this.hdtyagoTransTypes = ModelFactory.createModelForGraph(graph1);
 			this.hdtyagoTaxonomy = ModelFactory.createModelForGraph(graph2);
@@ -167,6 +170,7 @@ public final class DisambiguationMainService {
 					.createModelForGraph(graph9);
 			this.hdtdbpediaLabels_ger = ModelFactory.createModelForGraph(graph10);
 			this.hdtdbpediaCats_ger = ModelFactory.createModelForGraph(graph11);
+			this.hdtdbpediaCatsL_ger = ModelFactory.createModelForGraph(graph12);
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -205,6 +209,10 @@ public final class DisambiguationMainService {
 
 	public Model getDBPediaCategoryLabels() {
 		return this.hdtdbpediaCatsL;
+	}
+	
+	public Model getDBPediaCategoryLabels_GER() {
+		return this.hdtdbpediaCatsL_ger;
 	}
 
 	public Model getDBPediaDescription() {
