@@ -173,7 +173,7 @@ public class AnnotateEntities {
 				res = "Person";
 				break;
 			} else if (t.getUri().equalsIgnoreCase(
-					"http://dbpedia.org/ontology/Organisation")) {
+					"http://dbpedia.org/ontology/Organization")) {
 				res = "Organisation";
 				break;
 			} else if (t

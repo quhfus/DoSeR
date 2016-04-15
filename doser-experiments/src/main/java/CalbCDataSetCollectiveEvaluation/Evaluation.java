@@ -35,11 +35,14 @@ import experiments.collective.entdoccentric.calbc.Entity;
 import experiments.evaluation.UnicodeBOMInputStream;
 
 public class Evaluation {
-	private static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategories-collective";
-	private static final String CALBCFILE = "";
+	private static final String DISAMBIGUATIONSERVICE = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/disambiguation/disambiguationWithoutCategoriesBiomed-collective";
+	private static final String CALBCFILE = "/home/quh/Arbeitsfläche/Entpackung/Arbeitsfläche/Code_Data/Calbc/output.json";
 
 	private Gson gson;
 	private BufferedReader reader;
+
+	private static int correct = 0;
+	private static int overall = 0;
 
 	Evaluation() {
 		File jsonFile = new File(CALBCFILE);
@@ -63,42 +66,46 @@ public class Evaluation {
 			while ((line = reader.readLine()) != null) {
 				if (!line.equalsIgnoreCase("")) {
 					jsonString += line;
-				} else {
-					break;
-				}
-			}
-			entry = gson.fromJson(jsonString, CalbCPubMedID.class);
-			if (entry == null) {
-				return;
-			}
-			if (entry.getAbs() != null && !entry.getAbs().equalsIgnoreCase("")) {
-				// Transform entry into possible Disambiguation task
-				DisambiguationRequest req = new DisambiguationRequest();
-				req.setDocsToReturn(10);
-				req.setDocumentUri("CalbCSmall");
-				List<EntityDisambiguationDPO> l = new ArrayList<EntityDisambiguationDPO>();
-				List<Entity> entityList = entry.getEntityList();
-				for (Entity e : entityList) {
-					if (!e.isTitle()) {
-						EntityDisambiguationDPO dpo = new EntityDisambiguationDPO();
-						dpo.setContext(entry.getAbs());
-						dpo.setDocumentId("CalbCSmall");
-						dpo.setSelectedText(e.getKeyword());
-						dpo.setStartPosition(e.getPosition());
-						l.add(dpo);
+					System.out.println(jsonString);
+					entry = gson.fromJson(jsonString, CalbCPubMedID.class);
+					if (entry.getAbs() != null && !entry.getAbs().equalsIgnoreCase("")) {
+						System.out.println("juhuu");
+						// Transform entry into possible Disambiguation task
+						DisambiguationRequest req = new DisambiguationRequest();
+						req.setDocsToReturn(10);
+						req.setDocumentUri("CalbCSmall");
+						List<EntityDisambiguationDPO> l = new ArrayList<EntityDisambiguationDPO>();
+						List<Entity> entityList = entry.getEntityList();
+						for (Entity e : entityList) {
+							if (!e.isTitle()) {
+								EntityDisambiguationDPO dpo = new EntityDisambiguationDPO();
+								dpo.setContext(entry.getAbs());
+								dpo.setDocumentId("CalbCSmall");
+								dpo.setSelectedText(e.getKeyword());
+								dpo.setStartPosition(e.getPosition());
+								l.add(dpo);
+							}
+						}
+						req.setSurfaceFormsToDisambiguate(l);
+						List<Response> responses = queryService(req);
+						int counter = 0;
+						for (Entity e : entityList) {
+							if (!e.isTitle()) {
+								Response res = responses.get(counter);
+								if (res != null) {
+									List<DisambiguatedEntity> disEntities = res.getDisEntities();
+									if (isInGroundtruth(e.getConceptList(), disEntities.get(0).getEntityUri())) {
+										correct++;
+									}
+								}
+								overall++;
+								counter++;
+							}
+						}
+						System.out.println("Correct: " + correct + " Overall: " + overall);
 					}
 				}
-				req.setSurfaceFormsToDisambiguate(l);
-				List<Response> responses = queryService(req);
-				int counter = 0;
-				for (Entity e : entityList) {
-					if (!e.isTitle()) {
-						Response res = responses.get(counter);
-						List<DisambiguatedEntity> disEntities = res.getDisEntities();
-						isInGroundtruth(e.getConceptList(), disEntities.get(0).getEntityUri());
-						counter++;
-					}
-				}
+				jsonString = "";
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -111,14 +118,18 @@ public class Evaluation {
 				}
 			}
 		}
+
 	}
 
 	private boolean isInGroundtruth(List<Concept> conceptList, String dis) {
+		String[] splitter = dis.split("/");
+		String concept = splitter[splitter.length - 1];
 		for (Concept c : conceptList) {
-			System.out.println(c.getUrl());
+			if (c.getUrl().contains(concept))
+				return true;
 		}
-		System.out.println("DisambiguatedEntity: " + dis);
-		return true;
+		// System.out.println("DisambiguatedEntity: " + dis);
+		return false;
 	}
 
 	private List<Response> queryService(DisambiguationRequest req) {
