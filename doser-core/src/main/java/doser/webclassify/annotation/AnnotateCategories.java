@@ -29,6 +29,7 @@ import org.codehaus.jettison.json.JSONObject;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
 import doser.entitydisambiguation.table.logic.Type;
 import doser.general.HelpfulMethods;
+import doser.language.Languages;
 import doser.tools.RDFGraphOperations;
 import doser.tools.ServiceQueries;
 import doser.webclassify.dpo.WebSite;
@@ -38,21 +39,26 @@ import doser.webclassify.dpo.WebTypeResponse_Deprecated;
 public class AnnotateCategories {
 
 	public static final String TYPEQUERYURL = "http://theseus.dimis.fim.uni-passau.de:8080/doser-disambiguationserver/webclassify/types";
-	
+
 	public AnnotateCategories() {
 		super();
 	}
-	
-	public void annotateCategories(DisambiguatedEntity entity) {
-		Set<Type> types = RDFGraphOperations.getDbpediaCategoriesFromEntity(entity.getEntityUri());
+
+	public void annotateCategories(DisambiguatedEntity entity, Languages lang) {
+		Set<Type> types = null;
+		if (lang.equals(Languages.german)) {
+			types = RDFGraphOperations.getDbpediaCategoriesFromEntity_GER(entity.getEntityUri());
+		} else {
+			types = RDFGraphOperations.getDbpediaCategoriesFromEntity(entity.getEntityUri());
+		}
 		entity.setCategories(types);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public void annotateCategory(WebSite website) {
 		Set<Type> types = queryWebsiteTypes(website);
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	private Set<Type> queryWebsiteTypes(WebSite page) {
 		Set<Type> pageTypes = new TreeSet<Type>();
@@ -64,14 +70,12 @@ public class AnnotateCategories {
 		try {
 			ent = new UrlEncodedFormEntity(postParameters);
 		} catch (UnsupportedEncodingException e1) {
-			Logger.getRootLogger().error("Error:",e1);
+			Logger.getRootLogger().error("Error:", e1);
 		}
 		Header[] headers = { new BasicHeader("Accept", "application/json") };
 		if (ent != null) {
-			String resStr = ServiceQueries
-					.httpPostRequest(
-							"http://theseus.dimis.fim.uni-passau.de:8061/rest/annotate",
-							ent, headers);
+			String resStr = ServiceQueries.httpPostRequest("http://theseus.dimis.fim.uni-passau.de:8061/rest/annotate",
+					ent, headers);
 			JSONObject resultJSON = null;
 			JSONArray entities = null;
 			try {
@@ -105,10 +109,8 @@ public class AnnotateCategories {
 
 				Header[] headersTypeQuery = { new BasicHeader("Accept", "application/json"),
 						new BasicHeader("content-type", "application/json") };
-				ByteArrayEntity bytes = new ByteArrayEntity(jsonByteString,
-						ContentType.create("application/json"));
-				resStr = ServiceQueries.httpPostRequest(TYPEQUERYURL, bytes,
-						headersTypeQuery);
+				ByteArrayEntity bytes = new ByteArrayEntity(jsonByteString, ContentType.create("application/json"));
+				resStr = ServiceQueries.httpPostRequest(TYPEQUERYURL, bytes, headersTypeQuery);
 				WebTypeResponse_Deprecated response = null;
 				try {
 					response = mapper.readValue(resStr, WebTypeResponse_Deprecated.class);
@@ -127,13 +129,13 @@ public class AnnotateCategories {
 		}
 		return pageTypes;
 	}
-	
+
 	private void createDistribution(final Map<String, Set<String>> map, List<String> entities) {
 		Map<String, Integer> distribution = new HashMap<String, Integer>();
-		for(String s : entities) {
+		for (String s : entities) {
 			Set<String> set = map.get(s);
-			for(String str :  set) {
-				if(distribution.containsKey(str)) {
+			for (String str : set) {
+				if (distribution.containsKey(str)) {
 					int i = distribution.get(str);
 					distribution.put(str, ++i);
 				} else {
@@ -143,13 +145,12 @@ public class AnnotateCategories {
 		}
 		List<Map.Entry<String, Integer>> entries = HelpfulMethods.sortByValue(distribution);
 		int topK = 0;
-		for(Map.Entry<String, Integer> entry : entries) {
-			if(topK < 100) {
-				System.out.println(entry.getKey() + "\t"+entry.getValue());
+		for (Map.Entry<String, Integer> entry : entries) {
+			if (topK < 100) {
+				System.out.println(entry.getKey() + "\t" + entry.getValue());
 			}
 			topK++;
 		}
 	}
 
-	
 }

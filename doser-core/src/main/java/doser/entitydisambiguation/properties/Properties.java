@@ -63,6 +63,10 @@ public final class Properties {
 	public String getDBPediaArticleCategories() {
 		return this.config.getString("dbpedia.articlescategorie");
 	}
+	
+	public String getDBPediaArticleCategories_GER() {
+		return this.config.getString("dbpedia.articlescategorie.ger");
+	}
 
 	public String getDBPediaCategoryLabels() {
 		return this.config.getString("dbpedia.categorylabels");
@@ -78,6 +82,10 @@ public final class Properties {
 
 	public String getDBPediaLabels() {
 		return this.config.getString("dbpedia.labels");
+	}
+	
+	public String getDBPediaLabels_GER() {
+		return this.config.getString("dbpedia.labels.ger");
 	}
 	
 	public String getDBPediaFacts() {

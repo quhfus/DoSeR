@@ -37,15 +37,13 @@ public class AnnotateEntities {
 		return HelpfulMethods.sortByValue(map);
 	}
 
-	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionDocument(
-			Set<Paragraph> paragraphs, Languages lang) {
-		Map<DisambiguatedEntity, Integer> map = createEntityMap(paragraphs,
-				lang);
+	public List<Map.Entry<DisambiguatedEntity, Integer>> createEntityDistributionDocument(Set<Paragraph> paragraphs,
+			Languages lang) {
+		Map<DisambiguatedEntity, Integer> map = createEntityMap(paragraphs, lang);
 		return HelpfulMethods.sortByValue(map);
 	}
 
-	public List<DisambiguatedEntity> extractSignificantEntitiesInParagraph(
-			Paragraph p, Languages lang) {
+	public List<DisambiguatedEntity> extractSignificantEntitiesInParagraph(Paragraph p, Languages lang) {
 		Set<Paragraph> set = new HashSet<Paragraph>();
 		set.add(p);
 		Map<DisambiguatedEntity, Integer> map = createEntityMap(set, lang);
@@ -54,20 +52,16 @@ public class AnnotateEntities {
 		return l;
 	}
 
-	public DisambiguatedEntity extractTopicEntity(
-			Map<DisambiguatedEntity, Integer> map, Paragraph p) {
+	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map, Paragraph p) {
 		EntityRelevanceAlgorithm sig = new EntitySignificanceAlgorithm_Doc2Vec();
 		String topicEntityString = sig.process(map, p);
 		DisambiguatedEntity topicEntity = null;
 		if (!topicEntityString.equalsIgnoreCase("")) {
 			topicEntity = new DisambiguatedEntity();
 			topicEntity.setEntityUri(topicEntityString);
-			topicEntity.setCategories(RDFGraphOperations
-					.getDbpediaCategoriesFromEntity(topicEntityString));
-			topicEntity.setType(filterStandardDomain(RDFGraphOperations
-					.getRDFTypesFromEntity(topicEntityString)));
-			List<String> labels = RDFGraphOperations
-					.getDbPediaLabel(topicEntity.getEntityUri());
+			topicEntity.setCategories(RDFGraphOperations.getDbpediaCategoriesFromEntity(topicEntityString));
+			topicEntity.setType(filterStandardDomain(RDFGraphOperations.getRDFTypesFromEntity(topicEntityString)));
+			List<String> labels = RDFGraphOperations.getDbPediaLabel(topicEntity.getEntityUri());
 			if (labels.size() > 0) {
 				topicEntity.setText(labels.get(0));
 			}
@@ -75,8 +69,7 @@ public class AnnotateEntities {
 		return topicEntity;
 	}
 
-	public Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p,
-			Languages lang) {
+	public Map<DisambiguatedEntity, Integer> createEntityMap(Set<Paragraph> p, Languages lang) {
 		Map<DisambiguatedEntity, Integer> map = new HashMap<DisambiguatedEntity, Integer>();
 
 		for (Paragraph para : p) {
@@ -89,8 +82,12 @@ public class AnnotateEntities {
 						String offset = obj.getString("@offset");
 						DisambiguatedEntity e = new DisambiguatedEntity();
 						e.setEntityUri(uri);
-						List<String> labels = RDFGraphOperations
-								.getDbPediaLabel(uri);
+						List<String> labels = null;
+						if (lang.equals(Languages.german)) {
+							labels = RDFGraphOperations.getDbPediaLabel_GER(uri);
+						} else {
+							labels = RDFGraphOperations.getDbPediaLabel(uri);
+						}
 						if (labels.size() > 0) {
 							e.setText(labels.get(0));
 						}
@@ -113,8 +110,7 @@ public class AnnotateEntities {
 						}
 						e.addOffset(Integer.parseInt(offset));
 						e.setEntityUri(uri);
-						e.setType(filterStandardDomain(RDFGraphOperations
-								.getRDFTypesFromEntity(uri)));
+						e.setType(filterStandardDomain(RDFGraphOperations.getRDFTypesFromEntity(uri)));
 					} catch (JSONException e) {
 						Logger.getRootLogger().error("Error: ", e);
 					}
@@ -132,8 +128,7 @@ public class AnnotateEntities {
 			postParameters.add(new BasicNameValuePair("text", text));
 			postParameters.add(new BasicNameValuePair("confidence", "0.45"));
 			postParameters.add(new BasicNameValuePair("support", "20"));
-			serviceUrl = Properties.getInstance()
-					.getDBpediaSpotLight_Ger_Rest();
+			serviceUrl = Properties.getInstance().getDBpediaSpotLight_Ger_Rest();
 		} else {
 			postParameters.add(new BasicNameValuePair("text", text));
 			postParameters.add(new BasicNameValuePair("confidence", "0.2"));
@@ -149,8 +144,7 @@ public class AnnotateEntities {
 		}
 
 		if (ent != null) {
-			String resStr = ServiceQueries.httpPostRequest(serviceUrl, ent,
-					headers);
+			String resStr = ServiceQueries.httpPostRequest(serviceUrl, ent, headers);
 
 			JSONObject resultJSON = null;
 			JSONArray entities = null;
@@ -168,18 +162,13 @@ public class AnnotateEntities {
 	private String filterStandardDomain(Set<Type> set) {
 		String res = "Misc";
 		for (Type t : set) {
-			if (t.getUri().equalsIgnoreCase(
-					"http://dbpedia.org/ontology/Person")) {
+			if (t.getUri().equalsIgnoreCase("http://dbpedia.org/ontology/Person")) {
 				res = "Person";
 				break;
-			} else if (t.getUri().equalsIgnoreCase(
-					"http://dbpedia.org/ontology/Organization")) {
-				res = "Organisation";
+			} else if (t.getUri().equalsIgnoreCase("http://dbpedia.org/ontology/Organisation")) {
+				res = "Organization";
 				break;
-			} else if (t
-					.getUri()
-					.equalsIgnoreCase(
-							"http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
+			} else if (t.getUri().equalsIgnoreCase("http://www.ontologydesignpatterns.org/ont/d0.owl#Location")) {
 				res = "Location";
 				break;
 			}

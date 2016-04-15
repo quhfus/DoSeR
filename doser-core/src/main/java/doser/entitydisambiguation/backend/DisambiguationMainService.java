@@ -37,9 +37,11 @@ public final class DisambiguationMainService {
 	private static DisambiguationMainService instance = null;
 
 	private Model hdtdbpediaCats;
+	private Model hdtdbpediaCats_ger;
 	private Model hdtdbpediaCatsL;
 	private Model hdtdbpediaDesc;
 	private Model hdtdbpediaLabels;
+	private Model hdtdbpediaLabels_ger;
 	private Model hdtdbpediaSkosCategories;
 	private Model hdtdbpediaInstanceTypes;
 	private Model hdtYagoCatsLab;
@@ -136,6 +138,8 @@ public final class DisambiguationMainService {
 					.getDBpediaInstanceTypes(), null);
 			final HDT hdt9 = HDTManager.mapIndexedHDT(Properties.getInstance()
 					.getDBpediaRedirects(), null);
+			final HDT hdt10 = HDTManager.mapIndexedHDT(Properties.getInstance().getDBPediaLabels_GER(), null);
+			final HDT hdt11 = HDTManager.mapIndexedHDT(Properties.getInstance().getDBPediaArticleCategories_GER(), null);
 			final HDTGraph graph = new HDTGraph(hdt);
 			final HDTGraph graph1 = new HDTGraph(hdt1);
 			final HDTGraph graph2 = new HDTGraph(hdt2);
@@ -146,6 +150,8 @@ public final class DisambiguationMainService {
 			final HDTGraph graph7 = new HDTGraph(hdt7);
 			final HDTGraph graph8 = new HDTGraph(hdt8);
 			final HDTGraph graph9 = new HDTGraph(hdt9);
+			final HDTGraph graph10 = new HDTGraph(hdt10);
+			final HDTGraph graph11 = new HDTGraph(hdt11);
 			this.hdtdbpediaCats = ModelFactory.createModelForGraph(graph);
 			this.hdtyagoTransTypes = ModelFactory.createModelForGraph(graph1);
 			this.hdtyagoTaxonomy = ModelFactory.createModelForGraph(graph2);
@@ -159,6 +165,8 @@ public final class DisambiguationMainService {
 					.createModelForGraph(graph8);
 			this.hdtdbpediaRedirects = ModelFactory
 					.createModelForGraph(graph9);
+			this.hdtdbpediaLabels_ger = ModelFactory.createModelForGraph(graph10);
+			this.hdtdbpediaCats_ger = ModelFactory.createModelForGraph(graph11);
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -190,6 +198,10 @@ public final class DisambiguationMainService {
 	public Model getDBPediaArticleCategories() {
 		return this.hdtdbpediaCats;
 	}
+	
+	public Model getDBPediaArticleCategories_GER() {
+		return this.hdtdbpediaCats_ger;
+	}
 
 	public Model getDBPediaCategoryLabels() {
 		return this.hdtdbpediaCatsL;
@@ -205,6 +217,10 @@ public final class DisambiguationMainService {
 
 	public Model getDBPediaLabels() {
 		return this.hdtdbpediaLabels;
+	}
+	
+	public Model getDBPediaLabels_GER() {
+		return this.hdtdbpediaLabels_ger;
 	}
 
 	public Model getDBpediaSkosCategories() {
