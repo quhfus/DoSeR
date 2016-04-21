@@ -112,10 +112,11 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 							dpo.getStartPosition());
 					collectiveRep.add(col);
 
-				} else {
-					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
-					collectiveRep.add(sf);
 				}
+//				else {
+//					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
+//					collectiveRep.add(sf);
+//				}
 
 			} catch (final IOException e) {
 				logger.error("JsonException in "+CollectiveDisambiguationDBpediaEntities.class.getName(), e);

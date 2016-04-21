@@ -32,6 +32,11 @@ public class WikiPediaUriConverter {
 		return "http://dbpedia.org/resource/"
 				+ createConformDBpediaUriEndingfromEncodedString(string);
 	}
+	
+	public static String createConformDBpediaUrifromEncodedString_German(String string) {
+		return "http://de.dbpedia.org/resource/"
+				+ createConformDBpediaUriEndingfromEncodedString(string);
+	}
 
 	public static String convertStringToDBpediaConvention(String s) {
 		StringBuilder builder = new StringBuilder();

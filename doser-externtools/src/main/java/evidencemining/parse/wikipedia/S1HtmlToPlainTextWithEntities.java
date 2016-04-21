@@ -23,13 +23,6 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
 /**
  * HTML to plain-text. Second step for Wikipedia evidence Mining. Each HTML file
  * is transformed into a plaintext file, only containing the plain text and
@@ -40,9 +33,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  */
 public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback {
 
-	public static String MAINDIR = "/mnt/storage/zwicklbauer/WikiParse/temp/dump/";
-	public static String SAVEDIR = "/mnt/storage/zwicklbauer/WikiParse/temp/plain/";
-	public static String REDIRECTFILE = "/home/zwicklbauer/HDTGeneration/redirects_en.nt";
+	public static String MAINDIR = "/mnt/storage/zwicklbauer/WikiParse/ger_wiki/dump/html/";
+	public static String SAVEDIR = "/mnt/storage/zwicklbauer/WikiParse/ger_wiki/dump/plain/";
+//	public static String REDIRECTFILE = "/home/zwicklbauer/HDTGeneration/redirects_en.nt";
 
 	public static final int NUMBERTHREADS = 40;
 
@@ -50,7 +43,7 @@ public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback 
 
 	private Stack<IndexType> indentStack;
 
-	private static HashMap<String, String> redirects = new HashMap<String, String>();
+//	private static HashMap<String, String> redirects = new HashMap<String, String>();
 
 	private boolean isEntity;
 	private boolean tableContent;
@@ -103,40 +96,40 @@ public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback 
 		}
 	}
 
-	public static void createRedirectHashMap(File main) {
-		Model model = ModelFactory.createDefaultModel();
-		model.read(REDIRECTFILE);
-		StmtIterator iter = model.listStatements();
-		while (iter.hasNext()) {
-			Statement stmt = iter.nextStatement();
-			Resource subject = stmt.getSubject();
-			String sourceurl = subject.toString().replaceAll(
-					"http://dbpedia.org/resource/", "");
-
-			try {
-				sourceurl = URLDecoder.decode(sourceurl, "UTF-8");
-				sourceurl = URLEncoder.encode(sourceurl, "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-
-			RDFNode object = stmt.getObject();
-			String targeturl = "";
-			if (object instanceof Resource) {
-				targeturl = object.toString().replaceAll(
-						"http://dbpedia.org/resource/", "");
-				try {
-					targeturl = URLDecoder.decode(targeturl, "UTF-8");
-					targeturl = URLEncoder.encode(targeturl, "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-			}
-			if (filesHash.contains(targeturl)) {
-				redirects.put(sourceurl, targeturl);
-			}
-		}
-	}
+//	public static void createRedirectHashMap(File main) {
+//		Model model = ModelFactory.createDefaultModel();
+//		model.read(REDIRECTFILE);
+//		StmtIterator iter = model.listStatements();
+//		while (iter.hasNext()) {
+//			Statement stmt = iter.nextStatement();
+//			Resource subject = stmt.getSubject();
+//			String sourceurl = subject.toString().replaceAll(
+//					"http://dbpedia.org/resource/", "");
+//
+//			try {
+//				sourceurl = URLDecoder.decode(sourceurl, "UTF-8");
+//				sourceurl = URLEncoder.encode(sourceurl, "UTF-8");
+//			} catch (UnsupportedEncodingException e) {
+//				e.printStackTrace();
+//			}
+//
+//			RDFNode object = stmt.getObject();
+//			String targeturl = "";
+//			if (object instanceof Resource) {
+//				targeturl = object.toString().replaceAll(
+//						"http://dbpedia.org/resource/", "");
+//				try {
+//					targeturl = URLDecoder.decode(targeturl, "UTF-8");
+//					targeturl = URLEncoder.encode(targeturl, "UTF-8");
+//				} catch (UnsupportedEncodingException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			if (filesHash.contains(targeturl)) {
+//				redirects.put(sourceurl, targeturl);
+//			}
+//		}
+//	}
 
 	public static String convert(String html) {
 		S1HtmlToPlainTextWithEntities parser = new S1HtmlToPlainTextWithEntities();
@@ -188,11 +181,11 @@ public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback 
 					e1.printStackTrace();
 				}
 				if (checkFile(link)) {
-					if (redirects.containsKey(link)) {
-						String back = link;
-						link = redirects.get(link);
-						System.out.print("Redirect From: "+back+"To: "+link);
-					}
+//					if (redirects.containsKey(link)) {
+//						String back = link;
+//						link = redirects.get(link);
+//						System.out.print("Redirect From: "+back+"To: "+link);
+//					}
 					substring.append("<a " + object.toString() + "=\""
 							+ link + "\">");
 					isEntity = true;
@@ -296,7 +289,7 @@ public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback 
 		String s = new String(text);
 		s = s.replaceAll("\\[\\d*\\]", " ");
 		s = s.replaceAll("<[0-9A-Za-z \\ /\n\r\t]*>", " ");
-		s = s.replaceAll("[^A-Za-z0-9 \n\t.,!?]", " ");
+		s = s.replaceAll("[^A-Za-z0-9 \n\t.,!? äöüÄÜÖ]", " ");
 		s = s.replaceAll("[\\s]+", " ");
 		if (!tableContent && !isList && !s.contains("Template") && !isHeader
 				&& !isStyle) {
@@ -315,7 +308,7 @@ public class S1HtmlToPlainTextWithEntities extends HTMLEditorKit.ParserCallback 
 	public static void main(String args[]) {
 		File mainDirectory = new File(MAINDIR);
 		S1HtmlToPlainTextWithEntities.createFileHash(mainDirectory);
-		S1HtmlToPlainTextWithEntities.createRedirectHashMap(mainDirectory);
+//		S1HtmlToPlainTextWithEntities.createRedirectHashMap(mainDirectory);
 		S1HtmlToPlainTextWithEntities s1 = new S1HtmlToPlainTextWithEntities();
 		s1.readFile(mainDirectory);
 		;

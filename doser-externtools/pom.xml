@@ -22,7 +22,8 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>doser.tools.indexcreation.CreateDBpediaIndexV2</mainClass>
+							<mainClass>doc2vec.corpuscreation.CreateD2VCorpus_Wikipedia</mainClass>
+				<!--			<mainClass>doser.tools.indexcreation.CreateDBpediaIndexV2</mainClass> -->
 						</manifest>
 					</archive>
 				</configuration>
