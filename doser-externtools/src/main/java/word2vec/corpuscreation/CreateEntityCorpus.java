@@ -20,6 +20,8 @@ import doser.tools.indexcreation.WikiPediaUriConverter;
 
 public class CreateEntityCorpus {
 
+	public static final boolean SEPERATELINES = true;
+	
 	public static final String CORPUSFILE = "/home/zwicklbauer/word2vec/corpus/wikientitycorpus.dat";
 
 	public static final String DIRECTORY = "/mnt/storage/zwicklbauer/WikiParse/temp/plain_reduced";
@@ -56,6 +58,9 @@ public class CreateEntityCorpus {
 				xmlReader.parse(inputSource);
 				String fileText = handler.getString();
 				print(writer, fileText);
+				if(SEPERATELINES) {
+					printNewLine(writer);
+				}
 			} catch (SAXException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -164,6 +169,10 @@ public class CreateEntityCorpus {
 	public void print(PrintWriter writer, String text) {
 		writer.print(text);
 		writer.flush();
+	}
+	
+	public void printNewLine(PrintWriter writer) {
+		writer.print(System.lineSeparator());
 	}
 
 	public static void main(String[] args) {
