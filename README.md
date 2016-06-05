@@ -1,6 +1,6 @@
 #DoSeR - Disambiguation of Semantic Resources
 
-**If you are interested in the disambiguation system of DoSeR please, have a look at our DoSeR-Disambiguation repository at [Github DoSeR-Disambiguation](https://github.com/quhfus/DoSeR-Disambiguation)**
+**If you are interested in the entity disambiguation system of DoSeR only, please have a look at our DoSeR-Disambiguation repository at [Github DoSeR-Disambiguation](https://github.com/quhfus/DoSeR-Disambiguation)**
 
 Doser is a framework, written during my PhD to easily integrate entity disambiguation algorithms for different knowledge bases. It is generic in the way that knowledge bases with general entities (e.g. Wikipedia) and more specialized entities (e.g. biomedical entities) can be used. This framework is being continuously developed and may contain bugs. 
 The framework is written in Java and is deployed via Maven.
