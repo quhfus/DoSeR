@@ -1,4 +1,6 @@
-# DoSeR - Disambiguation of Semantic Resources
+#DoSeR - Disambiguation of Semantic Resources
+
+If you are interested in the disambiguation system of DoSeR, please have a look at [Github DoSeR-Disambiguation](https://github.com/quhfus/DoSeR-Disambiguation) 
 
 Doser is a framework, written during my PhD to easily integrate entity disambiguation algorithms for different knowledge bases. It is generic in the way that knowledge bases with general entities (e.g. Wikipedia) and more specialized entities (e.g. biomedical entities) can be used. This framework is being continuously developed and may contain bugs. 
 The framework is written in Java and is deployed via Maven.
@@ -33,10 +35,24 @@ All services can be addressed with the following links:
 - RDFSummarization Service: *serverurl*/doser-disambiguationserver/summarize
 - CategorySuggestion Service : *serverurl*/doser-disambiguationserver/categorysuggestion-proxy
 
-###Cite
-If you use this framework, please use the following snippet to cite this work:
+##Citation
+If you use DoSeR in your research, please cite the following paper:
 
-Zwicklbauer, S.; Seifert, C. & Granitzer, M.: From General to Specialized Domain: Analyzing Three Crucial Problems of Biomedical Entity Disambiguation, Proceedings of 26th International Conference on Database and Expert Systems Applications (DEXA), 76-93, Springer,
+    @inproceedings{DBLP:conf/esws/ZwicklbauerSG16,
+    author    = {Stefan Zwicklbauer and Christin Seifert and Michael Granitzer},
+    title     = {DoSeR - A Knowledge-Base-Agnostic Framework for Entity Disambiguation Using Semantic Embeddings},
+    booktitle = {The Semantic Web. Latest Advances and New Domains - 13th International
+               Conference, {ESWC} 2016, Heraklion, Crete, Greece, May 29 - June 2,
+               2016, Proceedings},
+    pages     = {182--198},
+    year      = {2016},
+    crossref  = {DBLP:conf/esws/2016},
+    url       = {http://dx.doi.org/10.1007/978-3-319-34129-3_12},
+    doi       = {10.1007/978-3-319-34129-3_12},
+    timestamp = {Mon, 23 May 2016 13:46:28 +0200},
+    biburl    = {http://dblp.uni-trier.de/rec/bib/conf/esws/ZwicklbauerSG16},
+    bibsource = {dblp computer science bibliography, http://dblp.org}
+    }
 
 ###Contact
 If you have further question, please ask stefan.zwicklbauer@uni-passau.de
