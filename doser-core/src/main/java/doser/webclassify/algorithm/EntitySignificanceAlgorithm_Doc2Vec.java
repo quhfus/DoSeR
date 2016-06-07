@@ -9,25 +9,30 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
+import doser.language.Languages;
 import doser.webclassify.dpo.Paragraph;
 import doser.word2vec.Data;
 import doser.word2vec.Doc2VecJsonFormat;
 import doser.word2vec.Word2VecJsonFormat;
 
-public class EntitySignificanceAlgorithm_Doc2Vec implements
-		EntityRelevanceAlgorithm {
+public class EntitySignificanceAlgorithm_Doc2Vec implements EntityRelevanceAlgorithm {
 
 	@Override
-	public String process(Map<DisambiguatedEntity, Integer> map, Paragraph p) {
+	public String process(Map<DisambiguatedEntity, Integer> map, Paragraph p, Languages lang) {
 		List<String> entities = new LinkedList<String>();
 		for (Map.Entry<DisambiguatedEntity, Integer> entry : map.entrySet()) {
 			entities.add(entry.getKey().getEntityUri());
 		}
-		return computeBestSingleTopic(entities, p.getContent());
+		return computeBestSingleTopic(entities, p.getContent(), lang);
 	}
 
-	private String computeBestSingleTopic(List<String> entities, String context) {
+	private String computeBestSingleTopic(List<String> entities, String context, Languages lang) {
 		Doc2VecJsonFormat format = new Doc2VecJsonFormat();
+		if (lang.equals(Languages.german)) {
+			format.setDomain("wiki_german");
+		} else {
+			format.setDomain(".");
+		}
 		context = context.toLowerCase();
 		context = context.replaceAll("[\\.\\,\\!\\? ]+", " ");
 		String[] candidates = new String[entities.size()];
@@ -55,8 +60,7 @@ public class EntitySignificanceAlgorithm_Doc2Vec implements
 					pos = j;
 					max = sim;
 				}
-				System.out.println("Entity: " + entities.get(j) + " sim: "
-						+ sim);
+				System.out.println("Entity: " + entities.get(j) + " sim: " + sim);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

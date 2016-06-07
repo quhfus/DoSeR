@@ -22,7 +22,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>doc2vec.corpuscreation.CreateD2VCorpus_Wikipedia</mainClass>
+							<mainClass>word2vec.corpuscreation.CreateDBpediaEdgeList</mainClass>
 				<!--			<mainClass>doser.tools.indexcreation.CreateDBpediaIndexV2</mainClass> -->
 						</manifest>
 					</archive>

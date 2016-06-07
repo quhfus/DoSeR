@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 import doser.entitydisambiguation.algorithms.collective.Edge;
 import doser.entitydisambiguation.algorithms.collective.Vertex;
 import doser.entitydisambiguation.dpo.DisambiguatedEntity;
+import doser.language.Languages;
 import doser.webclassify.dpo.Paragraph;
 import doser.word2vec.Word2VecJsonFormat;
 import edu.uci.ics.jung.algorithms.scoring.PageRank;
@@ -31,7 +32,7 @@ public class EntitySignificanceAlgorithmPR_W2V implements
 	private Factory<Integer> edgeFactory;
 
 	@Override
-	public String process(Map<DisambiguatedEntity, Integer> map, Paragraph p) {
+	public String process(Map<DisambiguatedEntity, Integer> map, Paragraph p, Languages lang) {
 		Set<String> entitySet = new HashSet<String>();
 		List<String> entities = new LinkedList<String>();
 		for (Map.Entry<DisambiguatedEntity, Integer> entry : map.entrySet()) {

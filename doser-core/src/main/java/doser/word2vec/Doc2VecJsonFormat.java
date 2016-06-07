@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Doc2VecJsonFormat {
 
+	private String domain;
 	private List<Data> data;
 
 	public Doc2VecJsonFormat() {
@@ -23,5 +24,12 @@ public class Doc2VecJsonFormat {
 	public void addData(Data doc) {
 		this.data.add(doc);
 	}
-	
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
 }

@@ -1,6 +1,7 @@
 package doser.webclassify.annotation;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +55,7 @@ public class AnnotateEntities {
 
 	public DisambiguatedEntity extractTopicEntity(Map<DisambiguatedEntity, Integer> map, Paragraph p, Languages lang) {
 		EntityRelevanceAlgorithm sig = new EntitySignificanceAlgorithm_Doc2Vec();
-		String topicEntityString = sig.process(map, p);
+		String topicEntityString = sig.process(map, p, lang);
 		DisambiguatedEntity topicEntity = null;
 		if (!topicEntityString.equalsIgnoreCase("")) {
 			topicEntity = new DisambiguatedEntity();
@@ -63,7 +64,15 @@ public class AnnotateEntities {
 			topicEntity.setType(filterStandardDomain(RDFGraphOperations.getRDFTypesFromEntity(topicEntityString)));
 			List<String> labels = null;
 			if(lang.equals(Languages.german)) {
+				topicEntityString = new String(topicEntityString.getBytes(Charset.forName("ISO-8859-1")), Charset.forName("UTF-8"));
+				topicEntity.setEntityUri(topicEntityString);
 				labels = RDFGraphOperations.getDbPediaLabel_GER(topicEntity.getEntityUri());
+				// Hack - Return always a label
+				if(labels.size() == 0) {
+					String l = topicEntity.getEntityUri().replace("http://de.dbpedia.org/resource/", "");
+					l = l.replaceAll("_", " ");
+					labels.add(l);
+				}
 			} else {
 				labels = RDFGraphOperations.getDbPediaLabel(topicEntity.getEntityUri());
 			}
@@ -84,12 +93,22 @@ public class AnnotateEntities {
 					try {
 						JSONObject obj = array.getJSONObject(i);
 						String uri = obj.getString("@URI");
+						
+
 						String offset = obj.getString("@offset");
 						DisambiguatedEntity e = new DisambiguatedEntity();
 						e.setEntityUri(uri);
 						List<String> labels = null;
 						if (lang.equals(Languages.german)) {
+							uri = new String(uri.getBytes(Charset.forName("ISO-8859-1")), Charset.forName("UTF-8"));
+							e.setEntityUri(uri);
 							labels = RDFGraphOperations.getDbPediaLabel_GER(uri);
+							// Hack - Return always a label
+							if(labels.size() == 0) {
+								String l = uri.replace("http://de.dbpedia.org/resource/", "");
+								l = l.replaceAll("_", " ");
+								labels.add(l);
+							}
 						} else {
 							labels = RDFGraphOperations.getDbPediaLabel(uri);
 						}

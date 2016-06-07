@@ -39,7 +39,7 @@ import doser.lucene.query.TermQuery;
 public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguationAlgorithm {
 
 	private final static Logger logger = LoggerFactory.getLogger(CollectiveDisambiguationDBpediaEntities.class);
-	
+
 	private EntityCentricKBDBpedia eckb;
 
 	private DisambiguationTaskCollective task;
@@ -112,14 +112,13 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 							dpo.getStartPosition());
 					collectiveRep.add(col);
 
+				} else {
+					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
+					collectiveRep.add(sf);
 				}
-//				else {
-//					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
-//					collectiveRep.add(sf);
-//				}
 
 			} catch (final IOException e) {
-				logger.error("JsonException in "+CollectiveDisambiguationDBpediaEntities.class.getName(), e);
+				logger.error("JsonException in " + CollectiveDisambiguationDBpediaEntities.class.getName(), e);
 			}
 		}
 
@@ -132,7 +131,8 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 
 		// AlgorithmDriver solver = new CollectiveOnlyDriver(
 		// responseArray, collectiveRep, eckb);
-		CollectiveAndContextDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb, task.getMainTopic());
+		CollectiveAndContextDriver solver = new CollectiveAndContextDriver(responseArray, collectiveRep, eckb,
+				task.getMainTopic());
 		solver.solve();
 
 		solver.generateResult();

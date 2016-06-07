@@ -37,8 +37,7 @@ public abstract class AbstractWord2VecPageRank {
 
 	protected List<SurfaceForm> repList;
 
-	public AbstractWord2VecPageRank(AbstractEntityCentricKBGeneral featureDefinition,
-			List<SurfaceForm> rep) {
+	public AbstractWord2VecPageRank(AbstractEntityCentricKBGeneral featureDefinition, List<SurfaceForm> rep) {
 		super();
 		this.eckb = featureDefinition;
 		this.repList = rep;
@@ -54,10 +53,9 @@ public abstract class AbstractWord2VecPageRank {
 	}
 
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
-		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
-				graph, MapTransformer.getInstance(edgeWeights),
-				getRootPrior(graph.getVertices()), 0.15);
-		pr.setMaxIterations(200);
+		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(graph,
+				MapTransformer.getInstance(edgeWeights), getRootPrior(graph.getVertices()), 0.15);
+		pr.setMaxIterations(70);
 		pr.evaluate();
 		return pr;
 	}
@@ -94,17 +92,14 @@ public abstract class AbstractWord2VecPageRank {
 		for (SurfaceForm rep : repList) {
 			List<String> arrList = rep.getCandidates();
 			for (String s : arrList) {
-				int occs = eckb.getFeatureDefinition().getOccurrences(
-						rep.getSurfaceForm(), s);
+				int occs = eckb.getFeatureDefinition().getOccurrences(rep.getSurfaceForm(), s);
 				List<String> l = new LinkedList<String>();
 				l.add(s);
 				if (rep.getCandidates().size() == 1) {
 					disambiguatedEntities.add(rep.getCandidates().get(0));
-					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true,
-							20000, rep.getContext());
+					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true, 20000, rep.getContext());
 				} else {
-					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true,
-							occs, rep.getContext());
+					addVertex(l, rep.getSurfaceForm(), rep.getQueryNr(), true, occs, rep.getContext());
 				}
 			}
 		}
@@ -123,15 +118,19 @@ public abstract class AbstractWord2VecPageRank {
 					List<String> l1 = v1.getUris();
 					List<String> l2 = v2.getUris();
 					if (l1.size() == 1 && l2.size() == 1) {
-						String format = this.eckb.generateWord2VecFormatString(
-								l1.get(0), l2.get(0));
+						String format = this.eckb.generateWord2VecFormatString(l1.get(0), l2.get(0));
+						w2vFormatStrings.add(format);
+					} else if (l1.size() > l2.size() && l1.size() > 0 && l2.size() > 0) {
+						String format = this.eckb.generateWord2VecFormatString(l1, l2.get(0));
+						w2vFormatStrings.add(format);
+					} else if (l2.size() > l1.size() && l1.size() > 0 && l2.size() > 0) {
+						String format = this.eckb.generateWord2VecFormatString(l2, l1.get(0));
 						w2vFormatStrings.add(format);
 					}
 				}
 			}
 		}
-		Map<String, Float> similarityMap = this.eckb
-				.getWord2VecSimilarities(w2vFormatStrings);
+		Map<String, Float> similarityMap = this.eckb.getWord2VecSimilarities(w2vFormatStrings);
 
 		for (Vertex v1 : vertexList) {
 			for (Vertex v2 : vertexList) {
@@ -140,8 +139,8 @@ public abstract class AbstractWord2VecPageRank {
 					List<String> l2 = v2.getUris();
 					if (l1.size() == 1 && l2.size() == 1) {
 						double weight = similarityMap.get(this.eckb.generateWord2VecFormatString(l1.get(0), l2.get(0)));
-						if(weight < 0.00000001) {
-							System.out.println(weight + " "+l1.get(0) + "   "+l2.get(0));
+						if (weight < 0.00000001) {
+							System.out.println(weight + " " + l1.get(0) + "   " + l2.get(0));
 						}
 						// Add Doc2Vec Local Compatibility
 						// First experiment: Harmonic mean
@@ -150,8 +149,14 @@ public abstract class AbstractWord2VecPageRank {
 						// double hm = 2 * (localComp * weight)
 						// / (localComp + weight);
 						// System.out.println(l1.get(0) + " "+l2.get(0)
-						// +"  Connection: "+ weight+ " Localcomp: "+ localComp
+						// +" Connection: "+ weight+ " Localcomp: "+ localComp
 						// + "HarmonicMean: "+ hm);
+						addEdge(v1, v2, edgeFactory.create(), weight);
+					} else if (l1.size() > l2.size() && l1.size() > 0 && l2.size() > 0) {
+						double weight = similarityMap.get(this.eckb.generateWord2VecFormatString(l1, l2.get(0)));
+						addEdge(v1, v2, edgeFactory.create(), weight);
+					} else if (l2.size() > l1.size() && l1.size() > 0 && l2.size() > 0) {
+						double weight = similarityMap.get(this.eckb.generateWord2VecFormatString(l2, l1.get(0)));
 						addEdge(v1, v2, edgeFactory.create(), weight);
 					}
 				}
@@ -171,8 +176,8 @@ public abstract class AbstractWord2VecPageRank {
 		}
 	}
 
-	protected void addVertex(List<String> uri, String sf, int qryNr,
-			boolean isCandidate, int occurrences, String context) {
+	protected void addVertex(List<String> uri, String sf, int qryNr, boolean isCandidate, int occurrences,
+			String context) {
 		Vertex v = new Vertex();
 		for (String u : uri) {
 			v.addUri(u);
@@ -209,8 +214,7 @@ public abstract class AbstractWord2VecPageRank {
 		graph.removeVertex(rem);
 	}
 
-	protected void updateGraph(List<String> candidates,
-			String disambiguatedEntity, int entityQry) {
+	protected void updateGraph(List<String> candidates, String disambiguatedEntity, int entityQry) {
 		Collection<Vertex> vertexCol = graph.getVertices();
 		List<Vertex> relVertexes = new ArrayList<Vertex>();
 		for (Vertex v : vertexCol) {
@@ -254,8 +258,7 @@ public abstract class AbstractWord2VecPageRank {
 		Transformer<Vertex, Double> distribution = new Transformer<Vertex, Double>() {
 			public Double transform(Vertex input) {
 				if (inner_roots.contains(input)) {
-					double d = new Double(input.getOccurrences()
-							/ (double) overallOccs);
+					double d = new Double(input.getOccurrences() / (double) overallOccs);
 					return d;
 				} else {
 					return 0.0;
@@ -274,8 +277,7 @@ public abstract class AbstractWord2VecPageRank {
 		Collection<Vertex> vertexCol = graph.getVertices();
 		for (Vertex c : vertexCol) {
 			if (c.getEntityQuery() == qryNr && c.isCandidate()) {
-				canList.add(new Candidate(c.getUris().get(0), c
-						.getOccurrences()));
+				canList.add(new Candidate(c.getUris().get(0), c.getOccurrences()));
 			}
 		}
 		Collections.sort(canList, Collections.reverseOrder());
@@ -302,8 +304,7 @@ public abstract class AbstractWord2VecPageRank {
 	protected boolean areCandidatesofSameSF(Vertex v1, Vertex v2) {
 		int qryNr1 = v1.getEntityQuery();
 		int qryNr2 = v2.getEntityQuery();
-		if (qryNr1 == -1 || qryNr2 == -1
-				|| v1.getEntityQuery() != v2.getEntityQuery()) {
+		if (qryNr1 == -1 || qryNr2 == -1 || v1.getEntityQuery() != v2.getEntityQuery()) {
 			return false;
 		}
 		return true;
