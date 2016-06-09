@@ -5,6 +5,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
-				getRootPrior(graph.getVertices()), 0.15);
+				getRootPrior(graph.getVertices()), 0.0);
 		pr.setMaxIterations(200);
 		pr.evaluate();
 		return pr;
@@ -110,32 +111,39 @@ public abstract class Word2VecPageRank extends Word2Vec {
 
 		// Add Edges
 		List<Vertex> vertexList = new ArrayList<Vertex>(graph.getVertices());
+		
+		// Create Word2Vec Queries
+		Set<String> w2vFormatStrings = new HashSet<String>();
 		for (Vertex v1 : vertexList) {
 			for (Vertex v2 : vertexList) {
 				if (!v1.equals(v2) && !areCandidatesofSameSF(v1, v2)) {
 					List<String> l1 = v1.getUris();
 					List<String> l2 = v2.getUris();
 					if (l1.size() == 1 && l2.size() == 1) {
-						double weight = super.getWord2VecSimilarity(l1.get(0),
-								l2.get(0));
-						// Add Doc2Vec Local Compatibility
-						// First experiment: Harmonic mean
-//						double localComp = super.getDoc2VecSimilarity(
-//								v2.getText(), v2.getContext(), l2.get(0));
-//						double hm = 2 * (localComp * weight)
-//								/ (localComp + weight);
-//						System.out.println(l1.get(0) + " "+l2.get(0) +"  Connection: "+ weight+ " Localcomp: "+ localComp + "HarmonicMean: "+ hm);
+						String format = super.generateWord2VecFormatString(
+								l1.get(0), l2.get(0));
+						w2vFormatStrings.add(format);
+					}
+				}
+			}
+		}
+		Map<String, Float> similarityMap = super.getWord2VecSimilarities(w2vFormatStrings);
+		
+		
+		for (Vertex v1 : vertexList) {
+			for (Vertex v2 : vertexList) {
+				if (!v1.equals(v2) && !areCandidatesofSameSF(v1, v2)) {
+					List<String> l1 = v1.getUris();
+					List<String> l2 = v2.getUris();
+					if (l1.size() == 1 && l2.size() == 1) {
+						String format = super.generateWord2VecFormatString(
+								l1.get(0), l2.get(0));
+						
+						double weight = similarityMap.get(format);
+						System.out.println("Weighting: "+l1.get(0)+"   "+l2.get(0) + "Weight: "+ weight);
 						addEdge(v1, v2, edgeFactory.create(), weight);
 					} else if (l1.size() > 1 && l2.size() == 1) {
-						// double weight = super.getWord2VecSimilarity(l1,
-						// l2.get(0));
-						// // System.out.println("WEIGHT: "+weight);
-						// addEdge(v1, v2, edgeFactory.create(), weight);
 					} else if (l1.size() == 1 && l2.size() > 2) {
-						// double weight = super.getWord2VecSimilarity(l2,
-						// l1.get(0));
-						// // System.out.println("WEIGHT: "+weight);
-						// addEdge(v1, v2, edgeFactory.create(), weight);
 					}
 				}
 			}
@@ -228,6 +236,7 @@ public abstract class Word2VecPageRank extends Word2Vec {
 		final Collection<Vertex> inner_roots = roots;
 		double sum = 0;
 		for (Vertex v : inner_roots) {
+//			sum += Math.log();
 			sum += Math.log(v.getOccurrences());
 		}
 		final double overallOccs = sum;
