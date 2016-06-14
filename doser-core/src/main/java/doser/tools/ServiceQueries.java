@@ -33,9 +33,6 @@ public class ServiceQueries {
 		try {
 			response = httpclient.execute(httppost);
 			Header[] headers = response.getAllHeaders();
-			for (int i = 0; i < headers.length; i++) {
-				System.out.println(headers[i].getName() + "   "+headers[i].getValue());
-			}
 			HttpEntity ent = response.getEntity();
 
 			buffer.append(EntityUtils.toString(ent));

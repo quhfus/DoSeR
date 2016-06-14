@@ -14,6 +14,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import doser.entitydisambiguation.properties.Properties;
 import doser.tools.ServiceQueries;
 
 public class Word2VecJsonFormat {
@@ -50,7 +51,7 @@ public class Word2VecJsonFormat {
 			ByteArrayEntity ent = new ByteArrayEntity(jsonString.getBytes(),
 					ContentType.create("application/json"));
 			String resStr = ServiceQueries.httpPostRequest(
-					("http://theseus.dimis.fim.uni-passau.de:80/Word2VecRest/" + serviceEndpoint), ent, headers);
+					(Properties.getInstance().getWord2VecService() + serviceEndpoint), ent, headers);
 			JSONObject resultJSON = null;
 			try {
 				resultJSON = new JSONObject(resStr);

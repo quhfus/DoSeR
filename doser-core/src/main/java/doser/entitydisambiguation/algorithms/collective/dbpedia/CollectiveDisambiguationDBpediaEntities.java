@@ -122,12 +122,12 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 			}
 		}
 
-		for (SurfaceForm sf : collectiveRep) {
-			if (sf.getSurfaceForm().equalsIgnoreCase("Sprint Communications Co")) {
-				List<String> candidates = new ArrayList<String>();
-				sf.setCandidates(candidates);
-			}
-		}
+//		for (SurfaceForm sf : collectiveRep) {
+//			if (sf.getSurfaceForm().equalsIgnoreCase("Sprint Communications Co")) {
+//				List<String> candidates = new ArrayList<String>();
+//				sf.setCandidates(candidates);
+//			}
+//		}
 
 		// AlgorithmDriver solver = new CollectiveOnlyDriver(
 		// responseArray, collectiveRep, eckb);
