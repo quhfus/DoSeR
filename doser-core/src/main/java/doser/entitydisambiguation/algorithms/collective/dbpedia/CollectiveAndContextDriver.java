@@ -52,11 +52,11 @@ class CollectiveAndContextDriver {
 		rules.addContextRule(eckb);
 		rules.performRuleChainBeforeCandidateSelection(rep);
 
-		CandidateReductionDBpediaW2V w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 20, 5, 70, false, false);
+		CandidateReductionDBpediaW2V w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 20, 5, 125, false, false);
 		w2vreduction.solve();
 		rep = w2vreduction.getRep();
 
-		w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 45, 5, 70, true, true);
+		w2vreduction = new CandidateReductionDBpediaW2V(eckb, rep, 45, 5, 250, true, true);
 		w2vreduction.solve();
 		rep = w2vreduction.getRep();
 		FinalEntityDisambiguation finalDis = new FinalEntityDisambiguation(eckb, rep);

@@ -55,7 +55,7 @@ public abstract class AbstractWord2VecPageRank {
 	protected PageRankWithPriors<Vertex, Edge> performPageRank() {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(graph,
 				MapTransformer.getInstance(edgeWeights), getRootPrior(graph.getVertices()), 0.15);
-		pr.setMaxIterations(70);
+		pr.setMaxIterations(200);
 		pr.evaluate();
 		return pr;
 	}
