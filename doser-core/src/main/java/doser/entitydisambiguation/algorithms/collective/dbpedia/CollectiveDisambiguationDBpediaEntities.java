@@ -113,6 +113,10 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 					collectiveRep.add(col);
 
 				} else {
+					ArrayList<String> l = new ArrayList<String>();
+					SurfaceForm col = new SurfaceForm(dpo.getSelectedText(), dpo.getContext(), l, i,
+							dpo.getStartPosition());
+					collectiveRep.add(col);
 //					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
 //					collectiveRep.add(sf);
 				}
