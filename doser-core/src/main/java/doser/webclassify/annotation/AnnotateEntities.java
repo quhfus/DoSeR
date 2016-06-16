@@ -150,7 +150,7 @@ public class AnnotateEntities {
 		String serviceUrl = "";
 		if (lang.equals(Languages.german)) {
 			postParameters.add(new BasicNameValuePair("text", text));
-			postParameters.add(new BasicNameValuePair("confidence", "0.45"));
+			postParameters.add(new BasicNameValuePair("confidence", "0.70"));
 			postParameters.add(new BasicNameValuePair("support", "20"));
 			serviceUrl = Properties.getInstance().getDBpediaSpotLight_Ger_Rest();
 		} else {
