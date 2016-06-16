@@ -68,7 +68,7 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 
 	@Override
 	public void processAlgorithm() {
-		AdditionalCandidateQuery aq = new AdditionalCandidateQuery(eckb);
+//		AdditionalCandidateQuery aq = new AdditionalCandidateQuery(eckb);
 		List<EntityDisambiguationDPO> entityList = task.getEntityToDisambiguate();
 		Response[] responseArray = new Response[entityList.size()];
 
@@ -113,8 +113,8 @@ public class CollectiveDisambiguationDBpediaEntities extends AbstractDisambiguat
 					collectiveRep.add(col);
 
 				} else {
-					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
-					collectiveRep.add(sf);
+//					SurfaceForm sf = aq.checkAdditionalSurfaceForms(dpo, i);
+//					collectiveRep.add(sf);
 				}
 
 			} catch (final IOException e) {

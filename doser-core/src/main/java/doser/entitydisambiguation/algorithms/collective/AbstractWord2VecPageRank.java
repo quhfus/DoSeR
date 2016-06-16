@@ -272,21 +272,21 @@ public abstract class AbstractWord2VecPageRank {
 		return this.repList;
 	}
 
-	protected List<String> computeSensePriorRankedList(int qryNr, int bestOf) {
-		List<Candidate> canList = new LinkedList<Candidate>();
-		Collection<Vertex> vertexCol = graph.getVertices();
-		for (Vertex c : vertexCol) {
-			if (c.getEntityQuery() == qryNr && c.isCandidate()) {
-				canList.add(new Candidate(c.getUris().get(0), c.getOccurrences()));
-			}
-		}
-		Collections.sort(canList, Collections.reverseOrder());
-		List<String> strList = new LinkedList<String>();
-		for (Candidate c : canList.subList(0, bestOf)) {
-			strList.add(c.candidate);
-		}
-		return strList;
-	}
+//	protected List<String> computeSensePriorRankedList(int qryNr, int bestOf) {
+//		List<Candidate> canList = new LinkedList<Candidate>();
+//		Collection<Vertex> vertexCol = graph.getVertices();
+//		for (Vertex c : vertexCol) {
+//			if (c.getEntityQuery() == qryNr && c.isCandidate()) {
+//				canList.add(new Candidate(c.getUris().get(0), c.getOccurrences()));
+//			}
+//		}
+//		Collections.sort(canList, Collections.reverseOrder());
+//		List<String> strList = new LinkedList<String>();
+//		for (Candidate c : canList.subList(0, bestOf)) {
+//			strList.add(c.candidate);
+//		}
+//		return strList;
+//	}
 
 	private void removeEdge(Edge e) {
 		graph.removeEdge(e);
