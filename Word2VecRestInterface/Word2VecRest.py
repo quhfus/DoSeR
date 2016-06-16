@@ -8,6 +8,9 @@ from numpy import dot
 from math import pi, e, fabs
 from time import *
 import logging
+from ConfigParser import SafeConfigParser
+import codecs
+import os.path
 from gunicorn.app.base import BaseApplication
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -19,35 +22,33 @@ class Word2VecRest(Flask):
 
     def compute_w2vsimilarity(self, s1, s2, domain):
         similarity = 0
-        if(domain == 'DBpedia'):
-            print 'Ich bin bei DBpedia drinnen'
+	if(domain == 'DBpedia'):
             try:
                 similarity = GunicornApplication.w2vmodel_dbpedia.similarity(s1, s2)
             except Exception:
                 similarity = 0
-        elif(domain == 'Biomed'):
-            try:
-                similarity = GunicornApplication.w2vmodel_general.similarity(s1, s2)
+	elif(domain == 'Biomed'):
+	    try:
+                similarity = GunicornApplication.w2vmodel_biomed.similarity(s1, s2)
             except Exception:
-                similarity = 0
+		similarity = 0
 
         return similarity
 
-def compute_w2vsimilarity_multi(self, l1, str, domain):
+    def compute_w2vsimilarity_multi(self, l1, str, domain):
         l2 = list()
         l2.append(str)
-        l_conform = list()
-        similarity = 0
+	l_conform = list()
+	similarity = 0
         if(domain == 'DBpedia'):
-            print 'Ich bin richtig bei DBPedia drninen'
-            for word in l1:
+	    for word in l1:
                 try:
-                    testword = GunicornApplication.w2vmodel_dbpedia.__getitem__(word)
-                    l_conform.append(word)
-                except:
-                    pass
-
-            if(len(l_conform)):
+	            testword = GunicornApplication.w2vmodel_dbpedia.__getitem__(word)
+	    	    l_conform.append(word)
+	        except:
+		    pass
+                
+	    if(len(l_conform)):
                 try :
                     similarity = GunicornApplication.w2vmodel_dbpedia.n_similarity(l_conform, l2)
                 except Exception:
@@ -69,27 +70,46 @@ def compute_w2vsimilarity_multi(self, l1, str, domain):
 
         return similarity
 
-    def infer_docvector(self, s1):
-        vec = GunicornApplication.d2vmodel.infer_vector(s1, steps=25)
-        return vec
+    def infer_docvector(self, s1, domain):
+        if(domain == 'wiki_german'):
+             return GunicornApplication.d2vmodel_german.infer_vector(s1, steps=25)
+	else:
+             return GunicornApplication.d2vmodel.infer_vector(s1, steps=25)
 
-    def compute_d2vsimilarity(self, d1, vec2):
-        try:
-            vec1 = GunicornApplication.d2vmodel.docvecs[d1]
-            # Check whether entity is in model
-            if(len(vec1) != GunicornApplication.d2vmodel.layer1_size) :
+    def compute_d2vsimilarity(self, d1, vec2, domain):
+        if(domain == 'wiki_german'):
+            try:
+                vec1 = GunicornApplication.d2vmodel_german.docvecs[d1]
+                # Check whether entity is in model
+                if(len(vec1) != GunicornApplication.d2vmodel_german.layer1_size) :
+                    similarity = 0
+                else : 
+                    similarity = dot(matutils.unitvec(vec1), matutils.unitvec(vec2))
+                    if(similarity > 0) :
+                        similarity = pi*similarity
+                    else :
+                        similarity = -(pi*fabs(similarity))
+            except Exception:
                 similarity = 0
-            else :
-                similarity = dot(matutils.unitvec(vec1), matutils.unitvec(vec2))
-                if(similarity > 0) :
-                    similarity = pi*similarity
-                else :
-                    similarity = -(pi*fabs(similarity))
-        except Exception:
-            similarity = 0
-        return similarity
+            return similarity
+        else:   
+            try:
+                vec1 = GunicornApplication.d2vmodel.docvecs[d1]
+	        # Check whether entity is in model
+	        if(len(vec1) != GunicornApplication.d2vmodel.layer1_size) :
+	            similarity = 0
+	        else : 
+	 	    similarity = dot(matutils.unitvec(vec1), matutils.unitvec(vec2))
+	            if(similarity > 0) :
+  	    	        similarity = pi*similarity
+	            else :
+		        similarity = -(pi*fabs(similarity))
+            except Exception:
+                similarity = 0
+            return similarity
 
 w2v = Word2VecRest(__name__)
+
 
 @w2v.route('/w2vsim', methods = ['POST'])
 def w2vsim():
@@ -101,6 +121,7 @@ def w2vsim():
     li = list()
     for q in data:
         split = q.split('|')
+
         if len(split) > 2 :
             l = list()
             for a in range(0, (len(split) - 1)):
@@ -117,45 +138,65 @@ def w2vsim():
 def infer():
     json = request.get_json(force=True)
     sfs = json['data']
+    domain = json['domain']
+    print domain
     f = list()
     for sf in sfs:
         candidates = sf['candidates']
-        cansim = list()
-        for i in range(0,len(candidates)):
+	print candidates
+	cansim = list()
+	for i in range(0,len(candidates)):
             cansim.append(0)
-        for i in range(0,10):
-            contextvec = w2v.infer_docvector(sf['context'].split())
-            it = 0
+	for i in range(0,10):
+            contextvec = w2v.infer_docvector(sf['context'].split(), domain)
+	    it = 0
             for can in candidates:
-                similarity = w2v.compute_d2vsimilarity(can, contextvec)
+                similarity = w2v.compute_d2vsimilarity(can, contextvec, domain)
                 val = cansim[it]
                 val += similarity
-                cansim[it] = val
-                it = it+1
-        for i in range(0, len(candidates)):
-            cansim[i] /= 10
-
+                cansim[it] = val 
+                it = it+1           
+	for i in range(0, len(candidates)):
+	    cansim[i] /= 10
+	   
         result = {"qryNr":sf['qryNr'], "surfaceForm":sf['surfaceForm'], "sim":cansim}
+	print result
         f.append(result)
     return jsonify(data=f)
 
-class GunicornApplication(BaseApplication):
 
-    d2vmodel = Doc2Vec.load('/mnt/ssd1/disambiguation/word2vec/doc2vec/Wiki_Standard_Model/doc2vec_wiki_model.d2v')
-    w2vmodel_dbpedia = Word2Vec.load_word2vec_format('/mnt/ssd1/disambiguation/word2vec/WikiEntityModel_400_neg10_iter5.seq', binary=True)
-    w2vmodel_biomed = Word2Vec.load_word2vec_format('/mnt/ssd1/disambiguation/word2vec/calbcsmall_model_sg_500.bin', binary=True)
+
+class GunicornApplication(BaseApplication):
+    
+    parser = SafeConfigParser()
+    with codecs.open('config.ini', 'r', encoding='utf-8') as f:
+        parser.readfp(f)
+
+    #Mandatory Loading for standard disambiguation
+    wiki_w2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_w2v_wikipedia')
+    w2vmodel_dbpedia = Word2Vec.load_word2vec_format(wiki_w2v_embeddings_file, binary=True)
+    wiki_d2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia')
+    d2vmodel = Doc2Vec.load(wiki_d2v_embeddings_file)
+
+    #Optional Embeddings
+    biomed_w2v_embedings_file = parser.get('Word2VecRest', 'embeddings_w2v_calbc')
+    if os.path.isfile(biomed_w2v_embedings_file):
+        w2vmodel_biomed = Word2Vec.load_word2vec_format(biomed_w2v_embedings_file, binary=True)
+
+    wiki_d2v_german_embeddings = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia_german')
+    if os.path.isfile(wiki_d2v_german_embeddings):
+        d2vmodel_german = Doc2Vec.load(wiki_d2v_german_embeddings)
 
     def __init__(self, wsgi_app, port=5000):
-#       D2VPATH = '/mnt/ssd1/disambiguation/word2vec/doc2vec/doc2vec_wiki_model.d2v'
- #       self.d2vmodel = Doc2Vec.load(D2VPATH)
-        self.options = {
+	self.options = {
             'bind': "127.0.0.1:{port}".format(port=port),
              'workers': 5,
              'preload_app': True,
-             'timeout': 200,
+	     'timeout': 200,
         }
         self.application = wsgi_app
-        super(GunicornApplication, self).__init__()
+	
+	super(GunicornApplication, self).__init__()
 
     def load_config(self):
         config = dict([(key, value) for key, value in self.options.iteritems()
@@ -165,6 +206,19 @@ class GunicornApplication(BaseApplication):
 
     def load(self):
         return self.application
+
+    def ConfigSectionMap(section):
+        dict1 = {}
+        options = Config.options(section)
+        for option in options:
+            try:
+                dict1[option] = Config.get(section, option)
+                if dict1[option] == -1:
+                    DebugPrint("skip: %s" % option)
+            except:
+                print("exception on %s!" % option)
+                dict1[option] = None
+        return dict1
 
 
 if __name__ == '__main__':
