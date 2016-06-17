@@ -171,7 +171,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 		PageRankWithPriors<Vertex, Edge> pr = new PageRankWithPriors<Vertex, Edge>(
 				graph, MapTransformer.getInstance(edgeWeights),
 				getRootPrior(graph.getVertices()), 0.13);
-		pr.setMaxIterations(250);
+		pr.setMaxIterations(75);
 		pr.evaluate();
 		return pr;
 	}
