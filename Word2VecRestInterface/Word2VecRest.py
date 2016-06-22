@@ -7,13 +7,15 @@ from gensim import matutils
 from numpy import dot
 from math import pi, e, fabs
 from time import *
-import logging
+import logging, codecs
 from ConfigParser import SafeConfigParser
-import codecs
 import os.path
 from gunicorn.app.base import BaseApplication
 
+import traceback
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Word2VecRest(Flask):
 
@@ -74,15 +76,18 @@ class Word2VecRest(Flask):
         if(domain == 'wiki_german'):
              return GunicornApplication.d2vmodel_german.infer_vector(s1, steps=25)
 	else:
-             return GunicornApplication.d2vmodel.infer_vector(s1, steps=25)
+             if GunicornApplication.d2vmodel is None:
+                 return 0
+             else : 
+                 return GunicornApplication.d2vmodel.infer_vector(s1, steps=25)
 
     def compute_d2vsimilarity(self, d1, vec2, domain):
-        if(domain == 'wiki_german'):
+	if(domain == 'wiki_german'):
             try:
                 vec1 = GunicornApplication.d2vmodel_german.docvecs[d1]
                 # Check whether entity is in model
                 if(len(vec1) != GunicornApplication.d2vmodel_german.layer1_size) :
-                    similarity = 0
+ 		    similarity = 0
                 else : 
                     similarity = dot(matutils.unitvec(vec1), matutils.unitvec(vec2))
                     if(similarity > 0) :
@@ -93,10 +98,15 @@ class Word2VecRest(Flask):
                 similarity = 0
             return similarity
         else:   
+            # Allows to use disambiguation service without loading a doc2vec embeddings. Simply return neutral 0
+ #           if GunicornApplication.d2vmodel is None:
+#		print 'I return the doc2vec similarity 0'
+#                return 0
+#            else :
             try:
                 vec1 = GunicornApplication.d2vmodel.docvecs[d1]
-	        # Check whether entity is in model
-	        if(len(vec1) != GunicornApplication.d2vmodel.layer1_size) :
+         # Check whether entity is in model
+                if(len(vec1) != GunicornApplication.d2vmodel.layer1_size) :
 	            similarity = 0
 	        else : 
 	 	    similarity = dot(matutils.unitvec(vec1), matutils.unitvec(vec2))
@@ -105,8 +115,10 @@ class Word2VecRest(Flask):
 	            else :
 		        similarity = -(pi*fabs(similarity))
             except Exception:
-                similarity = 0
-            return similarity
+                tb = traceback.format_exc()
+		logger.exception(tb)
+		similarity = 0
+	    return similarity
 
 w2v = Word2VecRest(__name__)
 
@@ -135,15 +147,14 @@ def w2vsim():
 
 
 @w2v.route('/d2vsim', methods = ['POST'])
-def infer():
+def d2vsim():
     json = request.get_json(force=True)
+    logger.info("callup")
     sfs = json['data']
     domain = json['domain']
-    print domain
     f = list()
     for sf in sfs:
         candidates = sf['candidates']
-	print candidates
 	cansim = list()
 	for i in range(0,len(candidates)):
             cansim.append(0)
@@ -158,16 +169,14 @@ def infer():
                 it = it+1           
 	for i in range(0, len(candidates)):
 	    cansim[i] /= 10
-	   
         result = {"qryNr":sf['qryNr'], "surfaceForm":sf['surfaceForm'], "sim":cansim}
-	print result
-        f.append(result)
+	f.append(result)
     return jsonify(data=f)
 
 
 
 class GunicornApplication(BaseApplication):
-    
+
     parser = SafeConfigParser()
     with codecs.open('config.ini', 'r', encoding='utf-8') as f:
         parser.readfp(f)
@@ -175,8 +184,13 @@ class GunicornApplication(BaseApplication):
     #Mandatory Loading for standard disambiguation
     wiki_w2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_w2v_wikipedia')
     w2vmodel_dbpedia = Word2Vec.load_word2vec_format(wiki_w2v_embeddings_file, binary=True)
+
+    #If no doc2vec embeddings are loaded (due to memory constraints), we always return 0 as cosine similarity
     wiki_d2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia')
-    d2vmodel = Doc2Vec.load(wiki_d2v_embeddings_file)
+    if os.path.isfile(wiki_d2v_embeddings_file):
+        d2vmodel = Doc2Vec.load(wiki_d2v_embeddings_file)
+    else :
+        d2vmodel = None
 
     #Optional Embeddings
     biomed_w2v_embedings_file = parser.get('Word2VecRest', 'embeddings_w2v_calbc')
@@ -186,11 +200,11 @@ class GunicornApplication(BaseApplication):
     wiki_d2v_german_embeddings = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia_german')
     if os.path.isfile(wiki_d2v_german_embeddings):
         d2vmodel_german = Doc2Vec.load(wiki_d2v_german_embeddings)
-
+    
     def __init__(self, wsgi_app, port=5000):
 	self.options = {
             'bind': "127.0.0.1:{port}".format(port=port),
-             'workers': 5,
+             'workers': 3,
              'preload_app': True,
 	     'timeout': 200,
         }
@@ -206,19 +220,6 @@ class GunicornApplication(BaseApplication):
 
     def load(self):
         return self.application
-
-    def ConfigSectionMap(section):
-        dict1 = {}
-        options = Config.options(section)
-        for option in options:
-            try:
-                dict1[option] = Config.get(section, option)
-                if dict1[option] == -1:
-                    DebugPrint("skip: %s" % option)
-            except:
-                print("exception on %s!" % option)
-                dict1[option] = None
-        return dict1
 
 
 if __name__ == '__main__':
