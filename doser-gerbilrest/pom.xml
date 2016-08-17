@@ -21,6 +21,10 @@
 			<name>Public online Restlet repository</name>
 			<url>http://maven.restlet.com</url>
 		</repository>
+						<repository>
+			<id>AKSWRepo</id>
+			<url>http://maven.aksw.org/repository/internal/</url>
+</repository>
 	</repositories>
 	<build>
 		<finalName>doser-gerbilrest</finalName>
@@ -57,8 +61,8 @@
 		<dependency>
 			<groupId>org.aksw</groupId>
 			<artifactId>gerbil.nif.transfer</artifactId>
-			<version>0.0.1</version>
-		</dependency>
+			<version>1.2.0</version>
+</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
