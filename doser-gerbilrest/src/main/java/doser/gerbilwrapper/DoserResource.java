@@ -1,6 +1,7 @@
 package doser.gerbilwrapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,11 @@ public class DoserResource extends ServerResource {
 
 	@Post
 	public String accept(Representation request) {
-		Reader inputReader;
+		InputStream stream;
+//		Reader inputReader;
 		try {
-			inputReader = request.getReader();
+			stream = request.getStream();
+//			inputReader = request.getReader();
 		} catch (IOException e) {
 			LOGGER.error("Exception while reading request.", e);
 			return "";
@@ -56,7 +59,8 @@ public class DoserResource extends ServerResource {
 		// ... this is only the parsing of an incoming document
 		Document document;
 		try {
-			document = parser.getDocumentFromNIFReader(inputReader);
+			document = parser.getDocumentFromNIFStream(stream);
+//			document = parser.getDocumentFromNIFReader(inputReader);
 		} catch (Exception e) {
 			LOGGER.error("Exception while reading request.", e);
 			return "";
@@ -93,8 +97,8 @@ public class DoserResource extends ServerResource {
 				String sf = document.getText().substring(
 						span.getStartPosition(),
 						span.getStartPosition() + span.getLength());
-				System.out.println("Surface Form: "+sf);
-				System.out.println("------------------------------------------------------------------------------------");
+//				System.out.println("Surface Form: "+sf);
+//				System.out.println("------------------------------------------------------------------------------------");
 				EntityDisambiguationDPO dpo = new EntityDisambiguationDPO();
 				dpo.setDocumentId(document.getDocumentURI());
 				String context = document.getText();
@@ -106,7 +110,7 @@ public class DoserResource extends ServerResource {
 				dpoList.add(dpo);
 			};
 
-			System.out.println(document.getText());
+//			System.out.println(document.getText());
 			req.setSurfaceFormsToDisambiguate(dpoList);
 
 			HttpParams my_httpParams = new BasicHttpParams();
@@ -121,6 +125,7 @@ public class DoserResource extends ServerResource {
 			Gson gson = new Gson();
 			String json = null;
 			json = gson.toJson(req);
+			System.out.println("Sending To Service: "+ json);
 			ByteArrayEntity ent = new ByteArrayEntity(json.getBytes(),
 					ContentType.create("application/json"));
 			httppost.setEntity(ent);
@@ -138,7 +143,7 @@ public class DoserResource extends ServerResource {
 			} finally {
 				httpclient.getConnectionManager().shutdown();
 			}
-			System.out.println(buffer.toString());
+//			System.out.println(buffer.toString());
 			DisambiguationResponse disResponse = gson.fromJson(
 					buffer.toString(), DisambiguationResponse.class);
 			List<Response> responses = disResponse.getTasks();

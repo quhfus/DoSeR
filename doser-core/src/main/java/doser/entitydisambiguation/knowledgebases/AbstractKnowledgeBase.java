@@ -37,6 +37,7 @@ public abstract class AbstractKnowledgeBase extends TimerTask {
 		this(uri, dynamic, new DefaultSimilarity());
 	}
 
+	// TODO Bugfix: Similarity is not set
 	AbstractKnowledgeBase(String uri, boolean dynamic, Similarity sim) {
 		super();
 		this.indexUri = uri;

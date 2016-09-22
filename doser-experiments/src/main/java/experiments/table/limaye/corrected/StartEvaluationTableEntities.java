@@ -60,6 +60,10 @@ public class StartEvaluationTableEntities {
 	
 	public static int disambiguationpages = 0;
 
+	public static int colIns = 0;
+	public static int rowIns = 0;
+	public static int test = 0;
+	
 	public static void main(String[] args) {
 		StartEvaluationTableEntities evaluate = new StartEvaluationTableEntities();
 		evaluate.action();
@@ -116,14 +120,22 @@ public class StartEvaluationTableEntities {
 
 				// Query each column separately
 				for (int i = 0; i < t.getNumberofColumns(); i++) {
+
 					Column column = t.getColumn(i);
 					List<EntityDisambiguationDPO> request_dpo = eval.transformInRequestFormat(column);
 					String topic = column.getHeader();
-					List<Response> l = queryService(request_dpo, topic);
-					setDisambiguatedColumn(t, i, l);
+//					List<Response> l = queryService(request_dpo, topic);
+//					setDisambiguatedColumn(t, i, l);
+					colIns++;
+					if(i == 0) {
+						rowIns += column.getCellList().size();
+					}
 				}
-
-				StartEvaluationTableEntities.evaluateResults(t);
+				System.out.println("Columns"+colIns);
+				System.out.println("Rows"+rowIns);
+				test += t.getNumberofColumns() * t.getColumn(0).getCellList().size();
+				System.out.println("Ins" +test);
+//				StartEvaluationTableEntities.evaluateResults(t);
 			}
 		}
 		System.out.println("Insgesamt: " + sum + " davon richtig: " + correct);

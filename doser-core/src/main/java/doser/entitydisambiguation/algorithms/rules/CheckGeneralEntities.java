@@ -72,9 +72,9 @@ class CheckGeneralEntities extends AbstractRule {
 				if (!keepCandidates.isEmpty()) {
 					c.setCandidates(keepCandidates);
 					if(keepCandidates.size() == 1) {
-						System.out.println("**********************************************************************");
-						System.out.println(keepCandidates.toString());
-						System.out.println("**********************************************************************");
+//						System.out.println("**********************************************************************");
+//						System.out.println(keepCandidates.toString());
+//						System.out.println("**********************************************************************");
 					}
 				}
 			}

@@ -200,7 +200,7 @@ class LocationDisambiguation {
 			if (words[i].equals(w + ".")
 					&& (word.startsWith(w) || word.endsWith(w))
 					&& words[i].length() > 3) {
-				System.out.println("Context adaptiert: " + words[i]);
+//				System.out.println("Context adaptiert: " + words[i]);
 				return true;
 			}
 		}

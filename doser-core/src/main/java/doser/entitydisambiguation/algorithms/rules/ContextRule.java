@@ -58,7 +58,7 @@ class ContextRule extends AbstractRule {
 							// Check for Appropriate entities
 							String candidateWithoutUrl = s.replaceAll("http://dbpedia.org/resource/", "").toLowerCase();
 							if (levenshteinDistance(candidateWithoutUrl, sf.getSurfaceForm().toLowerCase()) <= 2) {
-								System.out.println("LEVENSHTEIN DISTANCE ENTITY: " + s);
+//								System.out.println("LEVENSHTEIN DISTANCE ENTITY: " + s);
 							}
 							if (simValue > SIMILARITYTHRESHOLD
 									|| (queryType(s).equalsIgnoreCase("Misc") && simValue > SIMILARITYTHRESHOLDMISC)) {
@@ -79,8 +79,8 @@ class ContextRule extends AbstractRule {
 							}
 							if (notOnlyLevenshtein) {
 								sf.setCandidates(bestCandidate);
-								System.out.println("Es bleibt übrig SurfaceForm: " + sf.getSurfaceForm() + "   +"
-										+ bestCandidate.toString());
+//								System.out.println("Es bleibt übrig SurfaceForm: " + sf.getSurfaceForm() + "   +"
+//										+ bestCandidate.toString());
 							}
 						}
 					}

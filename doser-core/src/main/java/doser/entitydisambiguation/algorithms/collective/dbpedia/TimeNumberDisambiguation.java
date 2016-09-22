@@ -89,7 +89,7 @@ class TimeNumberDisambiguation {
 			put("second", "http://dbpedia.org/resource/Second");
 			put("week", "http://dbpedia.org/resource/Week");
 			put("weeks", "http://dbpedia.org/resource/Week");
-			put("socialist party", "http://dbpedia.org/resource/Socialist_Party_of_Serbia");
+//			put("socialist party", "http://dbpedia.org/resource/Socialist_Party_of_Serbia");
 		}
 	};
 

@@ -192,7 +192,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 						scores.add(new Candidate(pr.getVertexScore(v)));
 						double score = Math.abs(pr.getVertexScore(v));
 						stats.addValue(score);
-						System.out.println("Score for: "+v.getUris().get(0)+"  :  "+score);
+//						System.out.println("Score for: "+v.getUris().get(0)+"  :  "+score);
 						if (score > maxScore) {
 							tempSolution = v.getUris().get(0);
 							maxScore = score;
@@ -210,7 +210,7 @@ class FinalEntityDisambiguation extends AbstractWord2VecPageRank {
 						updateGraph(rep.getCandidates(), tempSolution,
 								rep.getQueryNr());
 						rep.setDisambiguatedEntity(tempSolution);
-						System.out.println("Ich disambiguiere: "+tempSolution);
+//						System.out.println("Ich disambiguiere: "+tempSolution);
 						disambiguatedSurfaceForms.set(i);
 						disambiguationStop = false;
 						break;

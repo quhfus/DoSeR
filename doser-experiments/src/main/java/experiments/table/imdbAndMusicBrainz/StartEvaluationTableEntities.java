@@ -47,6 +47,9 @@ public class StartEvaluationTableEntities {
 	public static int haveoneresult = 0;
 	
 	public static int disambiguationpages = 0;
+	
+	public static int colIns = 0;
+	public static int rowIns = 0;
 
 	public static void main(String[] args) {
 		StartEvaluationTableEntities evaluate = new StartEvaluationTableEntities();
@@ -59,7 +62,7 @@ public class StartEvaluationTableEntities {
 
 		BufferedReader reader = null;
 		try {
-		reader = new BufferedReader(new FileReader(new File("/home/quh/Arbeitsfläche/Table Disambiguation Data sets/musicbrainz_columns.txt")));
+		reader = new BufferedReader(new FileReader(new File("/home/quh/Arbeitsfläche/Table Disambiguation Data sets/imdb_columns.txt")));
 		String line = null;
 		Table current = new Table();
 		List<String> lines = new ArrayList<String>();
@@ -86,11 +89,17 @@ public class StartEvaluationTableEntities {
 						Column column = current.getColumn(i);
 						List<EntityDisambiguationDPO> request_dpo = transformInRequestFormat(column);
 						String topic = column.getHeader();
-						List<Response> l = queryService(request_dpo, topic);
-						setDisambiguatedColumn(current, i, l);
+//						List<Response> l = queryService(request_dpo, topic);
+//						setDisambiguatedColumn(current, i, l);
+						colIns++;
+						if(i == 0) {
+							rowIns += column.getCellList().size();
+						}
 					}
+					System.out.println("Columns"+colIns);
+					System.out.println("Rows"+rowIns);
 
-					StartEvaluationTableEntities.evaluateResults(current);
+//					StartEvaluationTableEntities.evaluateResults(current);
 				}
 				lines = new ArrayList<String>();
 				current = new Table();
