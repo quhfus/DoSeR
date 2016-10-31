@@ -1,7 +1,10 @@
 package doser.entitydisambiguation.algorithms;
 
-import doser.entitydisambiguation.algorithms.collective.dbpedia.CollectiveDisambiguationDBpediaEntities;
 import doser.entitydisambiguation.algorithms.collective.general.CollectiveDisambiguationGeneralEntities;
+import doser.entitydisambiguation.algorithms.contextcomparison.SingleDoc2Vec;
+import doser.entitydisambiguation.algorithms.contextcomparison.SingleEntityContextModel;
+import doser.entitydisambiguation.algorithms.contextcomparison.SingleTFIDF;
+import doser.entitydisambiguation.algorithms.contextcomparison.Statistics;
 import doser.entitydisambiguation.backend.AbstractDisambiguationTask;
 import doser.entitydisambiguation.backend.DisambiguationTaskSingle;
 import doser.entitydisambiguation.dpo.EntityDisambiguationDPO;
@@ -50,7 +53,10 @@ public class DisambiguationHandler {
 			if (task.getKbIdentifier().equals(KnowledgeBaseIdentifiers.Biomed)) {
 				algorithm = new CollectiveDisambiguationGeneralEntities();
 			} else {
-				algorithm = new CollectiveDisambiguationDBpediaEntities();
+//				algorithm = new SingleDoc2Vec();
+//				algorithm = new SingleTFIDF();
+				algorithm = new SingleEntityContextModel();
+//				algorithm = new CollectiveDisambiguationDBpediaEntities();
 			}
 		}
 		return algorithm;

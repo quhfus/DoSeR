@@ -125,7 +125,7 @@ public class DoserResource extends ServerResource {
 			Gson gson = new Gson();
 			String json = null;
 			json = gson.toJson(req);
-			System.out.println("Sending To Service: "+ json);
+//			System.out.println("Sending To Service: "+ json);
 			ByteArrayEntity ent = new ByteArrayEntity(json.getBytes(),
 					ContentType.create("application/json"));
 			httppost.setEntity(ent);
@@ -143,7 +143,7 @@ public class DoserResource extends ServerResource {
 			} finally {
 				httpclient.getConnectionManager().shutdown();
 			}
-//			System.out.println(buffer.toString());
+			System.out.println(buffer.toString());
 			DisambiguationResponse disResponse = gson.fromJson(
 					buffer.toString(), DisambiguationResponse.class);
 			List<Response> responses = disResponse.getTasks();

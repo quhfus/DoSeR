@@ -70,7 +70,6 @@ public class DisambiguationService {
 			mainService.disambiguate(tasks);
 
 			List<Response> responses = collectiveTask.getResponse();
-			System.out.println("CALLUP" + responses);
 			response.setTasks(responses);
 			response.setDocumentUri(request.getDocumentUri());
 		}

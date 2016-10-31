@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 __author__ = 'quh'
 
 from flask import Flask, request, jsonify
 from gensim.models.word2vec import Word2Vec
 from gensim.models.doc2vec import Doc2Vec
+from gensim.models.ldamodel import LdaModel
+from gensim import corpora
 from gensim import matutils
 from numpy import dot
 from math import pi, e, fabs
@@ -11,6 +16,7 @@ import logging, codecs
 from ConfigParser import SafeConfigParser
 import os.path
 from gunicorn.app.base import BaseApplication
+from scipy.stats import entropy
 
 import traceback
 
@@ -103,6 +109,7 @@ class Word2VecRest(Flask):
 #		print 'I return the doc2vec similarity 0'
 #                return 0
 #            else :
+            d1 = d1.replace("http://dbpedia.org/resource/","")
             try:
                 vec1 = GunicornApplication.d2vmodel.docvecs[d1]
          # Check whether entity is in model
@@ -119,6 +126,25 @@ class Word2VecRest(Flask):
 		logger.exception(tb)
 		similarity = 0
 	    return similarity
+
+    def compute_d2vsimilarity_exp(self, uri, contextvector):
+	uri = uri.replace("http://dbpedia.org/resource/","")
+	bestSimilarity = 0
+	uricounter = 0
+	while True:
+	    adapteduri = uri+'_'+str(uricounter)
+	    logger.info(adapteduri)
+	    try: 
+		documentVec = GunicornApplication.d2vmodel.docvecs[adapteduri]
+		if(len(documentVec) == GunicornApplication.d2vmodel.layer1_size) :
+		    bestSimilarity = max(bestSimilarity, dot(matutils.unitvec(contextvector), matutils.unitvec(documentVec)))
+		    uricounter=uricounter+1
+		else : 
+		    break
+	    except Exception:
+		break
+
+	return bestSimilarity
 
 w2v = Word2VecRest(__name__)
 
@@ -156,10 +182,13 @@ def d2vsim():
     for sf in sfs:
         candidates = sf['candidates']
 	cansim = list()
-	for i in range(0,len(candidates)):
-            cansim.append(0)
+#	contextvec = GunicornApplication.d2vmodel.infer_vector(sf['context'].strip().split(), alpha=0.01, steps=1000)
+#        for can in candidates:
+#            similarity = w2v.compute_d2vsimilarity(can, contextvec, domain)
+#            cansim.append(similarity)
+
 	for i in range(0,10):
-            contextvec = w2v.infer_docvector(sf['context'].split(), domain)
+            contextvec = GunicornApplication.d2vmodel.infer_vector(sf['context'].strip().split(), alpha=0.01, steps=100)
 	    it = 0
             for can in candidates:
                 similarity = w2v.compute_d2vsimilarity(can, contextvec, domain)
@@ -173,6 +202,54 @@ def d2vsim():
 	f.append(result)
     return jsonify(data=f)
 
+@w2v.route('/d2vsim_exp', methods = ['POST'])
+def d2vsim_exp():
+    json = request.get_json(force=True)
+    logger.info("callup")
+    sfs = json['data']
+    domain = json['domain']
+    f = list()
+    for sf in sfs:
+        candidates = sf['candidates']
+        cansim = list()
+
+        contextvec = GunicornApplication.d2vmodel.infer_vector(sf['context'].strip().split(), alpha=0.01, steps=1000)
+	canit = 0
+        for can in candidates:
+            similarity = w2v.compute_d2vsimilarity_exp(can, contextvec)
+            cansim.append(similarity)
+   
+        result = {"qryNr":sf['qryNr'], "surfaceForm":sf['surfaceForm'], "sim":cansim}
+        f.append(result)
+    return jsonify(data=f)
+
+@w2v.route('/ldasim', methods = ['POST'])
+def ldasim():
+#Computes Kullback-Leibler-Divergence between the topic probability distributions of entity
+#description and surface form query. Document Topic probability distributions are infered 
+#rom the underlying model.
+  
+    json = request.get_json(force=True)
+    query = json['query']
+#    logger.info(query)    
+    documents = json['documents']
+#    logger.info(documents)
+    
+    vec_query = GunicornApplication.lda_dictionary.doc2bow(query.lower().split())
+    f = []
+    for doc in documents:
+        vec_doc = GunicornApplication.lda_dictionary.doc2bow(doc.lower().split())
+ 	dist1 = []
+	dist2 = []
+	res1 = GunicornApplication.lda_wiki.get_document_topics(vec_query, minimum_probability=0, minimum_phi_value=0, per_word_topics=True)
+	res2 = GunicornApplication.lda_wiki.get_document_topics(vec_doc, minimum_probability=0, minimum_phi_value=0, per_word_topics=True)
+	for i in range(len(res1[0])):
+            dist1.append(res1[0][i][1])
+            dist2.append(res2[0][i][1])
+#	print entropy[dist1, dist2)
+#	result = entropy[dist1, dist2]
+	f.append(entropy(dist1, dist2))
+    return jsonify(data=f)
 
 
 class GunicornApplication(BaseApplication):
@@ -182,8 +259,8 @@ class GunicornApplication(BaseApplication):
         parser.readfp(f)
 
     #Mandatory Loading for standard disambiguation
-    wiki_w2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_w2v_wikipedia')
-    w2vmodel_dbpedia = Word2Vec.load_word2vec_format(wiki_w2v_embeddings_file, binary=True)
+#    wiki_w2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_w2v_wikipedia')
+#    w2vmodel_dbpedia = Word2Vec.load_word2vec_format(wiki_w2v_embeddings_file, binary=True)
 
     #If no doc2vec embeddings are loaded (due to memory constraints), we always return 0 as cosine similarity
     wiki_d2v_embeddings_file = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia')
@@ -200,11 +277,18 @@ class GunicornApplication(BaseApplication):
     wiki_d2v_german_embeddings = parser.get('Word2VecRest', 'embeddings_d2v_wikipedia_german')
     if os.path.isfile(wiki_d2v_german_embeddings):
         d2vmodel_german = Doc2Vec.load(wiki_d2v_german_embeddings)
-    
+
+    # Experimental LDA
+    lda_wiki_model_file = parser.get('Word2VecRest', 'wiki_lda')
+    lda_wiki_dictionary_file = parser.get('Word2VecRest', 'wiki_lda_dict')
+    if os.path.isfile(lda_wiki_model_file) and os.path.isfile(lda_wiki_dictionary_file): 
+	lda_wiki = LdaModel.load(lda_wiki_model_file)    
+        lda_dictionary = corpora.Dictionary.load_from_text(lda_wiki_dictionary_file)
+        
     def __init__(self, wsgi_app, port=5000):
 	self.options = {
             'bind': "127.0.0.1:{port}".format(port=port),
-             'workers': 3,
+             'workers': 7,
              'preload_app': True,
 	     'timeout': 200,
         }

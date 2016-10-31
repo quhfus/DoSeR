@@ -1,9 +1,9 @@
 package doser.entitydisambiguation.algorithms.contextcomparison;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -11,20 +11,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.BM25Similarity;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +42,9 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.general.HelpfulMethods;
 import doser.lucene.query.TermQuery;
 
-public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
+public class SingleEntityContextModel extends AbstractDisambiguationAlgorithm {
 
-	private final static Logger logger = LoggerFactory.getLogger(SingleTFIDF.class);
+	private final static Logger logger = LoggerFactory.getLogger(SingleEntityContextModel.class);
 
 	private EntityCentricKBDBpedia eckb;
 
@@ -146,9 +146,6 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 			SurfaceForm sf = collectiveRep.get(i);
 			if (sf.getCandidates().size() > 0) {
 				String context = extractContext(sf.getPosition(), sf.getContext(), 1500);
-//				List<String> l = sf.getCandidates();
-//				Collections.shuffle(l);
-//				String res = sf.getCandidates().get(0);
 				String res = queryContext(context, sf.getCandidates());
 				Response re = new Response();
 				List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
@@ -167,37 +164,23 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 	}
 
 	private String queryContext(String context, List<String> candidates) {
-		String topEntity = null;
-		BooleanQuery bq = new BooleanQuery();
+		String[] termSet = analyze(context).split(" ");
+		Map<String, Double> map = new HashMap<String, Double>();
 		for (String s : candidates) {
-			TermQuery tq = new TermQuery(new Term("Mainlink", s));
-			bq.add(tq, Occur.SHOULD);
-		}
-		Filter candidateFilter = new QueryWrapperFilter(bq);
-
-		BooleanQuery termbq = new BooleanQuery();
-		final String[] split = context.split(" ");
-		for (final String element : split) {
-			TermQuery tq = new TermQuery(new Term("LongDescription", element));
-			termbq.add(tq, Occur.SHOULD);
-		}
-		Query q = new FilteredQuery(termbq, candidateFilter);
-		IndexSearcher s = eckb.getSearcher();
-		s.setSimilarity(new BM25Similarity());
-		try {
-			TopDocs top = s.search(q, 100);
-			ScoreDoc[] sd = top.scoreDocs;
-			if (sd.length > 0) {
-				for (int i = 0; i < sd.length; i++) {
-					System.out.println(s.getIndexReader().document(sd[i].doc).get("Mainlink") + ": " + sd[i].score);
-				}
-
-				topEntity = s.getIndexReader().document(sd[0].doc).get("Mainlink");
+			TopDocs td = null;
+			try {
+				td = this.eckb.getSearcher().search(new TermQuery(new Term("Mainlink", s)), 1);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (td != null) {
+				double prob = computeCandidateProbability(td.scoreDocs[0].doc, termSet);
+				map.put(s, prob);
+				System.out.println("Candidate: " + s + " Probability: " + prob);
+			}
 		}
-		return topEntity;
+		List<Map.Entry<String, Double>> l = HelpfulMethods.sortByValue(map);
+		return l.get(0).getKey();
 	}
 
 	private Query createQuery(String sf, EntityCentricKBDBpedia kb) {
@@ -233,6 +216,59 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 	@Override
 	protected boolean preDisambiguation() {
 		return true;
+	}
+
+	private double computeCandidateProbability(int docId, String[] termSet) {
+		double queryProb = 0;
+		IndexReader reader = this.eckb.getSearcher().getIndexReader();
+		Map<String, Integer> map = null;
+		try {
+			map = getTermFrequencies(reader, docId, "LongDescription");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (map != null) {
+			int terms = 0;
+			for (Integer value : map.values()) {
+				terms += value;
+			}
+			for (String t : termSet) {
+				if (map.containsKey(t)) {
+					queryProb += Math.log(((double) map.get(t) / (double) terms) + 1);
+				}
+			}
+		}
+		return queryProb;
+	}
+
+	private Map<String, Integer> getTermFrequencies(IndexReader reader, int docId, String field) throws IOException {
+		Terms vector = reader.getTermVector(docId, field);
+		TermsEnum termsEnum = null;
+		termsEnum = vector.iterator(termsEnum);
+		Map<String, Integer> frequencies = new HashMap<>();
+		BytesRef text = null;
+		while ((text = termsEnum.next()) != null) {
+			String term = text.utf8ToString();
+			int freq = (int) termsEnum.totalTermFreq();
+			frequencies.put(term, freq);
+		}
+		return frequencies;
+	}
+
+	private String analyze(String text) {
+		Analyzer ana = new StandardAnalyzer();
+		StringBuilder builder = new StringBuilder();
+		try {
+			TokenStream stream = ana.tokenStream("", new StringReader(text));
+
+			stream.reset();
+			while (stream.incrementToken()) {
+				builder.append(stream.getAttribute(CharTermAttribute.class).toString() + " ");
+			}
+		} catch (IOException e) {
+		}
+		ana.close();
+		return builder.toString().trim();
 	}
 
 }

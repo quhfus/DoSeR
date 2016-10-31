@@ -4,27 +4,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.BM25Similarity;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +38,9 @@ import doser.entitydisambiguation.knowledgebases.EntityCentricKBDBpedia;
 import doser.general.HelpfulMethods;
 import doser.lucene.query.TermQuery;
 
-public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
+public class SingleDoc2Vec extends AbstractDisambiguationAlgorithm {
 
-	private final static Logger logger = LoggerFactory.getLogger(SingleTFIDF.class);
+	private final static Logger logger = LoggerFactory.getLogger(SingleDoc2Vec.class);
 
 	private EntityCentricKBDBpedia eckb;
 
@@ -115,17 +111,6 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 			}
 		}
 
-		// for (SurfaceForm sf : collectiveRep) {
-		// // System.out.println("SurfaceForm: "+sf.getSurfaceForm()+
-		// // "Position: "+sf.getPosition());
-		// List<String> l = sf.getCandidates();
-		// // System.out.println("Kandidaten: ");
-		// for (String s : l) {
-		// // System.out.println(s);
-		// }
-		// // System.out.println("Ranking: ");
-		// }
-
 //		prune(collectiveRep);
 
 		List<Response> res = Arrays.asList(disambiguate(collectiveRep, responseArray));
@@ -142,14 +127,15 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 	}
 
 	private Response[] disambiguate(List<SurfaceForm> collectiveRep, Response[] resultList) {
+		StandardAnalyzer ana = new StandardAnalyzer();
+		this.eckb.precomputeDoc2VecSimilarities(collectiveRep, 240);
+		// this.eckb.precomputeLDASimilarities(collectiveRep, 3000);
 		for (int i = 0; i < collectiveRep.size(); i++) {
 			SurfaceForm sf = collectiveRep.get(i);
 			if (sf.getCandidates().size() > 0) {
-				String context = extractContext(sf.getPosition(), sf.getContext(), 1500);
-//				List<String> l = sf.getCandidates();
-//				Collections.shuffle(l);
-//				String res = sf.getCandidates().get(0);
-				String res = queryContext(context, sf.getCandidates());
+				// String context = extractContext(sf.getPosition(),
+				// sf.getContext(), 300);
+				String res = queryContext(sf.getSurfaceForm(), sf.getContext(), sf.getCandidates());
 				Response re = new Response();
 				List<DisambiguatedEntity> entList = new LinkedList<DisambiguatedEntity>();
 				DisambiguatedEntity ent = new DisambiguatedEntity();
@@ -162,42 +148,26 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 				resultList[i] = re;
 			}
 		}
-
 		return resultList;
 	}
 
-	private String queryContext(String context, List<String> candidates) {
-		String topEntity = null;
-		BooleanQuery bq = new BooleanQuery();
-		for (String s : candidates) {
-			TermQuery tq = new TermQuery(new Term("Mainlink", s));
-			bq.add(tq, Occur.SHOULD);
+	private String queryContext(String surfaceForm, String context, List<String> candidates) {
+		HashMap<String, Float> map = new HashMap<String, Float>();
+		for (String can : candidates) {
+			float val = this.eckb.getDoc2VecSimilarity(surfaceForm, context, can);
+			// float val = this.eckb.getLDASimilarity(surfaceForm, context,
+			// can);
+			map.put(can, val);
 		}
-		Filter candidateFilter = new QueryWrapperFilter(bq);
-
-		BooleanQuery termbq = new BooleanQuery();
-		final String[] split = context.split(" ");
-		for (final String element : split) {
-			TermQuery tq = new TermQuery(new Term("LongDescription", element));
-			termbq.add(tq, Occur.SHOULD);
+		Map<String, Float> sortedmap = sortByValue(map);
+//		for (Map.Entry<String, Float> m : sortedmap.entrySet()) {
+//			System.out.println("Candidate: " + m.getKey() + " Score: " + m.getValue());
+//		}
+		if (sortedmap.size() > 0) {
+			return sortedmap.entrySet().iterator().next().getKey();
+		} else {
+			return "";
 		}
-		Query q = new FilteredQuery(termbq, candidateFilter);
-		IndexSearcher s = eckb.getSearcher();
-		s.setSimilarity(new BM25Similarity());
-		try {
-			TopDocs top = s.search(q, 100);
-			ScoreDoc[] sd = top.scoreDocs;
-			if (sd.length > 0) {
-				for (int i = 0; i < sd.length; i++) {
-					System.out.println(s.getIndexReader().document(sd[i].doc).get("Mainlink") + ": " + sd[i].score);
-				}
-
-				topEntity = s.getIndexReader().document(sd[0].doc).get("Mainlink");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return topEntity;
 	}
 
 	private Query createQuery(String sf, EntityCentricKBDBpedia kb) {
@@ -205,6 +175,21 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 		TermQuery query = new TermQuery(new Term("UniqueLabel", surfaceform));
 
 		return query;
+	}
+
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+		List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+			public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+				return -(o1.getValue()).compareTo(o2.getValue());
+			}
+		});
+
+		Map<K, V> result = new LinkedHashMap<K, V>();
+		for (Map.Entry<K, V> entry : list) {
+			result.put(entry.getKey(), entry.getValue());
+		}
+		return result;
 	}
 
 	private void prune(List<SurfaceForm> rep) {
@@ -222,8 +207,6 @@ public class SingleTFIDF extends AbstractDisambiguationAlgorithm {
 				List<Map.Entry<String, Integer>> l = HelpfulMethods.sortByValue(map);
 				for (int i = 0; i < 10; ++i) {
 					prunedCandidates.add(l.get(i).getKey());
-					// System.out.println("SensePrior ADd: "+l.get(i).getKey()+"
-					// "+l.get(i).getValue());
 				}
 				c.setCandidates(new ArrayList<String>(prunedCandidates));
 			}

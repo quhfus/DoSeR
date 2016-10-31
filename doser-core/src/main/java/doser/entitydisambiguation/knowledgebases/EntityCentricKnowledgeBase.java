@@ -87,40 +87,40 @@ public class EntityCentricKnowledgeBase extends AbstractKnowledgeBase {
 
 	@Override
 	public void initialize() {
-		indexpriorHashMap = new HashMap<String, Integer>();
-		indexsensePriorHashMap = new HashMap<Integer, HashMap<Integer, Integer>>();
-		indexRelation = new HashMap<Integer, HashSet<String>>();
-		indexsensePriorHashMapBlanc = new HashMap<String, HashMap<Integer, Integer>>();
-		try {
-			final IndexReader iReader = super.getSearcher().getIndexReader();
-			final int maxDoc = iReader.numDocs();
-			for (int i = 0; i < maxDoc; i++) {
-				if ((i % 50000) == 0) {
-					logger.info(this.kbName()+ " Loaded Entities: " + i);
-				}
-
-				final String val = iReader.document(i).get(KBOCCURRENCESFIELD);
-				String entity = iReader.document(i).get("Mainlink").replaceAll("http://dbpedia.org/resource/", "");
-				if ((val != null) && !val.equalsIgnoreCase("")) {
-					final String[] splitter = val.split(TRIMLABELAMOUNT);
-					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
-					for (final String element : splitter) {
-						final String[] value = element.split(TRIMOCCOCC);
-						int check = 1;
-						try {
-							check = Integer.valueOf(value[1]);
-						} catch (final NumberFormatException e) {
-							logger.warn(this.kbName()+ " Warning NumberFormatException while Initialization:" + val);
-						}
-						hash.put(value[0].toLowerCase(Locale.US).hashCode(), check);
-					}
-					indexsensePriorHashMapBlanc.put(entity, hash);
-				}
-			}
-			iReader.close();
-		} catch (final IOException e) {
-			logger.error("IOException in "+EntityCentricKnowledgeBase.class.getName(), e);
-		}
+//		indexpriorHashMap = new HashMap<String, Integer>();
+//		indexsensePriorHashMap = new HashMap<Integer, HashMap<Integer, Integer>>();
+//		indexRelation = new HashMap<Integer, HashSet<String>>();
+//		indexsensePriorHashMapBlanc = new HashMap<String, HashMap<Integer, Integer>>();
+//		try {
+//			final IndexReader iReader = super.getSearcher().getIndexReader();
+//			final int maxDoc = iReader.numDocs();
+//			for (int i = 0; i < maxDoc; i++) {
+//				if ((i % 50000) == 0) {
+//					logger.info(this.kbName()+ " Loaded Entities: " + i);
+//				}
+//
+//				final String val = iReader.document(i).get(KBOCCURRENCESFIELD);
+//				String entity = iReader.document(i).get("Mainlink").replaceAll("http://dbpedia.org/resource/", "");
+//				if ((val != null) && !val.equalsIgnoreCase("")) {
+//					final String[] splitter = val.split(TRIMLABELAMOUNT);
+//					final HashMap<Integer, Integer> hash = new HashMap<Integer, Integer>();
+//					for (final String element : splitter) {
+//						final String[] value = element.split(TRIMOCCOCC);
+//						int check = 1;
+//						try {
+//							check = Integer.valueOf(value[1]);
+//						} catch (final NumberFormatException e) {
+//							logger.warn(this.kbName()+ " Warning NumberFormatException while Initialization:" + val);
+//						}
+//						hash.put(value[0].toLowerCase(Locale.US).hashCode(), check);
+//					}
+//					indexsensePriorHashMapBlanc.put(entity, hash);
+//				}
+//			}
+//			iReader.close();
+//		} catch (final IOException e) {
+//			logger.error("IOException in "+EntityCentricKnowledgeBase.class.getName(), e);
+//		}
 	}
 	
 	protected String kbName() {

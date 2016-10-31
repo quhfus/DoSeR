@@ -11,6 +11,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
@@ -33,7 +35,7 @@ import doser.lucene.query.TermQuery;
 public class EnrichIndexWithWikiData {
 
 	public static final String OLDINDEX = "/home/quh/Arbeitsfläche/Wikipedia_Default_Aida_Sigir";
-	public static final String UPDATEINDEX = "/home/quh/Arbeitsfläche/Wikipedia_Default_Aida_Sigir_Update";
+	public static final String UPDATEINDEX = "/home/quh/Arbeitsfläche/Lucene_Test";
 	public static final String DOC2VECFILE = "/home/quh/Arbeitsfläche/doc2vec_corpus.dat";
 
 	public static int counter = 0;
@@ -63,6 +65,7 @@ public class EnrichIndexWithWikiData {
 			analyzerPerField.put("Type", new DoserIDAnalyzer());
 			analyzerPerField.put("StringLabel", new DoserIDAnalyzer());
 			analyzerPerField.put("Wikitext", new StandardAnalyzer());
+			analyzerPerField.put("LongDescription", new StandardAnalyzer());
 
 			PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), analyzerPerField);
 
@@ -104,9 +107,14 @@ public class EnrichIndexWithWikiData {
 						doc.add(new StringField("StringLabel", field[i].stringValue(), Store.YES));
 					}
 					// Add ShortDescriptions
-					doc.add(new TextField("ShortDescription", olddoc.get("ShortDescription"), Store.YES));
+//					doc.add(new TextField("ShortDescription", olddoc.get("ShortDescription"), Store.YES));
 					// Add longDescriptions
-					doc.add(new TextField("LongDescription", olddoc.get("LongDescription"), Store.YES));
+					FieldType myFieldType = new FieldType(TextField.TYPE_STORED);
+					myFieldType.setStoreTermVectors(true);
+					Field f = new Field("LongDescription", olddoc.get("LongDescription"), myFieldType);
+					doc.add(f);
+					
+//					doc.add(new TextField("LongDescription", olddoc.get("LongDescription"), Store.YES));
 					// Add Type
 					doc.add(new StringField("Type", olddoc.get("Type"), Store.YES));
 					// Add Occurrences
@@ -117,11 +125,11 @@ public class EnrichIndexWithWikiData {
 						doc.add(new StringField("UniqueLabel", field[i].stringValue(), Store.YES));
 					}
 					// Add DBPedia Facts
-					doc.add(new TextField("Relations", olddoc.get("Relations"), Store.YES));
+//					doc.add(new TextField("Relations", olddoc.get("Relations"), Store.YES));
 					// Add PattyFacts
-					doc.add(new TextField("PattyRelations", olddoc.get("PattyRelations"), Store.YES));
+//					doc.add(new TextField("PattyRelations", olddoc.get("PattyRelations"), Store.YES));
 					// Add PattyFreebaseFacts
-					doc.add(new TextField("PattyFreebaseRelations", olddoc.get("PattyFreebaseRelations"), Store.YES));
+//					doc.add(new TextField("PattyFreebaseRelations", olddoc.get("PattyFreebaseRelations"), Store.YES));
 					// Add DBpediaPriors
 					String vdegree = olddoc.get("DbpediaVertexDegree");
 					if(vdegree == null) {
@@ -129,7 +137,9 @@ public class EnrichIndexWithWikiData {
 					}
 					doc.add(new TextField("DbpediaVertexDegree", vdegree, Store.YES));
 					
-					doc.add(new TextField("Wikitext", createText(linecontent), Store.YES));
+					
+//					Field f = new Field("Wikitext", createText(linecontent), myFieldType);
+//					doc.add(f);
 					//System.out.println(createText(linecontent));
 					newIndexWriter.addDocument(doc);
 //					newIndexWriter.updateDocument(term, doc);

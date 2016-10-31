@@ -16,7 +16,7 @@
 		<module>doser-core</module>
 		<module>doser-disambiguationserver</module>
 		<module>doser-hadoop</module>
-		<module>doser-packageexp</module>
+		<module>doser-packagexp</module>
 		<module>doser-gerbilrest</module>
 	</modules>
 

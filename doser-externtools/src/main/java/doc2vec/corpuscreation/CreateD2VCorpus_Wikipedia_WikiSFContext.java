@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -178,10 +180,9 @@ public class CreateD2VCorpus_Wikipedia_WikiSFContext {
 	}
 
 	public void extractRelevantEntities() {
-		File oldIndexFile = new File(INDEX);
 		IndexReader readerOldIndex = null;
 		try {
-			final Directory oldDir = FSDirectory.open(oldIndexFile);
+			final Directory oldDir = FSDirectory.open(new File(INDEX));
 			readerOldIndex = DirectoryReader.open(oldDir);
 			for (int j = 0; j < readerOldIndex.maxDoc(); ++j) {
 				Document oldDoc = readerOldIndex.document(j);
